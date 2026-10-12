@@ -17,8 +17,6 @@
   // ],
   // at most 3 feedback messages / sign-ups per visitor per minute
   "ratelimits": [
-    { "name": "FEEDBACK_LIMIT", "namespace_id": "1001", "simple": { "limit": 3, "period": 60 } },
-    // admin page: up to 30 requests per minute (it loads several stats tabs)
-    { "name": "ADMIN_LIMIT", "namespace_id": "1002", "simple": { "limit": 30, "period": 60 } }
+    { "name": "FEEDBACK_LIMIT", "namespace_id": "1001", "simple": { "limit": 3, "period": 60 } }
   ]
 }

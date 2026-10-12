@@ -15,7 +15,7 @@
 //   ADMIN_EMAIL           your own address, for test sends
 //   POSTHOG_API_KEY       PostHog personal API key with "Query: Read" scope (Borderlines stats on /admin/)
 //   POSTHOG_PROJECT_ID    optional; the PostHog project number (default 652087, the Homo Ludens project)
-// Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT and ADMIN_LIMIT (rate limits), SUBSCRIBERS (KV namespace).
+// Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT (rate limit), SUBSCRIBERS (KV namespace).
 
 const KINDS = { idea: 'Idea', bug: 'Bug', history: 'Historical mistake', other: 'Other' };
 const GAMES = { portal: 'Portal', borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder' };
@@ -276,9 +276,11 @@ function announcement(games, id, origin, unsubLink) {
 async function admin(request, env, url) {
   if (!env.ADMIN_TOKEN) return json({ ok: false, error: 'not-configured' }, 503);
   const auth = request.headers.get('Authorization') || '';
-  const lim = env.ADMIN_LIMIT || env.FEEDBACK_LIMIT;
-  if (lim && !(await lim.limit({ key: 'adm:' + ipOf(request) })).success) return json({ ok: false, error: 'rate' }, 429);
-  if (!sameString(auth, 'Bearer ' + env.ADMIN_TOKEN)) return json({ ok: false, error: 'auth' }, 401);
+  // Only wrong tokens count against the rate limit (3 a minute), so the stats tabs can load freely.
+  if (!sameString(auth, 'Bearer ' + env.ADMIN_TOKEN)) {
+    if (!(await rateOk(env, 'adm:' + ipOf(request)))) return json({ ok: false, error: 'rate' }, 429);
+    return json({ ok: false, error: 'auth' }, 401);
+  }
   if (url.pathname === '/api/admin/borderlines') return await borderlinesStats(env, url);
   const gm = url.pathname.match(/^\/api\/admin\/games\/([a-z]+)$/);
   if (gm && GAME_SQL[gm[1]]) return await runStats(env, url, gm[1], GAME_SQL[gm[1]]);
