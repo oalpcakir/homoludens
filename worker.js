@@ -2,7 +2,7 @@
 //
 //   /api/feedback            feedback and bug reports → Discord
 //   /api/newsletter/*        double opt-in email list (sign up, confirm, unsubscribe)
-//   /api/admin/*             your own tools: subscriber count, preview and send the new-game email
+//   /api/admin/*             your own tools: Borderlines stats, subscriber count, preview and send the new-game email
 //   /borderlines/s/<score>   share link: a page with that score's preview image, which forwards players to the game
 //
 // Secrets (Settings → Variables and Secrets, type Secret — not under Builds):
@@ -13,6 +13,8 @@
 //   ADMIN_TOKEN           any long random string; you type it on /admin/ to send emails
 //   NEWSLETTER_FROM       e.g. "Homo Ludens <news@homoludens.games>" (a verified Resend domain)
 //   ADMIN_EMAIL           your own address, for test sends
+//   POSTHOG_API_KEY       PostHog personal API key with "Query: Read" scope (Borderlines stats on /admin/)
+//   POSTHOG_PROJECT_ID    optional; the PostHog project number (default 652087, the Homo Ludens project)
 // Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT (rate limit), SUBSCRIBERS (KV namespace).
 
 const KINDS = { idea: 'Idea', bug: 'Bug', history: 'Historical mistake', other: 'Other' };
@@ -276,6 +278,7 @@ async function admin(request, env, url) {
   const auth = request.headers.get('Authorization') || '';
   if (!(await rateOk(env, 'adm:' + ipOf(request)))) return json({ ok: false, error: 'rate' }, 429);
   if (!sameString(auth, 'Bearer ' + env.ADMIN_TOKEN)) return json({ ok: false, error: 'auth' }, 401);
+  if (url.pathname === '/api/admin/borderlines') return await borderlinesStats(env, url);
   if (!newsletterEnabled(env)) return json({ ok: false, error: 'newsletter-not-configured' }, 503);
   const games = await loadGames(env, url.origin);
 
@@ -342,6 +345,74 @@ async function admin(request, env, url) {
     return json({ ok: true, sent, remaining: queue.length - sent });
   }
   return json({ ok: false, error: 'not-found' }, 404);
+}
+
+// ---------------------------------------------------------------- Borderlines stats (admin only)
+// Daily players and scores, read from PostHog. Counts are per anonymous player id; a player's first
+// completion of a day counts. (HogQL returns only 100 rows unless a LIMIT is given, hence LIMIT 5000.) Results are cached for 5 minutes (?fresh=1 skips the cache).
+const BL_SINCE = "toDateTime('2026-09-20 00:00:00')";
+const BL_PID = 'coalesce(toString(properties.pid), distinct_id)';
+const BL_SQL = {
+  // one row per (daily number, mode): players who finished, their scores
+  done: `SELECT d, mode, count() AS players, round(avg(t), 1) AS avg, quantile(0.5)(t) AS median, max(t) AS best,
+      round(avg(h), 2) AS hints, countIf(nw = 0) AS newbies
+    FROM (SELECT toInt(properties.day) AS d, toString(properties.mode) AS mode, ${BL_PID} AS p,
+        argMin(toFloat(properties.total), timestamp) AS t, argMin(toFloat(properties.hints), timestamp) AS h,
+        argMin(toInt(properties.daysSinceFirst), timestamp) AS nw
+      FROM events WHERE event = 'game_complete' AND properties.mode IN ('daily', 'archive') AND timestamp >= ${BL_SINCE}
+      GROUP BY d, mode, p)
+    GROUP BY d, mode`,
+  started: `SELECT toInt(properties.day) AS d, toString(properties.mode) AS mode, uniq(${BL_PID}) AS players
+    FROM events WHERE event = 'game_start' AND properties.mode IN ('daily', 'archive') AND timestamp >= ${BL_SINCE}
+    GROUP BY d, mode`,
+  // visitors by the player's own calendar day (= that day's daily number)
+  opened: `SELECT toInt(properties.dayIdx) AS d, uniq(${BL_PID}) AS players, uniqIf(${BL_PID}, toInt(properties.daysSinceFirst) = 0) AS firstTime
+    FROM events WHERE event = 'app_open' AND timestamp >= ${BL_SINCE} GROUP BY d`,
+  // score spread of on-the-day players, in 50-point buckets (0–49 … 450–500)
+  hist: `SELECT d, least(intDiv(toInt(t), 50), 9) AS b, count() AS n
+    FROM (SELECT toInt(properties.day) AS d, ${BL_PID} AS p, argMin(toFloat(properties.total), timestamp) AS t
+      FROM events WHERE event = 'game_complete' AND properties.mode = 'daily' AND timestamp >= ${BL_SINCE} GROUP BY d, p)
+    GROUP BY d, b`,
+  // each realm of each daily (on the day and from the archive)
+  realms: `SELECT toString(properties.qid) AS q, uniq(${BL_PID}) AS players, round(avg(toFloat(properties.score)), 1) AS avg,
+      quantile(0.5)(toFloat(properties.score)) AS median, round(avg(toFloat(properties.coverage)), 2) AS coverage,
+      round(avg(toFloat(properties.precision)), 2) AS precision, round(avg(toFloat(properties.ms)) / 1000) AS seconds,
+      countIf(toFloat(properties.hintPenalty) > 0) AS hinted, count() AS rounds
+    FROM events WHERE event = 'round_submit' AND properties.mode IN ('daily', 'archive') AND timestamp >= ${BL_SINCE}
+    GROUP BY q`,
+  total: `SELECT uniq(${BL_PID}) AS players FROM events WHERE event = 'game_complete' AND properties.mode IN ('daily', 'archive') AND timestamp >= ${BL_SINCE}`,
+};
+async function phQuery(env, name, sql) {
+  const host = env.POSTHOG_HOST || 'https://us.posthog.com';
+  const r = await fetch(`${host}/api/projects/${env.POSTHOG_PROJECT_ID || '652087'}/query/`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${env.POSTHOG_API_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: { kind: 'HogQLQuery', query: sql + ' LIMIT 5000' }, name: 'admin-borderlines-' + name }),
+  });
+  const text = await r.text();
+  if (!r.ok) { const e = new Error('posthog'); e.detail = `${name}: HTTP ${r.status} ${text.slice(0, 300)}`; throw e; }
+  const j = JSON.parse(text);
+  return (j.results || []).map(row => Object.fromEntries(j.columns.map((c, i) => [c, row[i]])));
+}
+async function borderlinesStats(env, url) {
+  if (!env.POSTHOG_API_KEY) return json({ ok: false, error: 'posthog-not-configured' }, 503);
+  const cache = caches.default;
+  const key = new Request(url.origin + '/__cache/admin-borderlines');
+  if (url.searchParams.get('fresh') !== '1') {
+    const hit = await cache.match(key);
+    if (hit) return new Response(hit.body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+  }
+  let out;
+  try {
+    const names = Object.keys(BL_SQL);
+    const res = await Promise.all(names.map(n => phQuery(env, n, BL_SQL[n])));
+    out = Object.fromEntries(names.map((n, i) => [n, res[i]]));
+  } catch (e) {
+    return json({ ok: false, error: 'posthog', detail: e.detail || String(e.message) }, 502);
+  }
+  const body = JSON.stringify({ ok: true, at: Date.now(), ...out });
+  await cache.put(key, new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=300' } }));
+  return new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 }
 
 // ---------------------------------------------------------------- Borderlines share links

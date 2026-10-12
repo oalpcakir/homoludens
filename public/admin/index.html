@@ -7,12 +7,12 @@
 <title>Admin · Homo Ludens</title>
 <style>
 body{margin:0;background:#f7f6f2;color:#1f2b4a;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:860px;margin:0 auto;padding:32px 20px}
+main{max-width:1120px;margin:0 auto;padding:32px 20px}
 h1{font:400 34px Georgia,serif;margin:0 0 4px}
 .k{font:500 11px system-ui;letter-spacing:.14em;text-transform:uppercase;color:#5b6478}
 section{border-top:1px solid #dcdad2;padding:18px 0}
 label{display:block;font-size:13px;color:#5b6478;margin-bottom:4px}
-input,select{font:inherit;padding:9px 10px;border:1px solid #c9c7bf;border-radius:2px;background:#fff;color:inherit}
+input,select{max-width:100%;box-sizing:border-box;font:inherit;padding:9px 10px;border:1px solid #c9c7bf;border-radius:2px;background:#fff;color:inherit}
 button{font:500 14px system-ui;padding:10px 14px;border-radius:2px;border:1px solid #1f2b4a;background:#1f2b4a;color:#f7f6f2;cursor:pointer}
 button.ghost{background:transparent;color:#1f2b4a}
 button.danger{background:#962f2a;border-color:#962f2a}
@@ -20,13 +20,31 @@ button:disabled{opacity:.5;cursor:default}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
 .stats{display:flex;gap:24px}.stats b{font:400 30px Georgia,serif;display:block}
 iframe{width:100%;height:720px;border:1px solid #dcdad2;background:#fff}
-#log{font:13px ui-monospace,monospace;white-space:pre-wrap;color:#4a5468}
+#log,#blLog{font:13px ui-monospace,monospace;white-space:pre-wrap;color:#4a5468}
+h2{font:400 24px Georgia,serif;margin:0 0 10px}
+.muted{color:#5b6478;font-size:13px}
+.tbl{width:100%;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
+th{font:500 11px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#5b6478;text-align:right;padding:6px 8px;border-bottom:1px solid #c9c7bf;white-space:nowrap}
+td{text-align:right;padding:7px 8px;border-bottom:1px solid #e6e4dc;white-space:nowrap}
+th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+tr.day{cursor:pointer}tr.day:hover td{background:#efede6}tr.day.today td{font-weight:600}
+tr.day td:first-child::before{content:"▸ ";color:#8a90a0}tr.day.open td:first-child::before{content:"▾ "}
+td.z{color:#a3a8b4}
+tr.more>td{background:#fbfaf7;padding:14px 12px 18px;text-align:left;white-space:normal}
+.hist{display:flex;align-items:flex-end;gap:2px;height:64px;margin:6px 0 2px}
+.hist div{flex:1;background:#1f2b4a;border-radius:3px 3px 0 0;min-height:1px}
+.histx{display:flex;justify-content:space-between;font-size:11px;color:#5b6478}
+.sub>div{min-width:0;overflow-x:auto}
+.sub{display:grid;grid-template-columns:minmax(200px,280px) 1fr;gap:28px}
+@media(max-width:700px){.sub{grid-template-columns:1fr}}
+.sub table{font-size:13px}
 </style>
 </head>
 <body>
 <main>
   <div class="k">Homo Ludens</div>
-  <h1>New-game email</h1>
+  <h1>Admin</h1>
   <p>Only for you. Nothing here works without the admin token.</p>
 
   <section>
@@ -36,7 +54,22 @@ iframe{width:100%;height:720px;border:1px solid #dcdad2;background:#fff}
     </div>
   </section>
 
+  <section id="bl" hidden>
+    <div class="row" style="justify-content:space-between;align-items:baseline">
+      <h2>Borderlines · daily players</h2>
+      <button class="ghost" id="blFresh">Refresh</button>
+    </div>
+    <div class="stats" id="blTiles" style="margin:6px 0 14px;flex-wrap:wrap"></div>
+    <div class="tbl"><table>
+      <thead><tr><th>Daily</th><th>Date</th><th title="Opened the game that day (any mode)">Visitors</th><th title="Started that day's daily on the day">Started</th><th title="Finished that day's daily on the day">Finished</th><th title="Finished ÷ started">Done %</th><th title="Finished, and it was their first day">New</th><th>Avg</th><th>Median</th><th>Best</th><th title="Hints per game">Hints</th><th title="Finished this daily later, from the archive">Archive</th></tr></thead>
+      <tbody id="blBody"></tbody>
+    </table></div>
+    <p class="muted">Scores out of 500; each player's first finish counts. Players are counted by the anonymous id in their browser: ad blockers hide some players, and one person on two devices counts twice. Click a row for its score spread and the five realms. <span id="blAt"></span></p>
+    <p id="blLog"></p>
+  </section>
+
   <section id="main" hidden>
+    <h2>New-game email</h2>
     <div class="stats" id="stats"></div>
     <div class="row" style="margin-top:16px">
       <div><label for="game">Game to announce</label><select id="game"></select></div>
@@ -64,8 +97,9 @@ iframe{width:100%;height:720px;border:1px solid #dcdad2;background:#fff}
   function log(t) { $('log').textContent = t; }
   function load() {
     try { sessionStorage.setItem('hl-admin', $('tok').value.trim()); } catch (e) {}
+    loadBorderlines(false);
     api('/api/admin/stats').then(function (r) { return r.json(); }).then(function (j) {
-      if (!j.ok) { log('Error: ' + j.error); return; }
+      if (!j.ok) { if (j.error !== 'newsletter-not-configured') log('Email: ' + j.error); return; }
       $('main').hidden = false;
       $('stats').innerHTML = '<div><b>' + j.confirmed + '</b>confirmed</div><div><b>' + j.pending + '</b>waiting to confirm</div>' +
         j.games.map(function (g) { return '<div><b>' + (j.sent[g.id] || 0) + '</b>sent ' + g.title + '</div>'; }).join('');
@@ -75,6 +109,94 @@ iframe{width:100%;height:720px;border:1px solid #dcdad2;background:#fff}
       log('');
     }).catch(function () { log('Could not reach the server.'); });
   }
+
+  // ---------- Borderlines stats ----------
+  var esc = function (t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+  var BL = null, blMeta = null, labels = {};
+  function blLog(t) { $('blLog').textContent = t; }
+  function num(v, d) { return v == null || v === '' || isNaN(v) ? '–' : (+v).toFixed(d || 0); }
+  function by(rows, key) { var m = {}; (rows || []).forEach(function (r) { m[key(r)] = r; }); return m; }
+  function meta() {
+    if (blMeta) return Promise.resolve(blMeta);
+    return fetch('/borderlines/tiers.json').then(function (r) { return r.json(); }).then(function (j) { blMeta = j; return j; });
+  }
+  function dayIdx(start) {
+    var p = start.split('-').map(Number), s = new Date(p[0], p[1] - 1, p[2]), n = new Date();
+    return Math.round((new Date(n.getFullYear(), n.getMonth(), n.getDate()) - s) / 864e5);
+  }
+  function dateOf(start, i) { var p = start.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2] + i); }
+  function loadBorderlines(fresh) {
+    blLog('Loading Borderlines stats…');
+    $('blFresh').disabled = true;
+    Promise.all([api('/api/admin/borderlines' + (fresh ? '?fresh=1' : '')).then(function (r) { return r.json(); }), meta()]).then(function (a) {
+      $('blFresh').disabled = false;
+      var j = a[0];
+      if (!j.ok) {
+        $('bl').hidden = false;
+        blLog(j.error === 'posthog-not-configured' ? 'Add POSTHOG_API_KEY as a secret in Cloudflare to see Borderlines stats.' : 'Error: ' + j.error + (j.detail ? '\n' + j.detail : ''));
+        return;
+      }
+      BL = j; render(); blLog('');
+    }).catch(function () { $('blFresh').disabled = false; blLog('Could not load Borderlines stats.'); });
+  }
+  function render() {
+    var j = BL, m = blMeta, today = Math.min(dayIdx(m.start), m.days.length - 1);
+    var done = by(j.done, function (r) { return r.mode + ':' + r.d; });
+    var started = by(j.started, function (r) { return r.mode + ':' + r.d; });
+    var opened = by(j.opened, function (r) { return r.d; });
+    var g = function (map, k, f) { return map[k] ? map[k][f] : 0; };
+    var last7 = 0, n7 = 0;
+    for (var i = today - 1; i >= Math.max(0, today - 7); i--) { last7 += g(done, 'daily:' + i, 'players'); n7++; }
+    $('blTiles').innerHTML =
+      '<div><b>' + g(done, 'daily:' + today, 'players') + '</b>finished today</div>' +
+      '<div><b>' + (today > 0 ? g(done, 'daily:' + (today - 1), 'players') : '–') + '</b>yesterday</div>' +
+      '<div><b>' + (n7 ? Math.round(last7 / n7) : '–') + '</b>per day, last 7</div>' +
+      '<div><b>' + ((j.total[0] || {}).players || 0) + '</b>players ever</div>';
+    var rows = [];
+    for (var d = today; d >= 0; d--) {
+      var dn = done['daily:' + d] || {}, st = g(started, 'daily:' + d, 'players'), fin = dn.players || 0, ar = g(done, 'archive:' + d, 'players');
+      var vis = g(opened, d, 'players');
+      var z = function (v, s) { return v ? '<td>' + (s || v) + '</td>' : '<td class="z">0</td>'; };
+      rows.push('<tr class="day' + (d === today ? ' today' : '') + '" data-d="' + d + '"><td>#' + (d + 1) + '</td><td>' +
+        dateOf(m.start, d).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + (d === today ? ' · today' : '') + '</td>' +
+        z(vis) + z(st) + z(fin) + '<td>' + (st ? Math.round(100 * fin / st) + '%' : '–') + '</td>' + z(dn.newbies || 0) +
+        '<td>' + num(dn.avg) + '</td><td>' + num(dn.median) + '</td><td>' + num(dn.best) + '</td><td>' + num(dn.hints, 1) + '</td>' + z(ar) + '</tr>');
+    }
+    $('blBody').innerHTML = rows.join('');
+    $('blAt').textContent = 'Data from ' + new Date(j.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' (cached 5 min).';
+    $('bl').hidden = false;
+  }
+  function detail(d) {
+    var j = BL, hist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    (j.hist || []).forEach(function (r) { if (r.d === d) hist[r.b] = r.n; });
+    var max = Math.max.apply(null, hist) || 1, tot = hist.reduce(function (a, b) { return a + b; }, 0);
+    var realms = by(j.realms, function (r) { return r.q; });
+    var h = '<div class="sub"><div><div class="muted">Score spread, on the day (' + tot + ' players)</div>' +
+      '<div class="hist">' + hist.map(function (n, i) { return '<div style="height:' + (100 * n / max) + '%" title="' + (i * 50) + '–' + (i === 9 ? 500 : i * 50 + 49) + ': ' + n + ' player' + (n === 1 ? '' : 's') + '"></div>'; }).join('') + '</div>' +
+      '<div class="histx"><span>0</span><span>250</span><span>500</span></div></div>' +
+      '<div><div class="muted">Realms (on the day and from the archive)</div><table><thead><tr><th>#</th><th>Realm</th><th>Tier</th><th>Players</th><th>Avg</th><th>Median</th><th title="Share of the real land painted">Cover</th><th title="Share of the paint on the real land">Precise</th><th>Sec</th><th title="Rounds where a hint was used">Hint %</th></tr></thead><tbody>';
+    var lab = labels[d] || [];
+    for (var k = 1; k <= 5; k++) {
+      var r = realms['d' + (d + 1) + '-' + k] || {}, L = lab[k - 1] || {};
+      h += '<tr><td>' + k + '</td><td>' + esc(L.label ? L.label + ' · ' + L.yearLabel : '…') + '</td><td>' + esc(['', 'easy', 'medium', 'hard'][+(L.tier || blMeta.days[d][k - 1])] || '') + '</td><td>' + (r.players || 0) + '</td><td>' + num(r.avg) + '</td><td>' + num(r.median) +
+        '</td><td>' + (r.coverage != null ? Math.round(100 * r.coverage) + '%' : '–') + '</td><td>' + (r.precision != null ? Math.round(100 * r.precision) + '%' : '–') + '</td><td>' + num(r.seconds) + '</td><td>' + (r.rounds ? Math.round(100 * r.hinted / r.rounds) + '%' : '–') + '</td></tr>';
+    }
+    return h + '</tbody></table></div></div>';
+  }
+  $('blBody').addEventListener('click', function (e) {
+    var tr = e.target.closest('tr.day'); if (!tr) return;
+    var d = +tr.dataset.d, next = tr.nextElementSibling;
+    if (next && next.classList.contains('more')) { next.remove(); tr.classList.remove('open'); return; }
+    tr.classList.add('open');
+    var more = document.createElement('tr'); more.className = 'more';
+    more.innerHTML = '<td colspan="12">' + detail(d) + '</td>';
+    tr.after(more);
+    if (!labels[d]) fetch('/borderlines/days/' + (d + 1) + '.json').then(function (r) { return r.json(); }).then(function (q) {
+      labels[d] = q.map(function (x) { return { label: x.label, yearLabel: x.yearLabel, tier: x.tier }; });
+      if (more.isConnected) more.innerHTML = '<td colspan="12">' + detail(d) + '</td>';
+    }).catch(function () {});
+  });
+  $('blFresh').onclick = function () { loadBorderlines(true); };
   $('load').onclick = load;
   $('preview').onclick = function () {
     api('/api/admin/preview?game=' + encodeURIComponent($('game').value)).then(function (r) { return r.text(); }).then(function (h) { $('frame').srcdoc = h; $('frame').hidden = false; });
