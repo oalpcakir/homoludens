@@ -27,7 +27,7 @@ h2{font:400 24px Georgia,serif;margin:0 0 10px}
 table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:14px}
 th{font:500 11px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#5b6478;text-align:right;padding:6px 8px;border-bottom:1px solid #c9c7bf;white-space:nowrap}
 td{text-align:right;padding:7px 8px;border-bottom:1px solid #e6e4dc;white-space:nowrap}
-th:first-child,td:first-child,th:nth-child(2),td:nth-child(2){text-align:left}
+th:first-child,td:first-child,#bl th:nth-child(2),#bl td:nth-child(2){text-align:left}
 tr.day{cursor:pointer}tr.day:hover td{background:#efede6}tr.day.today td{font-weight:600}
 tr.day td:first-child::before{content:"▸ ";color:#8a90a0}tr.day.open td:first-child::before{content:"▾ "}
 td.z{color:#a3a8b4}
@@ -39,6 +39,19 @@ tr.more>td{background:#fbfaf7;padding:14px 12px 18px;text-align:left;white-space
 .sub{display:grid;grid-template-columns:minmax(200px,280px) 1fr;gap:28px}
 @media(max-width:700px){.sub{grid-template-columns:1fr}}
 .sub table{font-size:13px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid #c9c7bf;margin-top:8px}
+.tabs button{background:transparent;color:#5b6478;border:0;border-bottom:2px solid transparent;border-radius:0;padding:10px 12px;font-weight:500}
+.tabs button[aria-selected=true]{color:#1f2b4a;border-bottom-color:#1f2b4a}
+.pane{border-top:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:28px;margin-top:18px}
+.grid>div{min-width:0;overflow-x:auto}
+h3{font:500 12px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#5b6478;margin:0 0 6px}
+.bars{display:flex;align-items:flex-end;gap:2px;height:90px;margin:8px 0 2px}
+.bars div{flex:1;background:#1f2b4a;border-radius:3px 3px 0 0;min-height:1px}
+.bars div.zero{background:#dcdad2}
+.empty{color:#8a90a0;font-size:14px;padding:6px 0}
+.slog{font:13px ui-monospace,monospace;white-space:pre-wrap;color:#4a5468}
+td.l,th.l{text-align:left}
 </style>
 </head>
 <body>
@@ -54,7 +67,23 @@ tr.more>td{background:#fbfaf7;padding:14px 12px 18px;text-align:left;white-space
     </div>
   </section>
 
-  <section id="bl" hidden>
+  <nav class="tabs" id="tabs" hidden>
+    <button data-tab="ov" aria-selected="true">Overview</button>
+    <button data-tab="vs">Visitors</button>
+    <button data-tab="bl">Borderlines</button>
+    <button data-tab="rv">Retourvloot</button>
+    <button data-tab="tea">A Cup of Tea</button>
+    <button data-tab="pd">Polder</button>
+    <button data-tab="main">Email</button>
+  </nav>
+
+  <section class="pane" id="ov" hidden></section>
+  <section class="pane" id="vs" hidden></section>
+  <section class="pane" id="rv" hidden></section>
+  <section class="pane" id="tea" hidden></section>
+  <section class="pane" id="pd" hidden></section>
+
+  <section class="pane" id="bl" hidden>
     <div class="row" style="justify-content:space-between;align-items:baseline">
       <h2>Borderlines · daily players</h2>
       <button class="ghost" id="blFresh">Refresh</button>
@@ -68,7 +97,7 @@ tr.more>td{background:#fbfaf7;padding:14px 12px 18px;text-align:left;white-space
     <p id="blLog"></p>
   </section>
 
-  <section id="main" hidden>
+  <section class="pane" id="main" hidden>
     <h2>New-game email</h2>
     <div class="stats" id="stats"></div>
     <div class="row" style="margin-top:16px">
@@ -97,10 +126,11 @@ tr.more>td{background:#fbfaf7;padding:14px 12px 18px;text-align:left;white-space
   function log(t) { $('log').textContent = t; }
   function load() {
     try { sessionStorage.setItem('hl-admin', $('tok').value.trim()); } catch (e) {}
-    loadBorderlines(false);
+    $('tabs').hidden = false;
+    show(current);
     api('/api/admin/stats').then(function (r) { return r.json(); }).then(function (j) {
-      if (!j.ok) { if (j.error !== 'newsletter-not-configured') log('Email: ' + j.error); return; }
-      $('main').hidden = false;
+      if (!j.ok) { log(j.error === 'newsletter-not-configured' ? 'The email list is not switched on yet.' : 'Email: ' + j.error); return; }
+      emailReady = true;
       $('stats').innerHTML = '<div><b>' + j.confirmed + '</b>confirmed</div><div><b>' + j.pending + '</b>waiting to confirm</div>' +
         j.games.map(function (g) { return '<div><b>' + (j.sent[g.id] || 0) + '</b>sent ' + g.title + '</div>'; }).join('');
       var cur = $('game').value;
@@ -109,6 +139,182 @@ tr.more>td{background:#fbfaf7;padding:14px 12px 18px;text-align:left;white-space
       log('');
     }).catch(function () { log('Could not reach the server.'); });
   }
+
+
+  // ---------- tabs ----------
+  var current = 'ov', loaded = {}, emailReady = false;
+  try { current = sessionStorage.getItem('hl-admin-tab') || 'ov'; } catch (e) {}
+  function show(tab) {
+    current = tab;
+    try { sessionStorage.setItem('hl-admin-tab', tab); } catch (e) {}
+    document.querySelectorAll('#tabs button').forEach(function (b) { b.setAttribute('aria-selected', b.dataset.tab === tab ? 'true' : 'false'); });
+    document.querySelectorAll('.pane').forEach(function (p) { p.hidden = p.id !== tab; });
+    if (tab === 'bl' && !loaded.bl) { loaded.bl = true; loadBorderlines(false); }
+    if (GAMES[tab] && !loaded[tab]) { loaded[tab] = true; loadGame(tab, false); }
+  }
+  $('tabs').addEventListener('click', function (e) { var b = e.target.closest('button[data-tab]'); if (b) show(b.dataset.tab); });
+
+  // ---------- small render helpers ----------
+  function pct(a, b) { return b ? Math.round(100 * a / b) + '%' : '–'; }
+  function tiles(list) { return '<div class="stats" style="margin:6px 0 4px;flex-wrap:wrap">' + list.map(function (t) { return '<div title="' + esc(t[2] || '') + '"><b>' + t[0] + '</b>' + esc(t[1]) + '</div>'; }).join('') + '</div>'; }
+  // cols: [key, header, format?, left?]
+  function table(title, rows, cols, note) {
+    var h = '<div>' + (title ? '<h3>' + esc(title) + '</h3>' : '');
+    if (!rows || !rows.length) return h + '<div class="empty">No data yet.</div></div>';
+    h += '<table><thead><tr>' + cols.map(function (c, i) { return '<th class="' + (c[3] || i === 0 ? 'l' : '') + '">' + esc(c[1]) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    rows.forEach(function (r) {
+      h += '<tr>' + cols.map(function (c, i) {
+        var v = c[2] ? c[2](r[c[0]], r) : r[c[0]];
+        return '<td class="' + (c[3] || i === 0 ? 'l' : '') + (v === 0 || v === '0' ? ' z' : '') + '">' + (v == null || v === '' ? '–' : (c[4] ? v : esc(v))) + '</td>';
+      }).join('') + '</tr>';
+    });
+    return h + '</tbody></table>' + (note ? '<p class="muted">' + note + '</p>' : '') + '</div>';
+  }
+  function bars(title, data, labelOf, note) {
+    var max = Math.max.apply(null, data.map(function (d) { return d.n; }).concat([1]));
+    return '<div><h3>' + esc(title) + '</h3><div class="bars">' + data.map(function (d) {
+      return '<div class="' + (d.n ? '' : 'zero') + '" style="height:' + Math.max(2, 100 * d.n / max) + '%" title="' + esc(labelOf(d)) + ': ' + d.n + '"></div>';
+    }).join('') + '</div><div class="histx"><span>' + esc(labelOf(data[0])) + '</span><span>' + esc(labelOf(data[data.length - 1])) + '</span></div>' + (note ? '<p class="muted">' + note + '</p>' : '') + '</div>';
+  }
+  function head(title, tab, at) {
+    return '<div class="row" style="justify-content:space-between;align-items:baseline"><h2>' + esc(title) + '</h2><button class="ghost" data-fresh="' + tab + '">Refresh</button></div>' +
+      (at ? '<p class="muted" style="margin:0">Last 90 days. Data from ' + new Date(at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' (cached 5 min).</p>' : '');
+  }
+  document.addEventListener('click', function (e) { var b = e.target.closest('button[data-fresh]'); if (b) loadGame(b.dataset.fresh, true); });
+
+  var TITLES = { ov: 'Overview · whole site', vs: 'Visitors', rv: 'Retourvloot', tea: 'A Cup of Tea', pd: 'Polder' };
+  var GAMES = { ov: 'overview', vs: 'visitors', rv: 'retourvloot', tea: 'cupoftea', pd: 'polder' };
+  function loadGame(tab, fresh) {
+    var el = $(tab);
+    el.innerHTML = head(TITLES[tab], tab) + '<p class="slog">Loading…</p>';
+    api('/api/admin/games/' + GAMES[tab] + (fresh ? '?fresh=1' : '')).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok) { el.innerHTML = head(TITLES[tab], tab) + '<p class="slog">' + esc(j.error === 'posthog-not-configured' ? 'Add POSTHOG_API_KEY as a secret in Cloudflare to see stats.' : 'Error: ' + j.error + (j.detail ? '\n' + j.detail : '')) + '</p>'; return; }
+      el.innerHTML = head(TITLES[tab], tab, j.at) + RENDER[tab](j);
+    }).catch(function () { el.innerHTML = head(TITLES[tab], tab) + '<p class="slog">Could not load stats.</p>'; });
+  }
+
+  var GAME_NAMES = { borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder' };
+  var LEVELS = [['friesland', 'Friesland'], ['zeeland', 'Zeeland'], ['holland', 'Holland'], ['zuiderzee', 'Zuiderzee'], ['free', 'Free play']];
+  var ACH = { first: 'First field', big: "Leeghwater's heir", herd: 'Dairy country', hands: 'Small hands', kit: 'Well equipped', ruins: 'Lost and found', wolf: 'Wolf tamer', door: 'Shut the door', dry: 'Not a drop', perfect: 'Perfect region', nl: 'The Netherlands', hardwin: 'Storm-proof', hardall: 'Iron dikes', book: 'Bookworm' };
+  var RENDER = {
+    ov: function (j) {
+      var d = j.daily || [], wk = new Date(Date.now() - 6 * 864e5).toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' }), sum = function (k) { return d.filter(function (r) { return r.date >= wk; }).reduce(function (a, r) { return a + (r[k] || 0); }, 0); };
+      var today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Europe/Amsterdam' }), t = d[0] && d[0].date === today ? d[0] : {};
+      var h = tiles([[t.visitors || 0, 'visitors today'], [sum('visitors'), 'visitors, last 7 days', 'Each day\'s visitors added up, so someone who came on two days counts twice'], [d.reduce(function (a, r) { return a + (r.signups || 0); }, 0), 'email sign-ups']]);
+      h += '<div class="tbl" style="margin-top:14px">' + table('Per day (Amsterdam time)', d, [
+        ['date', 'Date', function (v) { var p = v.split('-'); return new Date(+p[0], p[1] - 1, +p[2]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }],
+        ['visitors', 'Visitors'], ['portal', 'Portal'], ['borderlines', 'Borderlines'], ['retourvloot', 'Retourvloot'], ['cupoftea', 'Tea'], ['polder', 'Polder'], ['signups', 'Sign-ups']
+      ], 'Visitors = anyone who opened any page. Game columns = people who started or resumed a game that day.') + '</div>';
+      h += '<div class="grid">' +
+        table('Where visitors come from', j.sources, [['source', 'Source', function (v) { return v === '$direct' ? 'Direct / unknown' : v; }], ['visitors', 'Visitors']]) +
+        table('Countries', j.countries, [['country', 'Country'], ['visitors', 'Visitors']]) +
+        table('Portal → game clicks', j.clicks, [['game', 'Game', function (v) { return GAME_NAMES[v] || v; }], ['clicks', 'Clicks'], ['players', 'People']]) + '</div>';
+      return h;
+    },
+    rv: function (j) {
+      var f = (j.funnel || [])[0] || {};
+      var h = tiles([[f.started || 0, 'started a company'], [f.tutorialDone || 0, 'finished the tutorial'], [f.tutorialSkip || 0, 'skipped the tutorial'], [f.firstShip || 0, 'sent a first ship'], [f.resumed || 0, 'came back to a save'], [f.ended || 0, 'reached an ending']]);
+      var reach = {}; (j.reach || []).forEach(function (r) { reach[r.decade] = r.players; });
+      var dec = []; for (var y = 1600; y <= 1790; y += 10) dec.push({ y: y, n: reach[y] || 0 });
+      var reached = function (y) { return (j.reach || []).reduce(function (a, r) { return a + (r.decade >= y ? r.players : 0); }, 0); };
+      h += '<div class="grid">' + bars('Furthest decade reached', dec, function (d) { return d.y + 's'; }, 'One bar per decade, 1600s to 1790s. Reached 1650: ' + reached(1650) + ' · 1700: ' + reached(1700) + ' · 1750: ' + reached(1750) + '.') +
+        table('How games ended', j.ends, [['reason', 'Ending', function (v) { return v === 'bankrupt' ? 'Bankrupt' : v === 'charter' ? 'Charter ran out (1799)' : v; }], ['games', 'Games'], ['year', 'Avg year'], ['dividends', 'Dividends'], ['voyages', 'Voyages'], ['monopolies', 'Monopolies'], ['cash', 'Cash'], ['debt', 'Debt']]) + '</div>';
+      var tot = {}; (j.choices || []).forEach(function (r) { tot[r.card] = (tot[r.card] || 0) + r.n; });
+      h += '<div class="grid" style="grid-template-columns:minmax(0,3fr) minmax(0,1fr)">' + table('Event choices (in game order)', j.choices, [['card', 'Event'], ['label', 'Choice', null, true], ['n', 'Times'], ['n', 'Share', function (v, r) { return pct(v, tot[r.card]); }], ['year', 'Year']]) +
+        table('Tutorial skipped at step', j.skips, [['step', 'Step'], ['n', 'Times']]) + '</div>';
+      return h;
+    },
+    tea: function (j) {
+      var p = (j.players || [])[0] || {}, sc = {}; (j.scenes || []).forEach(function (r) { sc[r.scene] = r; });
+      var rows = [1, 2, 3].map(function (n) { return Object.assign({ scene: n, started: 0, finished: 0 }, sc[n] || {}); });
+      return tiles([[p.players || 0, 'finished at least one scene'], [p.allThree || 0, 'finished all three']]) +
+        '<div class="grid">' + table('Scenes', rows, [['scene', 'Scene', function (v) { return 'Scene ' + v; }], ['started', 'Started'], ['finished', 'Finished'], ['finished', 'Done %', function (v, r) { return pct(v, r.started); }], ['blots', 'Avg blots'], ['medianBlots', 'Median blots']],
+          'Blots = wrong entries in the ledger before getting it right; fewer is better.') + '</div>';
+    },
+    pd: function (j) {
+      var lv = {}; (j.levels || []).forEach(function (r) { lv[r.level] = r; });
+      var st = {}; (j.storms || []).forEach(function (r) { st[r.level] = r; });
+      var rows = LEVELS.map(function (l) { return Object.assign({ id: l[0], name: l[1], starters: 0, finishers: 0, ends: 0, starts: 0, quits: 0 }, lv[l[0]] || {}, { storms: (st[l[0]] || {}).storms || 0 }); });
+      var any = (j.levels || []).length;
+      var h = '<div class="grid">' + table('Regions', any ? rows : [], [['name', 'Region'], ['starters', 'Started'], ['finishers', 'Finished'], ['finishers', 'Done %', function (v, r) { return pct(v, r.starters); }], ['stars', 'Avg stars'], ['threeStar', '3 stars', function (v, r) { return pct(v, r.ends); }], ['hardStarts', 'Hard', function (v, r) { return pct(v, r.starts); }], ['quits', 'Quits'], ['breaches', 'Breaches'], ['fields', 'Fields'], ['storms', 'Storms']],
+        'Started / finished count people; 3 stars and Hard are shares of all plays.') + '</div>';
+      var g = (j.goals || []).map(function (r) { return Object.assign({}, r, { name: (LEVELS.filter(function (l) { return l[0] === r.level; })[0] || [0, r.level])[1] }); });
+      h += '<div class="grid">' + table('Goals', g, [['name', 'Region'], ['goal', 'Goal'], ['ok', 'Met'], ['missed', 'Missed'], ['ok', 'Success', function (v, r) { return pct(v, v + r.missed); }]]) +
+        table('Achievements', j.achievements, [['id', 'Achievement', function (v) { return ACH[v] || v; }], ['players', 'People']]) +
+        table('Upgrades bought', j.upgrades, [['upgrade', 'Upgrade'], ['n', 'Times'], ['players', 'People']]) + '</div>';
+      return h;
+    },
+  };
+
+
+  // ---------- visitors ----------
+  function srcName(v, utm) {
+    if (utm) return 'utm: ' + utm;
+    if (!v || v === '$direct') return 'Direct / unknown';
+    var d = String(v).replace(/^www\./, '');
+    if (/workers\.dev$/.test(d)) return 'Internal (id lost)';
+    if (/(^|\.)reddit\.com$|^redd\.it$/.test(d)) return 'Reddit';
+    if (/^(t\.co|x\.com|twitter\.com)$/.test(d)) return 'X / Twitter';
+    if (/facebook\.com$|^fb\.com$/.test(d)) return 'Facebook';
+    if (/^news\.ycombinator\.com$/.test(d)) return 'Hacker News';
+    if (/(^|\.)google\./.test(d)) return 'Google';
+    if (/bing\.com$|duckduckgo\.com$|yahoo\.com$|ecosia\.org$/.test(d)) return 'Other search';
+    if (/itch\.io$/.test(d)) return 'itch.io';
+    if (/github\.com$/.test(d)) return 'GitHub';
+    if (/discord(app)?\.com$/.test(d)) return 'Discord';
+    return d;
+  }
+  var GKEYS = [['blStarts', 'Borderlines'], ['rvStarts', 'Retourvloot'], ['teaStarts', 'Tea'], ['pdStarts', 'Polder']];
+  function tried(v) { return GKEYS.filter(function (g) { return v[g[0]] > 0; }).length; }
+  function groupBy(list, keyOf) {
+    var m = {};
+    list.forEach(function (v) {
+      var k = keyOf(v) || '?', g = m[k] || (m[k] = { key: k, visitors: 0, played: 0, games: 0, multi: 0, back: 0, minutes: 0, bounce: 0, bl: 0 });
+      var t = tried(v);
+      g.visitors++; if (t) g.played++; g.games += t; if (t > 1) g.multi++; if (v.days > 1) g.back++;
+      g.minutes += v.minutes; if (!t && v.pageviews <= 1 && !v.portalClicks) g.bounce++; g.bl += v.blGames;
+    });
+    return Object.keys(m).map(function (k) { return m[k]; }).sort(function (a, b) { return b.visitors - a.visitors; });
+  }
+  var GCOLS = function (first) {
+    return [['key', first], ['visitors', 'Visitors'], ['played', 'Played', function (v, r) { return pct(v, r.visitors); }], ['games', 'Games tried', function (v, r) { return (v / r.visitors).toFixed(1); }],
+      ['bl', 'Borderlines finished', function (v, r) { return (v / r.visitors).toFixed(1); }], ['back', 'Came back', function (v, r) { return pct(v, r.visitors); }],
+      ['minutes', 'Minutes', function (v, r) { return (v / r.visitors).toFixed(1); }], ['bounce', 'Left at once', function (v, r) { return pct(v, r.visitors); }]];
+  };
+  function fmtWhen(t) { return new Date(t).toLocaleString('en-GB', { timeZone: 'Europe/Amsterdam', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+  function did(v) {
+    var a = [];
+    if (v.portalOpens) a.push('portal' + (v.portalClicks ? ' → ' + v.portalClicks + ' click' + (v.portalClicks > 1 ? 's' : '') : ''));
+    if (v.blStarts) a.push('Borderlines ' + v.blGames + '/' + v.blStarts + ' finished');
+    if (v.rvStarts) a.push('Retourvloot to ' + (v.rvYear || '?'));
+    if (v.teaStarts) a.push('Tea ' + v.teaDone + ' scene' + (v.teaDone === 1 ? '' : 's') + ' done');
+    if (v.pdStarts) a.push('Polder ' + v.pdDone + ' region' + (v.pdDone === 1 ? '' : 's') + ' done');
+    if (v.shares) a.push('shared');
+    if (v.signups) a.push('signed up');
+    return a.join(' · ') || 'looked around';
+  }
+  RENDER.vs = function (j) {
+    var P = (j.people || []).map(function (v) { v.src = srcName(v.source, v.utm); return v; });
+    var n = P.length, played = P.filter(function (v) { return tried(v); }).length;
+    var h = tiles([[n, 'visitors', 'One per browser'], [pct(played, n), 'played a game (' + played + ')'], [P.filter(function (v) { return tried(v) > 1; }).length, 'tried 2+ games'],
+      [pct(P.filter(function (v) { return v.days > 1; }).length, n), 'came back another day'], [P.reduce(function (a, v) { return a + v.signups; }, 0), 'email sign-ups']]);
+    var po = P.filter(function (v) { return v.portalOpens; }), pc = po.filter(function (v) { return v.portalClicks; }), pp = pc.filter(function (v) { return tried(v); });
+    h += '<div class="tbl" style="margin-top:14px">' + table('By where they came from', groupBy(P, function (v) { return v.src; }), GCOLS('Source'),
+      'Source = the site that sent their first page. Games tried = how many of the four games they started, on average. Minutes = minutes with any activity. Left at once = one page, no click, no game.') + '</div>';
+    h += '<div class="grid">' +
+      table('Portal visitors', [{ step: 'Opened the portal', n: po.length }, { step: 'Clicked a game', n: pc.length }, { step: 'Started that game (same id)', n: pp.length }],
+        [['step', 'Step'], ['n', 'People'], ['n', 'Share', function (v) { return pct(v, po.length); }]],
+        'Someone who switches browser on the way (e.g. from the Reddit app\'s built-in browser to Safari or Chrome) gets a new id, so their game shows up as a separate Direct visitor.') +
+      table('Portal clicks by spot', j.spots, [['game', 'Game', function (v) { return GAME_NAMES[v] || v; }], ['spot', 'Spot'], ['clicks', 'Clicks'], ['people', 'People']]) +
+      table('First page', groupBy(P, function (v) { return v.landing; }).map(function (g) { return { key: g.key, visitors: g.visitors, played: g.played }; }),
+        [['key', 'Page'], ['visitors', 'Visitors'], ['played', 'Played', function (v, r) { return pct(v, r.visitors); }]]) + '</div>';
+    h += '<div class="grid">' + table('Device', groupBy(P, function (v) { return v.device; }), GCOLS('Device').slice(0, 4)) +
+      table('Country', groupBy(P, function (v) { return v.country; }).slice(0, 15), GCOLS('Country').slice(0, 4)) + '</div>';
+    h += '<div class="tbl" style="margin-top:22px">' + table('Latest 100 visitors', P.slice(0, 100), [['first', 'First seen', fmtWhen], ['src', 'Source', null, true], ['country', 'Country', null, true], ['device', 'Device', null, true],
+      ['landing', 'First page', null, true], ['days', 'Days'], ['minutes', 'Min'], ['id', 'What they did', function (v, r) { return did(r); }, true]],
+      n >= 5000 ? 'Only the 5,000 newest visitors are loaded.' : '') + '</div>';
+    return h;
+  };
 
   // ---------- Borderlines stats ----------
   var esc = function (t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -132,8 +338,7 @@ tr.more>td{background:#fbfaf7;padding:14px 12px 18px;text-align:left;white-space
       $('blFresh').disabled = false;
       var j = a[0];
       if (!j.ok) {
-        $('bl').hidden = false;
-        blLog(j.error === 'posthog-not-configured' ? 'Add POSTHOG_API_KEY as a secret in Cloudflare to see Borderlines stats.' : 'Error: ' + j.error + (j.detail ? '\n' + j.detail : ''));
+        blLog(j.error === 'posthog-not-configured' ? 'Add POSTHOG_API_KEY as a secret in Cloudflare to see stats.' : 'Error: ' + j.error + (j.detail ? '\n' + j.detail : ''));
         return;
       }
       BL = j; render(); blLog('');
@@ -164,7 +369,6 @@ tr.more>td{background:#fbfaf7;padding:14px 12px 18px;text-align:left;white-space
     }
     $('blBody').innerHTML = rows.join('');
     $('blAt').textContent = 'Data from ' + new Date(j.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) + ' (cached 5 min).';
-    $('bl').hidden = false;
   }
   function detail(d) {
     var j = BL, hist = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];

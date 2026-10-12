@@ -15,7 +15,7 @@
 //   ADMIN_EMAIL           your own address, for test sends
 //   POSTHOG_API_KEY       PostHog personal API key with "Query: Read" scope (Borderlines stats on /admin/)
 //   POSTHOG_PROJECT_ID    optional; the PostHog project number (default 652087, the Homo Ludens project)
-// Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT (rate limit), SUBSCRIBERS (KV namespace).
+// Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT and ADMIN_LIMIT (rate limits), SUBSCRIBERS (KV namespace).
 
 const KINDS = { idea: 'Idea', bug: 'Bug', history: 'Historical mistake', other: 'Other' };
 const GAMES = { portal: 'Portal', borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder' };
@@ -276,9 +276,12 @@ function announcement(games, id, origin, unsubLink) {
 async function admin(request, env, url) {
   if (!env.ADMIN_TOKEN) return json({ ok: false, error: 'not-configured' }, 503);
   const auth = request.headers.get('Authorization') || '';
-  if (!(await rateOk(env, 'adm:' + ipOf(request)))) return json({ ok: false, error: 'rate' }, 429);
+  const lim = env.ADMIN_LIMIT || env.FEEDBACK_LIMIT;
+  if (lim && !(await lim.limit({ key: 'adm:' + ipOf(request) })).success) return json({ ok: false, error: 'rate' }, 429);
   if (!sameString(auth, 'Bearer ' + env.ADMIN_TOKEN)) return json({ ok: false, error: 'auth' }, 401);
   if (url.pathname === '/api/admin/borderlines') return await borderlinesStats(env, url);
+  const gm = url.pathname.match(/^\/api\/admin\/games\/([a-z]+)$/);
+  if (gm && GAME_SQL[gm[1]]) return await runStats(env, url, gm[1], GAME_SQL[gm[1]]);
   if (!newsletterEnabled(env)) return json({ ok: false, error: 'newsletter-not-configured' }, 503);
   const games = await loadGames(env, url.origin);
 
@@ -348,7 +351,7 @@ async function admin(request, env, url) {
 }
 
 // ---------------------------------------------------------------- Borderlines stats (admin only)
-// Daily players and scores, read from PostHog. Counts are per anonymous player id; a player's first
+// Daily players and scores, read from PostHog (same pattern for the other games below). Counts are per anonymous player id; a player's first
 // completion of a day counts. (HogQL returns only 100 rows unless a LIMIT is given, hence LIMIT 5000.) Results are cached for 5 minutes (?fresh=1 skips the cache).
 const BL_SINCE = "toDateTime('2026-09-20 00:00:00')";
 const BL_PID = 'coalesce(toString(properties.pid), distinct_id)';
@@ -394,18 +397,18 @@ async function phQuery(env, name, sql) {
   const j = JSON.parse(text);
   return (j.results || []).map(row => Object.fromEntries(j.columns.map((c, i) => [c, row[i]])));
 }
-async function borderlinesStats(env, url) {
+async function runStats(env, url, name, sqls) {
   if (!env.POSTHOG_API_KEY) return json({ ok: false, error: 'posthog-not-configured' }, 503);
   const cache = caches.default;
-  const key = new Request(url.origin + '/__cache/admin-borderlines');
+  const key = new Request(url.origin + '/__cache/admin-stats/' + name);
   if (url.searchParams.get('fresh') !== '1') {
     const hit = await cache.match(key);
     if (hit) return new Response(hit.body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
   }
   let out;
   try {
-    const names = Object.keys(BL_SQL);
-    const res = await Promise.all(names.map(n => phQuery(env, n, BL_SQL[n])));
+    const names = Object.keys(sqls);
+    const res = await Promise.all(names.map(n => phQuery(env, n, sqls[n])));
     out = Object.fromEntries(names.map((n, i) => [n, res[i]]));
   } catch (e) {
     return json({ ok: false, error: 'posthog', detail: e.detail || String(e.message) }, 502);
@@ -414,6 +417,99 @@ async function borderlinesStats(env, url) {
   await cache.put(key, new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=300' } }));
   return new Response(body, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 }
+const borderlinesStats = (env, url) => runStats(env, url, 'borderlines', BL_SQL);
+
+// ---------------------------------------------------------------- site and other games (admin only)
+// Last 90 days. Every game shares the site-wide player id, so distinct_id is one browser.
+// Careful: a column alias must not be called `event` (it would shadow the event name in WHERE).
+const R90 = 'timestamp >= now() - INTERVAL 90 DAY';
+const GAME_SQL = {
+  overview: {
+    daily: `SELECT toString(toDate(toTimeZone(timestamp, 'Europe/Amsterdam'))) AS date,
+        uniqIf(distinct_id, event = '$pageview') AS visitors,
+        uniqIf(distinct_id, event = '$pageview' AND properties.$pathname = '/') AS portal,
+        uniqIf(distinct_id, event = 'game_start' AND properties.mode IN ('daily', 'archive', 'practice')) AS borderlines,
+        uniqIf(distinct_id, event IN ('game_start', 'game_resume') AND properties.game = 'retourvloot') AS retourvloot,
+        uniqIf(distinct_id, event = 'tea_scene_start') AS cupoftea,
+        uniqIf(distinct_id, event IN ('polder_level_start', 'polder_resume')) AS polder,
+        countIf(event = 'newsletter_signup') AS signups
+      FROM events WHERE ${R90} GROUP BY date ORDER BY date DESC`,
+    sources: `SELECT coalesce(nullIf(toString(properties.$referring_domain), ''), '$direct') AS source, uniq(distinct_id) AS visitors
+      FROM events WHERE event = '$pageview' AND ${R90} AND NOT (coalesce(toString(properties.$referring_domain), '') LIKE '%workers.dev')
+      GROUP BY source ORDER BY visitors DESC`,
+    countries: `SELECT coalesce(toString(properties.$geoip_country_code), '?') AS country, uniq(distinct_id) AS visitors
+      FROM events WHERE event = '$pageview' AND ${R90} GROUP BY country ORDER BY visitors DESC`,
+    clicks: `SELECT toString(properties.game) AS game, count() AS clicks, uniq(distinct_id) AS players
+      FROM events WHERE event = 'portal_play' AND ${R90} GROUP BY game ORDER BY clicks DESC`,
+  },
+  // one row per visitor (browser id): where they came from and what they did
+  visitors: {
+    people: `SELECT distinct_id AS id, min(timestamp) AS first, max(timestamp) AS last,
+        argMinIf(coalesce(nullIf(toString(properties.$referring_domain), ''), '$direct'), timestamp, event = '$pageview') AS source,
+        argMinIf(toString(properties.utm_source), timestamp, event = '$pageview') AS utm,
+        argMinIf(toString(properties.$pathname), timestamp, event = '$pageview') AS landing,
+        argMin(toString(properties.$geoip_country_code), timestamp) AS country,
+        argMin(toString(properties.$device_type), timestamp) AS device,
+        uniq(toDate(toTimeZone(timestamp, 'Europe/Amsterdam'))) AS days,
+        uniq(toStartOfMinute(timestamp)) AS minutes,
+        countIf(event = '$pageview') AS pageviews,
+        countIf(event = 'portal_open') AS portalOpens, countIf(event = 'portal_play') AS portalClicks,
+        countIf(event = 'game_start' AND properties.mode IN ('daily', 'archive', 'practice')) AS blStarts,
+        countIf(event = 'game_complete' AND properties.mode IN ('daily', 'archive', 'practice')) AS blGames,
+        countIf(event IN ('game_start', 'game_resume') AND properties.game = 'retourvloot') AS rvStarts,
+        max(if(properties.game = 'retourvloot', toInt(properties.year), 0)) AS rvYear,
+        countIf(event = 'tea_scene_start') AS teaStarts, countIf(event = 'tea_scene_done') AS teaDone,
+        countIf(event IN ('polder_level_start', 'polder_resume')) AS pdStarts, countIf(event = 'polder_level_end') AS pdDone,
+        countIf(event = 'newsletter_signup') AS signups, countIf(event LIKE 'share%' OR event = 'polder_share') AS shares
+      FROM events WHERE ${R90} GROUP BY id ORDER BY first DESC`,
+    spots: `SELECT toString(properties.game) AS game, coalesce(toString(properties.from), '?') AS spot, count() AS clicks, uniq(distinct_id) AS people
+      FROM events WHERE event = 'portal_play' AND ${R90} GROUP BY game, spot ORDER BY clicks DESC`,
+  },
+ `SELECT uniqIf(distinct_id, event = 'game_start') AS started, countIf(event = 'game_start' AND toString(properties.restart) = 'true') AS restarts,
+        uniqIf(distinct_id, event = 'game_resume') AS resumed, uniqIf(distinct_id, event = 'tutorial_done') AS tutorialDone,
+        uniqIf(distinct_id, event = 'tutorial_skip') AS tutorialSkip, uniqIf(distinct_id, event = 'first_ship') AS firstShip,
+        uniqIf(distinct_id, event = 'game_end') AS ended
+      FROM events WHERE properties.game = 'retourvloot' AND ${R90}`,
+    reach: `SELECT intDiv(y, 10) * 10 AS decade, count() AS players
+      FROM (SELECT distinct_id, max(toInt(properties.year)) AS y FROM events
+        WHERE properties.game = 'retourvloot' AND properties.year IS NOT NULL AND ${R90} GROUP BY distinct_id)
+      GROUP BY decade ORDER BY decade`,
+    ends: `SELECT toString(properties.reason) AS reason, count() AS games, round(avg(toFloat(properties.year))) AS year,
+        round(avg(toFloat(properties.dividends))) AS dividends, round(avg(toFloat(properties.voyages)), 1) AS voyages,
+        round(avg(toFloat(properties.monopolies)), 1) AS monopolies, round(avg(toFloat(properties.cash))) AS cash, round(avg(toFloat(properties.debt))) AS debt
+      FROM events WHERE event = 'game_end' AND properties.game = 'retourvloot' AND ${R90} GROUP BY reason`,
+    choices: `SELECT toString(properties.event) AS card, toString(properties.label) AS label, count() AS n, round(avg(toFloat(properties.year))) AS year
+      FROM events WHERE event = 'event_choice' AND properties.game = 'retourvloot' AND ${R90} GROUP BY card, label ORDER BY year, card, n DESC`,
+    skips: `SELECT toString(properties.step) AS step, count() AS n
+      FROM events WHERE event = 'tutorial_skip' AND properties.game = 'retourvloot' AND ${R90} GROUP BY step ORDER BY n DESC`,
+  },
+  cupoftea: {
+    scenes: `SELECT toInt(properties.scene) AS scene, uniqIf(distinct_id, event = 'tea_scene_start') AS started,
+        uniqIf(distinct_id, event = 'tea_scene_done') AS finished, round(avgIf(toFloat(properties.blots), event = 'tea_scene_done'), 1) AS blots,
+        quantileIf(0.5)(toFloat(properties.blots), event = 'tea_scene_done') AS medianBlots
+      FROM events WHERE event IN ('tea_scene_start', 'tea_scene_done') AND ${R90} GROUP BY scene ORDER BY scene`,
+    players: `SELECT uniq(distinct_id) AS players, uniqIf(distinct_id, s = 3) AS allThree
+      FROM (SELECT distinct_id, uniq(toInt(properties.scene)) AS s FROM events WHERE event = 'tea_scene_done' AND ${R90} GROUP BY distinct_id)`,
+  },
+  polder: {
+    levels: `SELECT toString(properties.level) AS level, uniqIf(distinct_id, event = 'polder_level_start') AS starters,
+        uniqIf(distinct_id, event = 'polder_level_end') AS finishers, round(avgIf(toFloat(properties.stars), event = 'polder_level_end'), 2) AS stars,
+        countIf(event = 'polder_level_end' AND toInt(properties.stars) >= 3) AS threeStar, countIf(event = 'polder_level_end') AS ends,
+        countIf(event = 'polder_level_start' AND properties.diff = 'hard') AS hardStarts, countIf(event = 'polder_level_start') AS starts,
+        countIf(event = 'polder_quit') AS quits, round(avgIf(toFloat(properties.breaches), event = 'polder_level_end'), 1) AS breaches,
+        round(avgIf(toFloat(properties.fields), event = 'polder_level_end'), 1) AS fields
+      FROM events WHERE event IN ('polder_level_start', 'polder_level_end', 'polder_quit') AND ${R90} GROUP BY level`,
+    goals: `SELECT toString(properties.level) AS level, toString(properties.goal) AS goal,
+        countIf(toString(properties.ok) IN ('true', '1')) AS ok, countIf(toString(properties.ok) NOT IN ('true', '1')) AS missed
+      FROM events WHERE event = 'polder_goal' AND ${R90} GROUP BY level, goal ORDER BY level, goal`,
+    achievements: `SELECT toString(properties.id) AS id, uniq(distinct_id) AS players
+      FROM events WHERE event = 'polder_achievement' AND ${R90} GROUP BY id ORDER BY players DESC`,
+    upgrades: `SELECT toString(properties.key) AS upgrade, count() AS n, uniq(distinct_id) AS players
+      FROM events WHERE event = 'polder_upgrade' AND ${R90} GROUP BY upgrade ORDER BY n DESC`,
+    storms: `SELECT toString(properties.level) AS level, count() AS storms, round(avg(toFloat(properties.breaches)), 2) AS breaches
+      FROM events WHERE event = 'polder_storm' AND ${R90} GROUP BY level`,
+  },
+};
 
 // ---------------------------------------------------------------- Borderlines share links
 // /borderlines/s/247?d=12 → link previews show public/borderlines/og/247.png; people are sent on to the game.
