@@ -467,7 +467,8 @@ const GAME_SQL = {
     spots: `SELECT toString(properties.game) AS game, coalesce(toString(properties.from), '?') AS spot, count() AS clicks, uniq(distinct_id) AS people
       FROM events WHERE event = 'portal_play' AND ${R90} GROUP BY game, spot ORDER BY clicks DESC`,
   },
- `SELECT uniqIf(distinct_id, event = 'game_start') AS started, countIf(event = 'game_start' AND toString(properties.restart) = 'true') AS restarts,
+  retourvloot: {
+    funnel: `SELECT uniqIf(distinct_id, event = 'game_start') AS started, countIf(event = 'game_start' AND toString(properties.restart) = 'true') AS restarts,
         uniqIf(distinct_id, event = 'game_resume') AS resumed, uniqIf(distinct_id, event = 'tutorial_done') AS tutorialDone,
         uniqIf(distinct_id, event = 'tutorial_skip') AS tutorialSkip, uniqIf(distinct_id, event = 'first_ship') AS firstShip,
         uniqIf(distinct_id, event = 'game_end') AS ended
