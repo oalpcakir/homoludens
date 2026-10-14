@@ -52,6 +52,13 @@ h3{font:500 12px system-ui;letter-spacing:.08em;text-transform:uppercase;color:#
 .empty{color:#8a90a0;font-size:14px;padding:6px 0}
 .slog{font:13px ui-monospace,monospace;white-space:pre-wrap;color:#4a5468}
 td.l,th.l{text-align:left}
+.ic{display:inline-block;width:16px;height:16px;vertical-align:-3px;margin-right:8px;flex:none}
+img.ic{border-radius:3px;object-fit:cover}
+img.flag{width:20px;height:15px;vertical-align:-2px;border-radius:2px;box-shadow:0 0 0 1px rgba(31,43,74,.12)}
+svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs svg.ic{margin-right:6px;vertical-align:-3px}
+.sub2{color:#8a90a0;font-size:12px;margin-left:6px}
+.tbl td.l:last-child{white-space:normal;min-width:260px}
 </style>
 </head>
 <body>
@@ -70,10 +77,10 @@ td.l,th.l{text-align:left}
   <nav class="tabs" id="tabs" hidden>
     <button data-tab="ov" aria-selected="true">Overview</button>
     <button data-tab="vs">Visitors</button>
-    <button data-tab="bl">Borderlines</button>
-    <button data-tab="rv">Retourvloot</button>
-    <button data-tab="tea">A Cup of Tea</button>
-    <button data-tab="pd">Polder</button>
+    <button data-tab="bl"><span data-icon="borderlines"></span>Borderlines</button>
+    <button data-tab="rv"><span data-icon="retourvloot"></span>Retourvloot</button>
+    <button data-tab="tea"><span data-icon="cupoftea"></span>A Cup of Tea</button>
+    <button data-tab="pd"><span data-icon="polder"></span>Polder</button>
     <button data-tab="main">Email</button>
   </nav>
 
@@ -194,6 +201,36 @@ td.l,th.l{text-align:left}
   }
 
   var GAME_NAMES = { borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder' };
+  // ---------- icons: game glyphs, country flags, site logos ----------
+  var GAME_SVG = {
+    borderlines: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    retourvloot: '<path d="M3 16h18l-2.5 4h-13z"/><path d="M12 3v13"/><path d="M12 4l6 9h-6"/><path d="M12 6l-5 7h5"/>',
+    cupoftea: '<path d="M4 10h12v4a6 6 0 0 1-12 0z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c-1 1.5 1 2.5 0 4M12 3c-1 1.5 1 2.5 0 4"/>',
+    polder: '<path d="M10 21l1-9h2l1 9z"/><path d="M12 11L6 5M12 11l6-6M12 11l-6 6M12 11l6 6"/><path d="M3 21h18"/>'
+  };
+  function gameIcon(g) { return GAME_SVG[g] ? '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + GAME_SVG[g] + '</svg>' : ''; }
+  function gameCell(g) { return gameIcon(g) + esc(GAME_NAMES[g] || g || '?'); }
+  document.querySelectorAll('[data-icon]').forEach(function (e) { e.outerHTML = gameIcon(e.dataset.icon); });
+  var regionNames = null;
+  try { regionNames = new Intl.DisplayNames(['en'], { type: 'region' }); } catch (e) {}
+  function countryCell(cc) {
+    cc = String(cc || '').toUpperCase();
+    if (!/^[A-Z]{2}$/.test(cc)) return esc(cc || '?');
+    var name = cc; try { name = (regionNames && regionNames.of(cc)) || cc; } catch (e) {}
+    return '<img class="ic flag" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'" src="https://flagcdn.com/w40/' + cc.toLowerCase() + '.png">' + esc(name);
+  }
+  var DIRECT_SVG = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12M13 6l6 6-6 6"/></svg>';
+  var LABEL_DOMAIN = { 'Reddit': 'reddit.com', 'Reddit app': 'reddit.com', 'X / Twitter': 'x.com', 'Facebook': 'facebook.com', 'Hacker News': 'news.ycombinator.com',
+    'Google': 'google.com', 'itch.io': 'itch.io', 'GitHub': 'github.com', 'Discord': 'discord.com', 'Bing': 'bing.com', 'DuckDuckGo': 'duckduckgo.com' };
+  // label: a friendly name from srcName(); raw: the referring domain, shown small when it adds something
+  function sourceCell(label, raw) {
+    var dom = LABEL_DOMAIN[label] || (/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(label) ? label.replace(/^www\./, '') : null);
+    var icon = label === 'Direct / unknown' ? DIRECT_SVG : dom ? '<img class="ic" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'" src="https://www.google.com/s2/favicons?domain=' + encodeURIComponent(dom) + '&sz=32">' :
+      '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>';
+    var r = String(raw || '').replace(/^www\./, '');
+    var extra = r && raw !== '$direct' && r !== label && r !== dom && !/^(com|org|net)\./.test(r) ? '<span class="sub2">' + esc(raw) + '</span>' : '';
+    return icon + esc(label) + extra;
+  }
   var LEVELS = [['friesland', 'Friesland'], ['zeeland', 'Zeeland'], ['holland', 'Holland'], ['zuiderzee', 'Zuiderzee'], ['free', 'Free play']];
   var ACH = { first: 'First field', big: "Leeghwater's heir", herd: 'Dairy country', hands: 'Small hands', kit: 'Well equipped', ruins: 'Lost and found', wolf: 'Wolf tamer', door: 'Shut the door', dry: 'Not a drop', perfect: 'Perfect region', nl: 'The Netherlands', hardwin: 'Storm-proof', hardall: 'Iron dikes', book: 'Bookworm' };
   var RENDER = {
@@ -206,9 +243,9 @@ td.l,th.l{text-align:left}
         ['visitors', 'Visitors'], ['portal', 'Portal'], ['borderlines', 'Borderlines'], ['retourvloot', 'Retourvloot'], ['cupoftea', 'Tea'], ['polder', 'Polder'], ['signups', 'Sign-ups']
       ], 'Visitors = anyone who opened any page. Game columns = people who started or resumed a game that day.') + '</div>';
       h += '<div class="grid">' +
-        table('Where visitors come from', j.sources, [['source', 'Source', function (v) { return v === '$direct' ? 'Direct / unknown' : v; }], ['visitors', 'Visitors']]) +
-        table('Countries', j.countries, [['country', 'Country'], ['visitors', 'Visitors']]) +
-        table('Portal → game clicks', j.clicks, [['game', 'Game', function (v) { return GAME_NAMES[v] || v; }], ['clicks', 'Clicks'], ['players', 'People']]) + '</div>';
+        table('Where visitors come from', j.sources, [['source', 'Source', function (v) { return sourceCell(srcName(v), v); }, false, true], ['visitors', 'Visitors']]) +
+        table('Countries', j.countries, [['country', 'Country', countryCell, false, true], ['visitors', 'Visitors']]) +
+        table('Portal → game clicks', j.clicks, [['game', 'Game', gameCell, false, true], ['clicks', 'Clicks'], ['players', 'People']]) + '</div>';
       return h;
     },
     rv: function (j) {
@@ -253,12 +290,14 @@ td.l,th.l{text-align:left}
     if (!v || v === '$direct') return 'Direct / unknown';
     var d = String(v).replace(/^www\./, '');
     if (/workers\.dev$/.test(d)) return 'Internal (id lost)';
+    if (/^com\.reddit\./.test(d)) return 'Reddit app';
     if (/(^|\.)reddit\.com$|^redd\.it$/.test(d)) return 'Reddit';
     if (/^(t\.co|x\.com|twitter\.com)$/.test(d)) return 'X / Twitter';
     if (/facebook\.com$|^fb\.com$/.test(d)) return 'Facebook';
     if (/^news\.ycombinator\.com$/.test(d)) return 'Hacker News';
     if (/(^|\.)google\./.test(d)) return 'Google';
-    if (/bing\.com$|duckduckgo\.com$|yahoo\.com$|ecosia\.org$/.test(d)) return 'Other search';
+    if (/bing\.com$/.test(d)) return 'Bing';
+    if (/duckduckgo\.com$/.test(d)) return 'DuckDuckGo';
     if (/itch\.io$/.test(d)) return 'itch.io';
     if (/github\.com$/.test(d)) return 'GitHub';
     if (/discord(app)?\.com$/.test(d)) return 'Discord';
@@ -299,18 +338,18 @@ td.l,th.l{text-align:left}
     var h = tiles([[n, 'visitors', 'One per browser'], [pct(played, n), 'played a game (' + played + ')'], [P.filter(function (v) { return tried(v) > 1; }).length, 'tried 2+ games'],
       [pct(P.filter(function (v) { return v.days > 1; }).length, n), 'came back another day'], [P.reduce(function (a, v) { return a + v.signups; }, 0), 'email sign-ups']]);
     var po = P.filter(function (v) { return v.portalOpens; }), pc = po.filter(function (v) { return v.portalClicks; }), pp = pc.filter(function (v) { return tried(v); });
-    h += '<div class="tbl" style="margin-top:14px">' + table('By where they came from', groupBy(P, function (v) { return v.src; }), GCOLS('Source'),
+    h += '<div class="tbl" style="margin-top:14px">' + table('By where they came from', groupBy(P, function (v) { return v.src; }), [['key', 'Source', function (v) { return sourceCell(v); }, false, true]].concat(GCOLS('Source').slice(1)),
       'Source = the site that sent their first page. Games tried = how many of the four games they started, on average. Minutes = minutes with any activity. Left at once = one page, no click, no game.') + '</div>';
     h += '<div class="grid">' +
       table('Portal visitors', [{ step: 'Opened the portal', n: po.length }, { step: 'Clicked a game', n: pc.length }, { step: 'Started that game (same id)', n: pp.length }],
         [['step', 'Step'], ['n', 'People'], ['n', 'Share', function (v) { return pct(v, po.length); }]],
         'Someone who switches browser on the way (e.g. from the Reddit app\'s built-in browser to Safari or Chrome) gets a new id, so their game shows up as a separate Direct visitor.') +
-      table('Portal clicks by spot', j.spots, [['game', 'Game', function (v) { return GAME_NAMES[v] || v; }], ['spot', 'Spot'], ['clicks', 'Clicks'], ['people', 'People']]) +
+      table('Portal clicks by spot', j.spots, [['game', 'Game', gameCell, false, true], ['spot', 'Spot'], ['clicks', 'Clicks'], ['people', 'People']]) +
       table('First page', groupBy(P, function (v) { return v.landing; }).map(function (g) { return { key: g.key, visitors: g.visitors, played: g.played }; }),
         [['key', 'Page'], ['visitors', 'Visitors'], ['played', 'Played', function (v, r) { return pct(v, r.visitors); }]]) + '</div>';
     h += '<div class="grid">' + table('Device', groupBy(P, function (v) { return v.device; }), GCOLS('Device').slice(0, 4)) +
-      table('Country', groupBy(P, function (v) { return v.country; }).slice(0, 15), GCOLS('Country').slice(0, 4)) + '</div>';
-    h += '<div class="tbl" style="margin-top:22px">' + table('Latest 100 visitors', P.slice(0, 100), [['first', 'First seen', fmtWhen], ['src', 'Source', null, true], ['country', 'Country', null, true], ['device', 'Device', null, true],
+      table('Country', groupBy(P, function (v) { return v.country; }).slice(0, 15), [['key', 'Country', countryCell, false, true]].concat(GCOLS('Country').slice(1, 4))) + '</div>';
+    h += '<div class="tbl" style="margin-top:22px">' + table('Latest 100 visitors', P.slice(0, 100), [['first', 'First seen', fmtWhen], ['src', 'Source', function (v) { return sourceCell(v); }, true, true], ['country', 'Country', countryCell, true, true], ['device', 'Device', null, true],
       ['landing', 'First page', null, true], ['days', 'Days'], ['minutes', 'Min'], ['id', 'What they did', function (v, r) { return did(r); }, true]],
       n >= 5000 ? 'Only the 5,000 newest visitors are loaded.' : '') + '</div>';
     return h;
