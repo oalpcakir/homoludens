@@ -8,8 +8,10 @@ import os, shutil
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 OUT = os.path.join(ROOT, "public", "cupoftea")
-SITE = "https://homoludens.oalpcakir.workers.dev"
-ph = open(os.path.join(H, "..", "borderlines", "posthog_head.html"), encoding="utf-8").read().strip()
+import sys
+sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")))
+from site_config import SITE, canonical, analytics_head  # noqa: E402
+ph = analytics_head("cupoftea")
 
 SCENES = {
     1: ("", "A Cup of Tea", "East London, March 1850. A grocer's receipt: one pound of sugar, 4½d. Find out who got every farthing of it, from the Customs House to a sugar estate in Cuba."),
@@ -35,6 +37,7 @@ for n, (path, title, desc) in SCENES.items():
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{SITE}/og-cupoftea.png">
+{canonical("/cupoftea/" + path)}
 {icon}
 {ph}
 <script src="/feedback.js" defer data-game="cupoftea"></script>'''

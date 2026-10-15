@@ -13,6 +13,7 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://homoludens.oalpcakir.workers.dev/og-cupoftea.png">
+<link rel="canonical" href="https://homoludens.oalpcakir.workers.dev/cupoftea/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%233b2a1e'/%3E%3Cpath d='M7 12h15v5a7 7 0 0 1-7 7h-1a7 7 0 0 1-7-7z' fill='%23efe5cc'/%3E%3Cpath d='M22 14h2a3 3 0 0 1 0 6h-2' fill='none' stroke='%23efe5cc' stroke-width='2'/%3E%3Cpath d='M5 26h21' stroke='%23a7622f' stroke-width='2'/%3E%3C/svg%3E">
 <!-- Analytics: PostHog (US), cookieless; the game's own anonymous player id is the distinct id -->
 <script>
@@ -26,6 +27,28 @@
       pid = p.id;
     } catch (e) {}
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+    // Every page is tagged with its game and version (filled in by the builders from games.json).
+    var GAME = "cupoftea", VERSION = "2026.10";
+    // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
+    // the matching standard event is sent once next to it, with legacy_event naming the original.
+    var STD = {
+      borderlines: { game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
+      retourvloot: { game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
+      cupoftea: { tea_scene_start: "game_started", tea_scene_done: "game_completed" },
+      polder: { polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
+      portal: { portal_play: "next_game_clicked" }
+    }[GAME] || {};
+    function standard(ev) {
+      try {
+        var name = ev && STD[ev.event];
+        if (!name || (ev.properties && ev.properties.legacy_event)) return ev;
+        var props = { legacy_event: ev.event }, src = ev.properties || {};
+        for (var k in src) if (k.charAt(0) !== "$" && k !== "token" && k !== "distinct_id") props[k] = src[k];
+        if (/resume/.test(ev.event)) props.resume = true;
+        setTimeout(function () { posthog.capture(name, props); }, 0);
+      } catch (e) {}
+      return ev;
+    }
     posthog.init(KEY, {
       api_host: HOST,
       persistence: "memory",          // no cookies
@@ -34,8 +57,11 @@
       capture_pageleave: false,
       disable_session_recording: true,
       person_profiles: "identified_only",
-      bootstrap: pid ? { distinctID: pid } : undefined
+      bootstrap: pid ? { distinctID: pid } : undefined,
+      before_send: standard
     });
+    posthog.register({ game: GAME, game_version: VERSION });
+    if (GAME !== "portal") posthog.capture("game_opened", { page: location.pathname });
   })();
 </script>
 <script src="/feedback.js" defer data-game="cupoftea"></script>
@@ -214,6 +240,7 @@ canvas.rc{display:block;width:100%;max-width:420px;height:auto;margin:10px auto 
 #intro button.ghost{background:none;color:var(--ink)}
 .hbtn{background:none;border-color:#e9dcc0;color:#e9dcc0;font-size:14px;padding:3px 10px}
 @media (max-width:1100px){#app{grid-template-columns:1fr;height:auto}#right{display:block}#notes{max-height:none;margin-bottom:14px}}
+@media (max-width:700px){header{flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 14px}header h1{font-size:22px;white-space:nowrap}header .sub{flex-basis:100%;order:9;font-size:14px}header .prog{margin-left:0}header .hbtn{padding:6px 10px}#app{padding:0 8px 8px}}
 @media (prefers-reduced-motion:reduce){.coin{transition:none!important}}
 </style>
 </head>

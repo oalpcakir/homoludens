@@ -13,7 +13,9 @@ H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 PUB = os.path.join(ROOT, "public")
 DAYS = os.path.join(PUB, "borderlines", "days")
-SITE = "https://homoludens.oalpcakir.workers.dev"
+import sys
+sys.path.insert(0, os.path.normpath(os.path.join(H, "..")))
+from site_config import SITE, canonical, analytics_head  # noqa: E402
 
 
 def og(title, desc, url, img):
@@ -43,7 +45,7 @@ def build():
     data = dict(base, days=tiers)
     data_js = "window.GAME_DATA = " + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n"
 
-    ph = open(os.path.join(H, "posthog_head.html"), encoding="utf-8").read().strip()
+    ph = analytics_head("borderlines")
     g = open(os.path.join(H, "game.html"), encoding="utf-8").read().replace("/*DATA*/", data_js)
     head = f'''<!doctype html>
 <html lang="en">
@@ -51,7 +53,8 @@ def build():
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="A daily history map game. Paint the land a historical realm ruled, then see how close you came.">
-{og("Borderlines", "You get a year and a realm. Paint the land it ruled. A daily history map game.", SITE + "/borderlines/", SITE + "/og-borderlines.png")}<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f2b4a'/%3E%3Cpath d='M7 22l6-12 5 8 3-4 4 8z' fill='%23f7f6f2'/%3E%3C/svg%3E">
+{og("Borderlines", "You get a year and a realm. Paint the land it ruled. A daily history map game.", SITE + "/borderlines/", SITE + "/og-borderlines.png")}{canonical("/borderlines/")}
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f2b4a'/%3E%3Cpath d='M7 22l6-12 5 8 3-4 4 8z' fill='%23f7f6f2'/%3E%3C/svg%3E">
 <script>
   window.BORDERLINES_CONFIG = {{
     reportEndpoint: "",

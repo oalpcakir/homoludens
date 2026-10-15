@@ -7,8 +7,10 @@ import os, shutil
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 OUT = os.path.join(ROOT, "public", "polder")
-SITE = "https://homoludens.oalpcakir.workers.dev"
-ph = open(os.path.join(H, "..", "borderlines", "posthog_head.html"), encoding="utf-8").read().strip()
+import sys
+sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")))
+from site_config import SITE, canonical, analytics_head  # noqa: E402
+ph = analytics_head("polder")
 title = "Polder"
 desc = "Build dikes, close them into rings and drain the sea, from the terp mounds of 1200 to the North Sea flood of 1953. Four regions of the Netherlands, each with its own storms and lakes."
 icon = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E"
@@ -26,6 +28,7 @@ head = f'''<meta name="description" content="{desc}">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{SITE}/og-polder.png">
+{canonical("/polder/")}
 {icon}
 {ph}
 <script src="/feedback.js" defer data-game="polder"></script>'''

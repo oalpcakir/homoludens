@@ -302,14 +302,23 @@ function track(name,props){ try{ if(window.posthog&&window.posthog.capture) wind
 let SET={sfx:true,music:true,diff:'normal'}; try{ Object.assign(SET,JSON.parse(localStorage.getItem('polder.settings.v1')||'{}')); }catch(e){}
 function saveSet(){ try{ localStorage.setItem('polder.settings.v1',JSON.stringify(SET)); }catch(e){} }
 let MEMRUN=null;
-function saveRun(){ if(!S||S.over||!LV) return; const d={v:1,lv:LV.id,G:Array.from(G),crack:Array.from(crack),armor:Array.from(armor),tag:Array.from(tag),fv:Array.from(fieldVar),TERPS,LN:LAKENAMES,ZZ:ZZMARK,structs:structs.map(z=>({c:z.c,kind:z.kind})),houses,sheep:sheep.filter(a=>!a.drown).map(a=>({x:+a.x.toFixed(2),y:+a.y.toFixed(2),k:a.kind})),S:Object.assign({},S,{busy:false}),fc:firstCrackShown,hs:hansShown};
+function saveRun(){ if(!S||S.over||!LV) return; const d={v:1,lv:LV.id,G:Array.from(G),crack:Array.from(crack),armor:Array.from(armor),tag:Array.from(tag),fv:Array.from(fieldVar),TERPS,LN:LAKENAMES,ZZ:ZZMARK,structs:structs.map(z=>({c:z.c,kind:z.kind})),houses,sheep:sheep.filter(a=>!a.drown).map(a=>({x:+a.x.toFixed(2),y:+a.y.toFixed(2),k:a.kind})),S:Object.assign({},S,{busy:false}),fc:firstCrackShown,hs:hansShown,rp:rngP&&rngP.state?rngP.state():null,rs:rngS&&rngS.state?rngS.state():null};
   MEMRUN=d; try{ localStorage.setItem('polder.run.v1',JSON.stringify(d)); }catch(e){} }
-function loadRun(){ try{ const v=localStorage.getItem('polder.run.v1'); if(v) return JSON.parse(v); }catch(e){} return MEMRUN; }
+// A saved run is only offered if it is complete and from a version this page understands. A run that fails the
+// check is left in storage (not deleted) and is simply replaced when a new region starts.
+function validRun(d){ const n=COLS*ROWS, arr=k=>Array.isArray(d[k])&&d[k].length===n;
+  return !!(d&&d.v===1&&LEVELS.some(l=>l.id===d.lv)&&arr('G')&&arr('crack')&&arr('armor')&&arr('tag')&&arr('fv')
+    &&d.S&&typeof d.S==='object'&&Array.isArray(d.S.queue)&&Array.isArray(d.structs)&&Array.isArray(d.houses)&&Array.isArray(d.sheep)); }
+function loadRun(){ let d=null; try{ const v=localStorage.getItem('polder.run.v1'); if(v) d=JSON.parse(v); }catch(e){} if(!d) d=MEMRUN; return validRun(d)?d:null; }
+// Read-only view for the browser smoke tests (tests/smoke); the game never reads it.
+window.__polderTest={ snapshot:()=>S&&LV?{lv:LV.id,year:S.year,busy:!!S.busy,piece:S.piece,queue:JSON.stringify(S.queue),G:Array.from(G).join(''),rp:rngP.state(),rs:rngS.state()}:null };
 function clearRun(){ MEMRUN=null; try{ localStorage.removeItem('polder.run.v1'); }catch(e){} }
 function resumeRun(d){
   LV=LEVELS.find(l=>l.id===d.lv); START=LV.start; STEP=LV.step; LAST_PIECE=LV.turns; ENDY=LV.final?LV.final.year:LV.end;
   const H=!!(d.S&&d.S.hard); LV._storms=LV.storms(H); QUESTS=LV.goals(H);
-  const seed=(Math.random()*4294967296)>>>0; rngP=mulberry32(seed^0xA5A5); rngS=mulberry32(seed^0x5A5A);
+  // Continue the same random sequence (pieces, storms) as before the reload; saves from before this change get a fresh one.
+  if(Number.isInteger(d.rp)&&Number.isInteger(d.rs)){ rngP=mulberry32(d.rp); rngS=mulberry32(d.rs); }
+  else { const seed=(Math.random()*4294967296)>>>0; rngP=mulberry32(seed^0xA5A5); rngS=mulberry32(seed^0x5A5A); }
   G=Uint8Array.from(d.G); crack=Uint8Array.from(d.crack); armor=Uint8Array.from(d.armor); tag=Uint8Array.from(d.tag); fieldVar=Uint8Array.from(d.fv);
   TERPS=d.TERPS; LAKENAMES=d.LN||{}; ZZMARK=d.ZZ||0;
   structs=d.structs.map(z=>({c:z.c,kind:z.kind,born:-10})); houses=d.houses; sheep=[]; parts=[]; floats=[]; lakes=[];
@@ -608,7 +617,7 @@ function weights(y){
 }
 
 // ---------- rng ----------
-function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function mulberry32(a){const f=function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}; f.state=()=>a|0; return f;}
 function hashStr(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 const today=new Date().toISOString().slice(0,10);
 
@@ -1315,7 +1324,8 @@ function levelSelect(){
   m.classList.remove('hidden');
   b.querySelectorAll('.rg').forEach(el=>el.onclick=()=>{ const k=+el.dataset.k; if(!isUnlocked(k)){ sfx.nope(); toast(`Win ${LEVELS[k-1].name} first (${LEVELS[k-1].need||UNLOCK_AT} ★).`); return; } m.classList.add('hidden'); b.className='mbox'; audioInit(); musicStart(); startLevel(LEVELS[k].id); });
   b.querySelectorAll('.diffrow button').forEach(x=>x.onclick=()=>{ SET.diff=x.dataset.d; saveSet(); track('polder_diff',{diff:SET.diff}); levelSelect(); });
-  if(run) $('contBtn').onclick=()=>{ m.classList.add('hidden'); b.className='mbox'; audioInit(); musicStart(); resumeRun(run); };
+  if(run) $('contBtn').onclick=()=>{ m.classList.add('hidden'); b.className='mbox'; audioInit(); musicStart();
+    try{ resumeRun(run); }catch(e){ track('polder_resume_failed',{msg:String(e&&e.message||e).slice(0,80)}); levelSelect(); toast('That saved game could not be restored. Pick a region to start again.',4200); } };
   $('resetBtn').onclick=async()=>{ const r=await card({title:'Reset all progress?',text:'Stars, unlocked regions, your legacy, the Chronicle and achievements will all be wiped. This cannot be undone.',btn:'Keep my progress',btn2:'Reset everything'}); if(r===2){ MEMPROG={}; clearRun(); try{ localStorage.removeItem('polder.progress.v1'); }catch(e){} track('polder_reset',{}); } levelSelect(); };
   $('freeBtn').onclick=()=>{ m.classList.add('hidden'); b.className='mbox'; audioInit(); musicStart(); startLevel('free'); };
   $('bookBtn').onclick=()=>openBook('all');

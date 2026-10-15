@@ -2,6 +2,7 @@
   {
     "id": "borderlines",
     "no": 1,
+    "version": "2026.10",
     "title": "Borderlines",
     "url": "/borderlines/",
     "image": "/og-borderlines.png",
@@ -11,6 +12,7 @@
   {
     "id": "retourvloot",
     "no": 2,
+    "version": "2026.10",
     "title": "Retourvloot",
     "url": "/retourvloot/",
     "image": "/og-retourvloot.png",
@@ -20,6 +22,7 @@
   {
     "id": "cupoftea",
     "no": 3,
+    "version": "2026.10",
     "title": "A Cup of Tea",
     "url": "/cupoftea/",
     "image": "/og-cupoftea.png",
@@ -29,6 +32,7 @@
   {
     "id": "polder",
     "no": 4,
+    "version": "2026.10",
     "title": "Polder",
     "url": "/polder/",
     "image": "/og-polder.png",

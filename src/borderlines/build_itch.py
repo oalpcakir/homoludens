@@ -12,7 +12,9 @@ import os, re, zipfile
 
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
-SITE = "https://homoludens.oalpcakir.workers.dev"  # change here when homoludens.games is live
+import sys
+sys.path.insert(0, os.path.normpath(os.path.join(H, "..")))
+from site_config import SITE  # noqa: E402  (change it in src/site_config.py)
 SRC = os.path.join(ROOT, "public", "borderlines", "index.html")
 OUT = os.path.join(ROOT, "dist", "itch")
 

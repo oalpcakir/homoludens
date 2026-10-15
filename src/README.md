@@ -9,14 +9,16 @@ python3 build.py            # build every page from src/ into public/, then run 
 python3 build.py --check    # same, and fail if public/ differs from what is committed (CI runs this)
 python3 validate.py         # only the checks: games.json, links and assets, placeholders, sitemap
 node --test tests/*.test.mjs  # worker (mocked KV, Resend, Turnstile, Discord) and Retourvloot model tests
+npm ci && npx playwright install chromium   # once, for the browser tests
+npm run smoke                 # every page in headless Chromium: no JS errors or missing files, games start, Polder save/resume/reset
 ```
 
-Python 3.10+ and Node 18+; no packages needed. `.github/workflows/check.yml` runs the last two on every push and pull request. It never deploys.
-`src/site_config.py` holds the site origin used by the portal builder and validate.py.
+Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` only pins Playwright and D3 for the browser tests. `.github/workflows/check.yml` (build + unit tests) and `smoke.yml` (browser tests) run on every push and pull request. Neither deploys.
+`src/site_config.py` holds the site origin (`SITE`) for every builder: OG tags, canonical links, sitemap.xml and robots.txt. For the homoludens.games switch, change it there and run `python3 build.py`.
 
 ## portal/
 - `portal.html` — portal template ({{POSTHOG}}, {{SITE}}, {{LAND}}, {{REALM}}, {{W}}, {{H}} placeholders for the analytics snippet, OG URLs and the map plate from `portal_svg.json`).
-- `build_portal.py` — writes `public/index.html`. Edit the template, never `public/index.html` directly (the next build overwrites it).
+- `build_portal.py` — writes `public/index.html`, `public/sitemap.xml` and `public/robots.txt` (templates here). Edit the templates, never the files in `public/` (the next build overwrites them).
 
 
 ## borderlines/ (No. 1)
@@ -26,7 +28,7 @@ Python 3.10+ and Node 18+; no packages needed. `.github/workflows/check.yml` run
 - `build_borderlines.py` — writes `public/borderlines/index.html` and updates the daily count in the portal.
 - `auto_update.py` + `catalog.py` — the monthly updater. `.github/workflows/borderlines-monthly.yml` runs it on the 1st of every month: it adds enough days to stay ~5 weeks ahead (about 30), checks each realm against historical-basemaps (shape exists, big enough, capital inside), commits and pushes; Cloudflare redeploys. To add realms, add lines to `catalog.py`. To test locally: `python3 src/borderlines/auto_update.py --data <historical-basemaps>/geojson --today 2026-12-01 --dry-run`.
 - `questions.py`, `basics.py`, `daily30.py`, `meta.py`, `prep3.py`, `build_site.py` — the original hand-made lists and one-off builders for days 1–42 and the pool. The updater reads the lists (old realms can come back as reruns) but the builders are no longer part of the pipeline.
-- `posthog_head.html` — shared analytics snippet (PostHog US, cookieless), also used by Retourvloot.
+- `posthog_head.html` — shared analytics snippet (PostHog US, cookieless) used by every page. Builders fill in the game id and the `version` from `public/games.json` (bump it when a game changes meaningfully). Every event carries `game` and `game_version`; besides each game's own events it sends the shared names `game_opened`, `game_started`, `tutorial_completed`, `game_progress`, `game_completed`, `result_shared`, `next_game_clicked` (with `legacy_event` = the original name). The mapping table is in the snippet.
 
 ## retourvloot/ (No. 2)
 - Plain HTML/JS: `model.js`, `events.js`, `images.js`, `tut.js`, `ui.js`, `head.html`, `body.html`; images in `img/`.
@@ -42,6 +44,7 @@ Python 3.10+ and Node 18+; no packages needed. `.github/workflows/check.yml` run
 - `polder.html` — the whole game in one self-contained page (canvas, Web Audio sound and music, the Netherlands menu map, the Chronicle).
 - `build_polder.py` — adds the shared head (meta tags, icon, analytics, feedback button) and writes `public/polder/`, `public/og-polder.png` and the portal plate.
 - `nlmap_gen.py` — regenerates the menu map's region outlines (needs Natural Earth via the `world-atlas` npm package and shapely); paste its output into `NLGEO` in `polder.html`.
+- A saved run is checked before Continue is offered (`validRun`); damaged or unknown saves are left alone and not offered. The run also stores the random-number state (`rp`, `rs`), so a reload continues the same pieces and storms. `window.__polderTest.snapshot()` is a read-only hook for the smoke tests.
 - Kept in the player's browser: `polder.progress.v1` (stars and best fields per region, Chronicle pages `_seen`, achievements `_ach`, `_campaign`), `polder.run.v1` (the game in progress), `polder.settings.v1` (sound, music). The portal reads the first two.
 - PostHog events: polder_menu, polder_level_start, polder_resume, polder_goal, polder_upgrade, polder_storm, polder_level_end, polder_quit, polder_share, polder_book, polder_achievement, polder_reset.
 

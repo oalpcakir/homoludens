@@ -34,7 +34,7 @@ def local_path(u, base_dir):
     return p
 
 # ---- games.json
-REQ = {"id": str, "no": int, "title": str, "url": str, "image": str, "short": str, "announce": str}
+REQ = {"id": str, "no": int, "version": str, "title": str, "url": str, "image": str, "short": str, "announce": str}
 try:
     games = json.load(open(os.path.join(PUB, "games.json"), encoding="utf-8"))
 except Exception as e:
@@ -62,11 +62,12 @@ for g in games:
 # ---- HTML pages
 class Refs(HTMLParser):
     def __init__(self):
-        super().__init__(); self.refs = []; self.title = False; self.og = None
+        super().__init__(); self.refs = []; self.title = False; self.og = None; self.canon = None
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
         if tag == "title": self.title = True
         if tag == "meta" and a.get("property") == "og:image": self.og = a.get("content")
+        if tag == "link" and a.get("rel") == "canonical": self.canon = a.get("href")
         for k in ("src", "href"):
             v = a.get(k)
             if v and not (tag == "link" and a.get("rel") in ("preconnect", "dns-prefetch")):
@@ -82,6 +83,11 @@ for f in pages:
     try: r.feed(s)
     except Exception as e: err(f"{rel}: HTML parse error {e}")
     if not r.title: err(f"{rel}: no <title>")
+    if "/admin/" not in f.replace(os.sep, "/"):
+        want = SITE + "/" + os.path.relpath(os.path.dirname(f), PUB).replace(os.sep, "/").replace(".", "").strip("/")
+        want = want.rstrip("/") + "/"
+        if r.canon is None and r.og: err(f"{rel}: no <link rel=canonical>")
+        elif r.canon and r.canon != want: err(f"{rel}: canonical {r.canon}, expected {want}")
     if r.og:
         p = local_path(r.og, os.path.dirname(f))
         if p and not os.path.exists(p): err(f"{rel}: og:image {r.og} not found")
