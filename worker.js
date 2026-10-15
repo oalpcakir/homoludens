@@ -62,7 +62,7 @@ async function rateOk(env, key) {
   const { success } = await env.FEEDBACK_LIMIT.limit({ key });
   return success;
 }
-async function turnstileOk(env, token, ip) {
+async function turnstileOk(env, token, ip, host) {
   if (!env.TURNSTILE_SECRET) return false;
   const form = new FormData();
   form.append('secret', env.TURNSTILE_SECRET);
@@ -70,7 +70,10 @@ async function turnstileOk(env, token, ip) {
   form.append('remoteip', ip);
   const r = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form });
   const j = await r.json();
-  return !!j.success;
+  if (!j.success) return false;
+  // A token solved on another site with the same key must not pass. (Cloudflare's test secrets report a dummy hostname.)
+  const testSecret = /^[123]x0{10,}/.test(env.TURNSTILE_SECRET);
+  return testSecret || !host || !j.hostname || j.hostname === host;
 }
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
 
@@ -89,7 +92,7 @@ async function feedback(request, env, url) {
   const ip = ipOf(request);
   if (!(await rateOk(env, 'fb:' + ip))) return json({ ok: false, error: 'rate' }, 429);
   if (!env.TURNSTILE_SECRET || !env.DISCORD_WEBHOOK_URL) return json({ ok: false, error: 'not-configured' }, 503);
-  if (!(await turnstileOk(env, d.token, ip))) return json({ ok: false, error: 'captcha' }, 403);
+  if (!(await turnstileOk(env, d.token, ip, url.hostname))) return json({ ok: false, error: 'captcha' }, 403);
   const fields = [
     { name: 'Page', value: page || '/', inline: true },
     { name: 'From', value: (request.cf && request.cf.country) || '?', inline: true },
@@ -107,6 +110,26 @@ async function feedback(request, env, url) {
   });
   if (!res.ok) return json({ ok: false, error: 'deliver' }, 502);
   return json({ ok: true });
+}
+
+// ---------------------------------------------------------------- KV helpers
+// KV list() returns at most 1000 keys per call; always follow the cursor.
+async function listAll(env, prefix, each) {
+  let cursor;
+  do {
+    const l = await env.SUBSCRIBERS.list({ prefix, cursor });
+    for (const k of l.keys) each(k);
+    cursor = l.list_complete ? null : l.cursor;
+  } while (cursor);
+}
+async function putRetry(env, key, value, opts) {
+  for (let i = 0; i < 3; i++) {
+    try { await env.SUBSCRIBERS.put(key, value, opts); return true; } catch (e) { if (i === 2) return false; await new Promise(r => setTimeout(r, 300 * (i + 1))); }
+  }
+}
+async function sha256hex(s) {
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join('');
 }
 
 // ---------------------------------------------------------------- newsletter
@@ -144,13 +167,17 @@ async function sendEmail(env, msg) {
   });
   return r.ok;
 }
-async function sendBatch(env, msgs) {
+// The idempotency key makes Resend send a given batch only once within 24 hours, even if the request is repeated
+// (a double click, two tabs, a retry after a timeout). Returns 'ok', 'busy' (same batch already in flight) or 'fail'.
+async function sendBatch(env, msgs, idempotencyKey) {
+  const headers = { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' };
+  if (idempotencyKey) headers['Idempotency-Key'] = idempotencyKey;
   const r = await fetch('https://api.resend.com/emails/batch', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    method: 'POST', headers,
     body: JSON.stringify(msgs.map(m => ({ from: env.NEWSLETTER_FROM, ...m }))),
   });
-  return r.ok;
+  if (r.ok) return 'ok';
+  return r.status === 409 ? 'busy' : 'fail';
 }
 
 async function subscribe(request, env, url) {
@@ -162,7 +189,7 @@ async function subscribe(request, env, url) {
   if (!(await rateOk(env, 'nl:' + ip))) return json({ ok: false, error: 'rate' }, 429);
   const email = String(d.email || '').trim().toLowerCase();
   if (email.length > 120 || !EMAIL_RE.test(email)) return json({ ok: false, error: 'email' }, 400);
-  if (!(await turnstileOk(env, d.token, ip))) return json({ ok: false, error: 'captcha' }, 403);
+  if (!(await turnstileOk(env, d.token, ip, url.hostname))) return json({ ok: false, error: 'captcha' }, 403);
 
   // Same answer whether or not the address is already on the list, so the form can't be used to look people up.
   const key = 'sub:' + email;
@@ -214,13 +241,16 @@ async function unsubscribe(request, env, url) {
   if (!email) return page('Link not valid', '<p>This unsubscribe link is not valid. Reply to any email from us and we’ll remove you by hand.</p>', 400);
   if (request.method === 'POST') {
     await env.SUBSCRIBERS.delete('sub:' + email);
-    // forget every trace of the address, including which emails it was sent
-    let cursor;
-    do {
-      const l = await env.SUBSCRIBERS.list({ prefix: 'sent:', cursor });
-      for (const k of l.keys) if (k.name.endsWith(':' + email)) await env.SUBSCRIBERS.delete(k.name);
-      cursor = l.list_complete ? null : l.cursor;
-    } while (cursor);
+    // forget every trace of the address, including which emails it was sent (sent:<game>:<email>)
+    let games = null;
+    try { games = await loadGames(env, url.origin); } catch (e) {}
+    if (games) {
+      await Promise.all(games.map(g => env.SUBSCRIBERS.delete(`sent:${g.id}:${email}`)));
+    } else { // games.json unreadable: fall back to scanning
+      const del = [];
+      await listAll(env, 'sent:', k => { if (k.name.endsWith(':' + email)) del.push(k.name); });
+      for (const k of del) await env.SUBSCRIBERS.delete(k);
+    }
     if (body.includes('List-Unsubscribe=One-Click')) return new Response('', { status: 200 }); // mail client one-click
     return page('Unsubscribed', `<p><b>${esc(email)}</b> has been removed. You won’t get any more emails from Homo Ludens.</p><p><a href="/">Back to the games</a></p>`);
   }
@@ -288,14 +318,10 @@ async function admin(request, env, url) {
   const games = await loadGames(env, url.origin);
 
   if (url.pathname === '/api/admin/stats') {
-    let confirmed = 0, pending = 0, cursor;
-    do {
-      const l = await env.SUBSCRIBERS.list({ prefix: 'sub:', cursor });
-      for (const k of l.keys) (k.metadata && k.metadata.s === 'c') ? confirmed++ : pending++;
-      cursor = l.list_complete ? null : l.cursor;
-    } while (cursor);
+    let confirmed = 0, pending = 0;
+    await listAll(env, 'sub:', k => { (k.metadata && k.metadata.s === 'c') ? confirmed++ : pending++; });
     const sent = {};
-    for (const g of games) sent[g.id] = (await env.SUBSCRIBERS.list({ prefix: `sent:${g.id}:` })).keys.length;
+    for (const g of games) { let n = 0; await listAll(env, `sent:${g.id}:`, () => n++); sent[g.id] = n; }
     return json({ ok: true, confirmed, pending, sent, games: games.map(g => ({ id: g.id, title: g.title })) });
   }
   if (url.pathname === '/api/admin/preview') {
@@ -319,35 +345,46 @@ async function admin(request, env, url) {
     // Send to confirmed subscribers who haven't had this game's email yet, up to `max` per run
     // (Resend's free plan allows 100 emails a day; press Send again the next day to continue).
     const max = Math.min(Math.max(1, Number(d.max) || 95), 500);
-    const todo = []; let cursor;
-    do {
-      const l = await env.SUBSCRIBERS.list({ prefix: 'sub:', cursor });
-      for (const k of l.keys) if (k.metadata && k.metadata.s === 'c') todo.push(k.name.slice(4));
-      cursor = l.list_complete ? null : l.cursor;
-    } while (cursor);
-    const already = new Set();
-    cursor = undefined;
-    do {
-      const l = await env.SUBSCRIBERS.list({ prefix: `sent:${id}:`, cursor });
-      for (const k of l.keys) already.add(k.name.slice(`sent:${id}:`.length));
-      cursor = l.list_complete ? null : l.cursor;
-    } while (cursor);
-    const queue = todo.filter(e => !already.has(e));
-    const now = queue.slice(0, max);
-    let sent = 0;
-    for (let i = 0; i < now.length; i += 100) {
-      const chunk = now.slice(i, i + 100);
-      const msgs = [];
-      for (const email of chunk) {
-        const unsub = await linkFor(env, url.origin, 'unsubscribe', email);
-        const m = announcement(games, id, url.origin, unsub);
-        msgs.push({ to: [email], subject: m.subject, html: m.html, text: m.text, headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } });
+    // One send at a time. KV is not a perfect lock (it is eventually consistent), so the Resend idempotency key
+    // below is the real guard against a batch going out twice; the lock just stops a second click early.
+    const LOCK = 'lock:announce';
+    const held = await env.SUBSCRIBERS.get(LOCK);
+    if (held && Number(held) > Date.now()) return json({ ok: false, error: 'busy' }, 409);
+    await env.SUBSCRIBERS.put(LOCK, String(Date.now() + 110 * 1000), { expirationTtl: 120 });
+    try {
+      const todo = [];
+      await listAll(env, 'sub:', k => { if (k.metadata && k.metadata.s === 'c') todo.push(k.name.slice(4)); });
+      const already = new Set();
+      await listAll(env, `sent:${id}:`, k => already.add(k.name.slice(`sent:${id}:`.length)));
+      const queue = todo.filter(e => !already.has(e)).sort();
+      const now = queue.slice(0, max);
+      let sent = 0;
+      for (let i = 0; i < now.length; i += 100) {
+        const chunk = now.slice(i, i + 100);
+        // Mark first, send second: if the Worker dies in between, someone misses one email (visible in the admin
+        // count) instead of somebody getting it twice. A failed send rolls the marks back.
+        const marked = [];
+        for (const email of chunk) if (await putRetry(env, `sent:${id}:${email}`, String(Date.now()))) marked.push(email);
+        if (!marked.length) return json({ ok: false, error: 'storage', sent, remaining: queue.length - sent }, 503);
+        const msgs = [];
+        for (const email of marked) {
+          const unsub = await linkFor(env, url.origin, 'unsubscribe', email);
+          const m = announcement(games, id, url.origin, unsub);
+          msgs.push({ to: [email], subject: m.subject, html: m.html, text: m.text, headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' } });
+        }
+        const key = `announce-${id}-${(await sha256hex(marked.join('\n'))).slice(0, 40)}`;
+        const res = await sendBatch(env, msgs, key);
+        if (res !== 'ok') {
+          // 'busy' means another request is sending this very batch: keep the marks. Only a real failure rolls back.
+          if (res === 'fail') await Promise.all(marked.map(e => env.SUBSCRIBERS.delete(`sent:${id}:${e}`).catch(() => {})));
+          return json({ ok: false, error: res === 'busy' ? 'busy' : 'deliver', sent, remaining: queue.length - sent }, res === 'busy' ? 409 : 502);
+        }
+        sent += marked.length;
       }
-      if (!(await sendBatch(env, msgs))) return json({ ok: false, error: 'deliver', sent, remaining: queue.length - sent }, 502);
-      for (const email of chunk) await env.SUBSCRIBERS.put(`sent:${id}:${email}`, String(Date.now()));
-      sent += chunk.length;
+      return json({ ok: true, sent, remaining: queue.length - sent });
+    } finally {
+      await env.SUBSCRIBERS.delete(LOCK).catch(() => {});
     }
-    return json({ ok: true, sent, remaining: queue.length - sent });
   }
   return json({ ok: false, error: 'not-found' }, 404);
 }

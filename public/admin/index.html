@@ -456,9 +456,11 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
     api('/api/admin/announce', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ game: id, mode: 'all', confirm: id, max: Number($('max').value) }) })
       .then(function (r) { return r.json(); }).then(function (j) {
         $('send').disabled = false; $('confirm').value = '';
-        log(j.ok ? ('Sent ' + j.sent + '. Still to send: ' + j.remaining + (j.remaining ? ' (press Send again tomorrow).' : '. Done.')) : ('Error: ' + j.error + (j.sent != null ? ' after ' + j.sent + ' sent' : '')));
+        log(j.ok ? ('Sent ' + j.sent + '. Still to send: ' + j.remaining + (j.remaining ? ' (press Send again tomorrow).' : '. Done.'))
+          : j.error === 'busy' ? 'Another send is already running. Wait two minutes, then check the counts before sending again.'
+          : ('Error: ' + j.error + (j.sent != null ? ' after ' + j.sent + ' sent' : '')));
         load();
-      });
+      }).catch(function () { $('send').disabled = false; log('No answer from the server. Check the counts before sending again; nothing is sent twice.'); });
   };
   if ($('tok').value) load();
 })();

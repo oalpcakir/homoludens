@@ -2,8 +2,22 @@
 
 Build sources behind the published site (the repo's `public/` folder holds the built pages).
 
+## Build and test
+
+```
+python3 build.py            # build every page from src/ into public/, then run validate.py
+python3 build.py --check    # same, and fail if public/ differs from what is committed (CI runs this)
+python3 validate.py         # only the checks: games.json, links and assets, placeholders, sitemap
+node --test tests/*.test.mjs  # worker (mocked KV, Resend, Turnstile, Discord) and Retourvloot model tests
+```
+
+Python 3.10+ and Node 18+; no packages needed. `.github/workflows/check.yml` runs the last two on every push and pull request. It never deploys.
+`src/site_config.py` holds the site origin used by the portal builder and validate.py.
+
 ## portal/
-- `portal.html` — portal template ({{POSTHOG}}, {{LAND}}, {{REALM}}, {{W}}, {{H}} placeholders for the analytics snippet and the map plate).
+- `portal.html` — portal template ({{POSTHOG}}, {{SITE}}, {{LAND}}, {{REALM}}, {{W}}, {{H}} placeholders for the analytics snippet, OG URLs and the map plate from `portal_svg.json`).
+- `build_portal.py` — writes `public/index.html`. Edit the template, never `public/index.html` directly (the next build overwrites it).
+
 
 ## borderlines/ (No. 1)
 - `game.html` — game template; `/*DATA*/` is replaced by the page data (practice pool, base map, each daily's difficulty tiers).
@@ -33,6 +47,6 @@ Build sources behind the published site (the repo's `public/` folder holds the b
 
 ## Deploy & feedback
 - `wrangler.jsonc` deploys `public/` to Cloudflare Workers; pushes to main redeploy.
-- `worker.js` adds one route, `/api/feedback`: checks messages (Turnstile, rate limit) and posts them to Discord.
+- `worker.js` handles `/api/feedback` (Turnstile, rate limit, Discord), `/api/newsletter/*` (double opt-in list in KV), `/api/admin/*` (stats, announcement email) and `/borderlines/s/<score>` share pages. Announcement sends are locked, marked before sending, and carry a Resend idempotency key, so a double click or a retry never emails anyone twice. Tests: `tests/worker.test.mjs`.
 - Worker secrets: `DISCORD_WEBHOOK_URL`, `TURNSTILE_SECRET` (set with `wrangler secret put`). The public Turnstile site key is in `public/feedback.js`.
 - The feedback form doesn't work on a plain local server; everything else is static.
