@@ -1,5 +1,5 @@
 // Browser smoke tests: every page loads without JavaScript errors or missing local files, each game starts,
-// and save / resume / reset behave. Runs fully offline: external hosts (analytics, fonts, Turnstile, Wikimedia)
+// and save / resume / reset behave. Runs fully offline: external hosts (analytics, fonts, Turnstile)
 // are stubbed and D3 is served from node_modules.
 //   npm ci && npx playwright install chromium   (once)
 //   npm run smoke
