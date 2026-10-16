@@ -56,6 +56,9 @@ async function open(platform, game, { cg = {}, storage = 'ok', seed, path = '/in
   await page.waitForTimeout(400);
   return { page, ctx, problems, external, close: () => ctx.close() };
 }
+// wait (up to 15 s, slow CI runners) until the mock SDK log satisfies f
+const waitLog = (page, f) => page.waitForFunction(new Function('return (' + f + ')(window.__cg && window.__cg.log || [])'), null, { timeout: 15000 }).catch(() => {});
+const lastGp = l => l.filter(x => /^gameplay/.test(x)).at(-1);
 const cgLog = page => page.evaluate(() => (window.CrazyGames && window.__cg && window.__cg.log) ? window.__cg.log.slice() : []);
 
 // how to get each game into actual play from a first visit
@@ -72,7 +75,8 @@ for (const platform of ['itch', 'crazygames']) {
     test(`${platform} · ${game}: loads from the package alone, starts, no errors, no site services`, async () => {
       const t = await open(platform, game);
       await START[game](t.page);
-      await t.page.waitForTimeout(900);
+      if (platform === 'crazygames') await waitLog(t.page, "l => l.includes('gameplayStart')");
+      else await t.page.waitForTimeout(900);
       const html = await t.page.content();
       assert.doesNotMatch(html, /feedback\.js/, 'feedback button shipped');
       if (platform === 'crazygames') {
@@ -117,6 +121,7 @@ test('crazygames · kantar: progress goes to SDK data and survives a reload (res
   const t = await open('crazygames', 'kantar');
   await START.kantar(t.page);
   await t.page.evaluate(() => saveGame());
+  await waitLog(t.page, "l => l.includes('data.set:kantar-game-v04')");
   const log = await cgLog(t.page);
   assert.ok(log.includes('data.set:kantar-game-v04'), 'game not saved through SDK data');
   assert.ok(log.includes('data.set:kantar-set'), 'settings not saved through SDK data');
@@ -132,7 +137,8 @@ test('crazygames · kantar: "Play again" asks for a midgame ad; sound is off and
   await t.page.evaluate(() => { while (G.phase !== 'end') G = aiAct(G)[1]; showEnd(); });
   await t.page.waitForTimeout(400);
   await t.page.click('#again');
-  await t.page.waitForTimeout(900);
+  await waitLog(t.page, "l => l.includes('adFinished')");
+  await t.page.waitForFunction(() => G.phase !== 'end', null, { timeout: 15000 }).catch(() => {});
   const log = await cgLog(t.page);
   const ad = log.indexOf('requestAd:midgame');
   assert.ok(ad >= 0, 'no midgame ad: ' + log.join(','));
@@ -147,7 +153,7 @@ test('crazygames · kantar: an unfilled ad lets the game go on', async () => {
   await START.kantar(t.page);
   await t.page.evaluate(() => { while (G.phase !== 'end') G = aiAct(G)[1]; showEnd(); });
   await t.page.waitForTimeout(300);
-  await t.page.click('#again'); await t.page.waitForTimeout(800);
+  await t.page.click('#again'); await waitLog(t.page, "l => l.includes('adError')"); await t.page.waitForFunction(() => G.phase !== 'end', null, { timeout: 15000 }).catch(() => {});
   assert.ok(await t.page.evaluate(() => G.phase !== 'end'));
   assert.deepEqual(t.problems, []);
   await t.close();
@@ -211,22 +217,22 @@ test('crazygames: gameplay stops on menus, results and modal events, and starts 
   // Kantar: rules sheet and end screen are breaks
   let t = await open('crazygames', 'kantar');
   await START.kantar(t.page); await t.page.waitForTimeout(600);
-  await t.page.click('#rulesBtn'); await t.page.waitForTimeout(600);
+  await t.page.click('#rulesBtn'); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStop'");
   let log = await cgLog(t.page);
   assert.equal(log.filter(x => /^gameplay/.test(x)).at(-1), 'gameplayStop', 'Kantar rules: ' + log.join(','));
-  await t.page.click('#resumeBtn'); await t.page.waitForTimeout(600);
+  await t.page.click('#resumeBtn'); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStart'");
   log = await cgLog(t.page);
   assert.equal(log.filter(x => /^gameplay/.test(x)).at(-1), 'gameplayStart', 'Kantar resume: ' + log.join(','));
-  await t.page.evaluate(() => { while (G.phase !== 'end') G = aiAct(G)[1]; showEnd(); }); await t.page.waitForTimeout(600);
+  await t.page.evaluate(() => { while (G.phase !== 'end') G = aiAct(G)[1]; showEnd(); }); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStop'");
   log = await cgLog(t.page);
   assert.equal(log.filter(x => /^gameplay/.test(x)).at(-1), 'gameplayStop', 'Kantar end: ' + log.join(','));
   await t.close();
   // Retourvloot: the clock running is play; a modal event card is a break
   t = await open('crazygames', 'retourvloot');
-  await START.retourvloot(t.page); await t.page.waitForTimeout(600);
+  await START.retourvloot(t.page); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStart'");
   log = await cgLog(t.page);
   assert.equal(log.filter(x => /^gameplay/.test(x)).at(-1), 'gameplayStart', 'Retourvloot running: ' + log.join(','));
-  await t.page.evaluate(() => { modalOpen = true; }); await t.page.waitForTimeout(600);
+  await t.page.evaluate(() => { modalOpen = true; }); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStop'");
   log = await cgLog(t.page);
   assert.equal(log.filter(x => /^gameplay/.test(x)).at(-1), 'gameplayStop', 'Retourvloot modal: ' + log.join(','));
   await t.close();

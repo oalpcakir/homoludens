@@ -175,7 +175,8 @@ test('Kantar: a round can be played, the game saves and offers to resume', async
   for (let i = 0; i < 3; i++) await t.page.evaluate(() => document.querySelector('#market [data-drag]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
   await t.page.click('#offer');
   await t.page.waitForFunction(() => G.turn === 1, null, { timeout: 15000 });
-  await t.page.waitForTimeout(600);
+  // the game saves once it is the player's move again (after the rival's turn), which can take a while on a slow runner
+  await t.page.waitForFunction(() => !!localStorage.getItem('kantar-game-v04'), null, { timeout: 20000 }).catch(() => {});
   assert.ok((await store(t.page))['kantar-game-v04'], 'no save');
   await t.page.reload(); await t.page.waitForTimeout(600);
   assert.ok(await t.page.isVisible('#resumeSaved'), 'no resume button');
