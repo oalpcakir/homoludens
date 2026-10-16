@@ -335,7 +335,10 @@ let QUESTS=[], ZZMARK=0;
 function track(name,props){ try{ if(window.posthog&&window.posthog.capture) window.posthog.capture(name,Object.assign({game:'polder'},props||{})); }catch(e){} }
 const CG=!!window.POLDER_CG; let CGSDK=null, adMuted=false, cgMuted=false;
 const PF={
-  async init(){ if(!CG||!window.CrazyGames||!window.CrazyGames.SDK) return; try{ await window.CrazyGames.SDK.init(); const env=window.CrazyGames.SDK.environment; if(env==='crazygames'||env==='local'){ CGSDK=window.CrazyGames.SDK;
+  async init(){
+    // platform packages (src/platform): the adapter has already initialised the SDK and the saved data
+    if(window.HLP){ await HLP.ready; CGSDK=HLP.sdk; if(CGSDK){ try{ cgMuted=!!CGSDK.game.settings.muteAudio; CGSDK.game.addSettingsChangeListener(st=>{ cgMuted=!!st.muteAudio; applyMute(); }); }catch(e){} } return; }
+    if(!CG||!window.CrazyGames||!window.CrazyGames.SDK) return; try{ await window.CrazyGames.SDK.init(); const env=window.CrazyGames.SDK.environment; if(env==='crazygames'||env==='local'){ CGSDK=window.CrazyGames.SDK;
       try{ cgMuted=!!CGSDK.game.settings.muteAudio; CGSDK.game.addSettingsChangeListener(st=>{ cgMuted=!!st.muteAudio; applyMute(); }); }catch(e){} } }catch(e){} },
   playing:false,
   start(){ if(this.playing) return; this.playing=true; try{ CGSDK&&CGSDK.game.gameplayStart(); }catch(e){} },
@@ -969,7 +972,9 @@ function end(){
   track('polder_level_end',{level:LV.id,diff:S.hard?'hard':'normal',stars:st,fields,breaches:S.breaches,upgrades:Object.keys(S.up).length,animals});
   achCheck(true);
   const pr2=loadProg(), epi=['friesland','zeeland','holland','zuiderzee'].every(perkOn)&&!pr2._campaign; if(epi){ pr2._campaign=1; saveProg(pr2); }
-  const shareTxt=`Polder · ${LV.name}${S.hard?' (Hard)':''} ${'★'.repeat(st)}${'☆'.repeat(nq-st)} · ${fields} fields`+(CG?'':`\n${(location.protocol.startsWith('http')?location.origin:'https://homoludens.oalpcakir.workers.dev')}/polder/`);
+  // off CrazyGames the link is a share page whose preview names the result (worker.js /polder/s/)
+  const shareUrl=CG?'':`${window.HL_SITE||(location.protocol.startsWith('http')?location.origin:'https://homoludens.oalpcakir.workers.dev')}/polder/s/${LV.id}/${st}?n=${nq}&f=${fields}${S.hard?'&h=1':''}`;
+  const shareTxt=`Polder · ${LV.name}${S.hard?' (Hard)':''} ${'★'.repeat(st)}${'☆'.repeat(nq-st)} · ${fields} fields`+(CG?'':`\n${shareUrl}`);
   const nowOpen=nextL&&isUnlocked(li+1), newPerk=PERKS[LV.id]&&!hadPerk&&perkOn(LV.id);
   if(st>=(LV.need||UNLOCK_AT)) PF.happy();
   let msg=''; if(nextL){ msg=nowOpen?(wasLocked?`<b>${nextL.name} unlocked!</b>`:`Next up: <b>${nextL.name}</b>.`):`Get ${LV.need||UNLOCK_AT} ★ here to unlock <b>${nextL.name}</b>.`; }
@@ -978,8 +983,8 @@ function end(){
     text:`<span class="stars" style="font-size:30px">${'<span class=w>★</span>'.repeat(st)}${'★'.repeat(nq-st)}</span><br><b>${st} of ${nq} goals</b>${st>(old.stars||0)&&old.stars?' · new best!':''}`+
       `<div class="res"><div><b>${fields}</b><span>fields won</span></div><div><b>${animals}</b><span>animals</span></div><div><b>${S.breaches}</b><span>breaches</span></div></div>`+msg,
     eff:'Roughly a sixth of today\'s Netherlands was once sea, lake or marsh. "God created the world, but the Dutch created the Netherlands."',
-    list:qlist+`<button class="sharebtn" id="shareBtn">Copy result to share</button>`, btn:nowOpen?`Next: ${nextL.name}`:'Try again', btn2:'All regions',
-    onShow:b=>{ const sb=b.querySelector('#shareBtn'); sb.onclick=()=>{ copyText(shareTxt).then(ok=>{ sb.textContent=ok?'Copied!':'Could not copy'; track('polder_share',{level:LV.id,stars:st}); }); }; }
+    list:qlist+`<button class="sharebtn" id="shareBtn">${!CG&&navigator.share&&matchMedia('(pointer:coarse)').matches?'Share result':'Copy result to share'}</button>`+(CG?'':'<div data-hl-next></div>'), btn:nowOpen?`Next: ${nextL.name}`:'Try again', btn2:'All regions',
+    onShow:b=>{ const sb=b.querySelector('#shareBtn'); sb.onclick=()=>{ if(!CG&&navigator.share&&matchMedia('(pointer:coarse)').matches){ track('polder_share',{level:LV.id,stars:st,how:'native'}); navigator.share({text:shareTxt.split('\n')[0],url:shareUrl}).catch(()=>{}); return; } copyText(shareTxt).then(ok=>{ sb.textContent=ok?'Copied!':'Could not copy'; track('polder_share',{level:LV.id,stars:st}); }); }; }
   }).then(async r=>{
     if(PF.canAd()) await PF.ad('midgame');
     if(epi){ await card({yr:'After 1953',art:'dam',title:'The Delta Works',text:"After the flood of 1953 the Dutch began the Delta Works: dams, sluices and storm-surge barriers across the river mouths of Zeeland and South Holland. The last great piece, the Maeslantkering near Rotterdam, was finished in 1997.",eff:'You won every region. The whole map is yours.',btn:'See the map'}); levelSelect(); return; }
@@ -1475,7 +1480,8 @@ window.addEventListener('resize',resize);
 newGame('friesland'); resize(); requestAnimationFrame(frame);
 window.__polder={PF,dbg:{preview:()=>preview,storm,setYear:y=>{S.year=y;updateUI();},structs:()=>structs,houses:()=>houses,spawnAnimal,refresh:()=>{open=computeOpen(G);computeLakes();updateUI();},tag:()=>tag},startLevel,levelSelect,checkQuests,applyUp,card,get S(){return S},get G(){return G},place,placement,setHover:(x,y)=>setHover({x,y}),waitDecade};
 
-function isNewPlayer(){ const pr=loadProg(); return !loadRun()&&!LEVELS.some(L=>pr[L.id])&&!Object.keys(pr._seen||{}).length; }
+// a damaged or unknown run save also counts as "not new": it is left alone (not cleared by an automatic start)
+function isNewPlayer(){ const pr=loadProg(); let raw=null; try{ raw=STORE.get('polder.run.v1'); }catch(e){} return !raw&&!loadRun()&&!LEVELS.some(L=>pr[L.id])&&!Object.keys(pr._seen||{}).length; }
 function boot(){
   loadSet(); muted=!SET.sfx; setBtns(); if(CG) document.querySelectorAll('.mainonly').forEach(e=>e.remove());
   if(isNewPlayer()){ startLevel('friesland'); return; }

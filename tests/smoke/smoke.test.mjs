@@ -103,7 +103,8 @@ test('Cup of Tea: intro leads to the desk, and the header fits a phone', async (
 
 // Polder helpers
 async function polderStart(t) {
-  await t.page.locator('.rg[data-k="0"]').click();
+  // a first visit goes straight to Friesland's intro; later visits show the region menu
+  if (await t.page.locator('.rg[data-k="0"]').count()) await t.page.locator('.rg[data-k="0"]').click();
   await t.page.getByRole('button', { name: 'Begin' }).click();
   await t.page.waitForFunction(() => { const s = window.__polderTest.snapshot(); return s && !s.busy; });
   await t.page.waitForTimeout(300);

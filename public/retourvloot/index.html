@@ -8,11 +8,11 @@
 <meta property="og:title" content="Retourvloot">
 <meta property="og:description" content="Run the Dutch East India Company from Amsterdam, 1602 to 1799. Send silver east, wait a year for letters from Batavia, chase the spice monopolies and keep the shareholders paid.">
 <meta property="og:url" content="https://homoludens.oalpcakir.workers.dev/retourvloot/">
-<meta property="og:image" content="https://homoludens.oalpcakir.workers.dev/og-retourvloot.png">
+<meta property="og:image" content="https://homoludens.oalpcakir.workers.dev/og-retourvloot.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://homoludens.oalpcakir.workers.dev/og-retourvloot.png">
+<meta name="twitter:image" content="https://homoludens.oalpcakir.workers.dev/og-retourvloot.jpg">
 <link rel="canonical" href="https://homoludens.oalpcakir.workers.dev/retourvloot/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2326457d'/%3E%3Cpath d='M6 20h20l-3 5H9z M15 6v13 M15 7l7 9h-7z M14 9l-6 8h6z' fill='%23e9e8e1' stroke='%23e9e8e1' stroke-width='1.2'/%3E%3C/svg%3E">
 <!-- Analytics: PostHog (US), cookieless; the game's own anonymous player id is the distinct id -->
@@ -35,7 +35,7 @@
       borderlines: { game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
       retourvloot: { game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
       cupoftea: { tea_scene_start: "game_started", tea_scene_done: "game_completed" },
-      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed" },
+      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed", kantar_share: "result_shared" },
       polder: { polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
       portal: { portal_play: "next_game_clicked" }
     }[GAME] || {};
@@ -66,6 +66,7 @@
   })();
 </script>
 <script src="/feedback.js" defer data-game="retourvloot"></script>
+<script src="/next.js" defer data-game="retourvloot"></script>
 <style>html,body{margin:0}</style>
 <title>Retourvloot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2366,6 +2367,7 @@ function showEnd() {
       <span>Came home</span><b class="num">${num(S.humans.returned)} (${S.humans.sent ? Math.round(S.humans.returned / S.humans.sent * 100) : 0}%)</b>
     </div></div>
     <div class="hist"><b>The real Company</b>About a million people sailed east for the VOC between 1602 and 1795; roughly a third came home. It paid an average dividend of around 18% a year on its original capital, from 1730 mostly with money it did not earn. At nationalisation its debt is usually put at about ƒ120 million; sources vary.</div>
+    <div data-hl-next></div>
     <div class="actions"><button type="button" class="btn" id="m-new">Start a new company</button></div>`);
   $('m-new').addEventListener('click', () => { S = newState(); save(); closeSheet(); syncInputs(); render(); track('game_start', { restart: true }); openQueued(); });
 }

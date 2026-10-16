@@ -34,7 +34,7 @@ def local_path(u, base_dir):
     return p
 
 # ---- games.json
-REQ = {"id": str, "no": int, "version": str, "title": str, "url": str, "image": str, "short": str, "announce": str}
+REQ = {"id": str, "no": int, "version": str, "title": str, "url": str, "devices": str, "length": str, "image": str, "short": str, "announce": str}
 try:
     games = json.load(open(os.path.join(PUB, "games.json"), encoding="utf-8"))
 except Exception as e:
@@ -45,6 +45,7 @@ for g in games:
     for k, t in REQ.items():
         if not isinstance(g.get(k), t) or (t is str and not g[k].strip()):
             err(f"games.json {g.get('id')}: field '{k}' missing or not {t.__name__}")
+    if g.get("devices") not in ("any", "desktop"): err(f"games.json {g.get('id')}: devices must be 'any' or 'desktop' (next.js and the portal use it)")
     if not re.fullmatch(r"[a-z]+", str(g.get("id", ""))): err(f"games.json: id '{g.get('id')}' must be lowercase letters (admin URLs rely on it)")
     for k in ("url", "image"):
         p = local_path(str(g.get(k, "")), PUB)

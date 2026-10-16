@@ -65,6 +65,7 @@ def build():
 </script>
 {ph}
 <script src="/feedback.js" defer data-game="borderlines"></script>
+<script src="/next.js" defer data-game="borderlines"></script>
 <style>html,body{{margin:0}}[hidden]{{display:none!important}}</style>
 '''
     i = g.index('<div id="app">')

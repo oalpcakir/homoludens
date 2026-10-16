@@ -5,6 +5,8 @@
     "version": "2026.10",
     "title": "Borderlines",
     "url": "/borderlines/",
+    "devices": "any",
+    "length": "5 minutes",
     "image": "/og-borderlines.png",
     "short": "You get a year and a realm. Paint the land it ruled, then see how close you came. A new daily challenge every day.",
     "announce": "You get a year and the name of a realm: the Ottoman Empire in 1530, the Inca in 1530, Aksum in 500. Paint the land you think it ruled on a world map with no modern borders, then see how close you came. Five new realms every day, from easy to hard."
@@ -15,7 +17,9 @@
     "version": "2026.10",
     "title": "Retourvloot",
     "url": "/retourvloot/",
-    "image": "/og-retourvloot.png",
+    "devices": "desktop",
+    "length": "30–80 minutes",
+    "image": "/og-retourvloot.jpg",
     "short": "Run the Dutch East India Company from Amsterdam, 1602 to 1799. Letters from Batavia take a year.",
     "announce": "You are a director of the Dutch East India Company in Amsterdam, from its founding in 1602 to its end in 1799. Equip ships, send silver east and wait a year for letters from Batavia. Chase the spice monopolies and keep the shareholders paid, while the Company slowly hollows out. Every event card shows a real painting or print from the Rijksmuseum, and the other ledger keeps count of what the trade cost. Best on a laptop or desktop; 30 to 80 minutes."
   },
@@ -25,7 +29,9 @@
     "version": "2026.10",
     "title": "A Cup of Tea",
     "url": "/cupoftea/",
-    "image": "/og-cupoftea.png",
+    "devices": "desktop",
+    "length": "3 scenes",
+    "image": "/og-cupoftea.jpg",
     "short": "A grocer's receipt from East London, 1850. Read the papers of the day, do the sums, and find out who got every farthing.",
     "announce": "East London, March 1850. A working family's grocer's receipt: one pound of brown sugar for 4½d, two ounces of Congou tea for 5d. You are a nameless detective with a desk of real papers: Parliamentary debates, newspaper letters, price lists. Fill the ledger, line by line, until every farthing is accounted for: the grocer, Her Majesty's Customs, the shipowner, and the money that never reached London. Three scenes, from a London shop to a sugar estate outside Havana and back to the tea. Every figure comes from a source of the time. Best on a laptop or desktop."
   },
@@ -35,7 +41,9 @@
     "version": "2026.10",
     "title": "Polder",
     "url": "/polder/",
-    "image": "/og-polder.png",
+    "devices": "desktop",
+    "length": "15 minutes a region",
+    "image": "/og-polder.jpg",
     "short": "Build dikes, drain the sea, and survive seven centuries of Dutch storms, from the terp mounds of 1200 to the flood of 1953.",
     "announce": "Place dike pieces, close them into rings and watch the water drain away into fields, sheep and windmills. Then the real storms come: St. Elizabeth's Flood, the Christmas Flood, the North Sea Flood of 1953. Play four regions of the Netherlands, each with its own challenge: link the Frisian terps, win back Zeeland's drowned villages, tame North Holland's waterwolf and close off the Zuiderzee. Every turn brings a page of Dutch history for your Chronicle. Best on a laptop or desktop; about 15 minutes per region."
   },
@@ -45,7 +53,9 @@
     "version": "2026.10",
     "title": "Kantar",
     "url": "/kantar/",
-    "image": "/og-kantar.png",
+    "devices": "any",
+    "length": "10 minutes",
+    "image": "/og-kantar.jpg",
     "short": "A two-player duel in the Grand Bazaar of Istanbul. You divide three goods between two pans; your rival chooses.",
     "announce": "Istanbul, the Grand Bazaar. Saffron, silk, coffee and copper come to the stall over six rounds, and you share them with a rival merchant. You put three goods into the pans of a brass scale; your rival takes one pan and leaves you the other. Win the majority in a good to earn its price, but carry too much and you lose the light-load bonus. Two wax seals, a narh price that moves with supply, a teacher that explains the best move at every step, and your own stats. Easy to learn, hard to master; about 10 minutes a game, in English or Turkish, on any screen."
   }

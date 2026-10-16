@@ -4,6 +4,7 @@
 //   /api/newsletter/*        double opt-in email list (sign up, confirm, unsubscribe)
 //   /api/admin/*             your own tools: Borderlines stats, subscriber count, preview and send the new-game email
 //   /borderlines/s/<score>   share link: a page with that score's preview image, which forwards players to the game
+//   /kantar/s/<you>-<rival>, /polder/s/<region>/<stars>   the same for Kantar and Polder results (text preview, game's own image)
 //
 // Secrets (Settings → Variables and Secrets, type Secret — not under Builds):
 //   DISCORD_WEBHOOK_URL   Discord channel webhook (feedback)
@@ -37,6 +38,8 @@ export default {
       if (p.startsWith('/api/admin/')) return await admin(request, env, url);
       if (p.startsWith('/api/')) return json({ ok: false, error: 'not-found' }, 404);
       if (p.startsWith('/borderlines/s/')) return shareCard(url);
+      if (p.startsWith('/kantar/s/')) return kantarShare(url);
+      if (p.startsWith('/polder/s/')) return polderShare(url);
     } catch (e) {
       return json({ ok: false, error: 'server' }, 500);
     }
@@ -481,6 +484,11 @@ const GAME_SQL = {
       FROM events WHERE event = '$pageview' AND ${R90} GROUP BY country ORDER BY visitors DESC`,
     clicks: `SELECT toString(properties.game) AS game, count() AS clicks, uniq(distinct_id) AS players
       FROM events WHERE event = 'portal_play' AND ${R90} GROUP BY game ORDER BY clicks DESC`,
+    // the "next game" card at the end of each game (public/next.js)
+    next: `SELECT toString(properties.from) AS src, toString(properties.to) AS dst,
+        countIf(event = 'next_game_shown') AS shown, countIf(event = 'next_game_clicked') AS clicks
+      FROM events WHERE event IN ('next_game_shown', 'next_game_clicked') AND properties.from IS NOT NULL AND ${R90}
+      GROUP BY src, dst ORDER BY shown DESC, clicks DESC`,
   },
   // one row per visitor (browser id): where they came from and what they did
   visitors: {
@@ -560,8 +568,19 @@ const GAME_SQL = {
         countIf(event = 'kantar_resume') AS resumes, uniqIf(distinct_id, event = 'kantar_stats_open') AS statsOpen,
         countIf(event = 'kantar_game_end' AND properties.result = 'win') AS wins,
         countIf(event = 'kantar_game_end' AND properties.result = 'loss') AS losses,
-        countIf(event = 'kantar_game_end' AND properties.result = 'draw') AS draws
-      FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end', 'kantar_resume', 'kantar_stats_open') AND ${R90}`,
+        countIf(event = 'kantar_game_end' AND properties.result = 'draw') AS draws,
+        countIf(event = 'kantar_leave') AS leaves, countIf(event = 'kantar_share') AS shares, uniqIf(distinct_id, event = 'kantar_share') AS sharers
+      FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end', 'kantar_resume', 'kantar_stats_open', 'kantar_leave', 'kantar_share') AND ${R90}`,
+    // games with the teacher on: how often the player's move matched its best move, and how long games take
+    teacher: `SELECT if(toString(properties.teacher) IN ('true', '1'), 1, 0) AS teacher, count() AS games,
+        sum(toInt(properties.tm)) AS moves, sum(toInt(properties.tbest)) AS best, round(avg(toFloat(properties.tgap)), 2) AS gap,
+        sum(toInt(properties.applied)) AS applied, countIf(toString(properties.tut) IN ('true', '1')) AS tut,
+        round(avgIf(toFloat(properties.ms), toFloat(properties.ms) > 0) / 60000, 1) AS minutes,
+        round(quantileIf(0.5)(toFloat(properties.ms), toFloat(properties.ms) > 0) / 60000, 1) AS medianMinutes
+      FROM events WHERE event = 'kantar_game_end' AND properties.tm IS NOT NULL AND ${R90} GROUP BY teacher ORDER BY teacher DESC`,
+    // unfinished games: the turn (0–5) at which the page was closed
+    leaves: `SELECT toInt(properties.turn) AS turn, count() AS games, round(avg(toFloat(properties.you) - toFloat(properties.rival)), 1) AS margin
+      FROM events WHERE event = 'kantar_leave' AND ${R90} GROUP BY turn ORDER BY turn`,
     // one row per setting combination; win rates show whether Apprentice/Master and the teacher feel right
     setups: `SELECT toString(properties.mode) AS mode, if(toString(properties.diff) = 'usta', 'master', 'apprentice') AS level,
         if(toString(properties.teacher) IN ('true', '1'), 1, 0) AS teacher,
@@ -592,6 +611,47 @@ const GAME_SQL = {
       FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end', 'kantar_resume') AND ${R90} GROUP BY date ORDER BY date DESC`,
   },
 };
+
+// ---------------------------------------------------------------- Kantar and Polder share links
+// The preview (title, description) names the result; the image is the game's own; people are sent on to the game.
+const escHtml = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function sharePage(url, { title, desc, image, game, label }) {
+  const t = escHtml(title), d = escHtml(desc), img = url.origin + image, to = url.origin + game, self = escHtml(url.origin + url.pathname + url.search);
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>${t}</title><meta name="description" content="${d}"><meta name="robots" content="noindex">
+<meta property="og:type" content="website"><meta property="og:site_name" content="Homo Ludens">
+<meta property="og:title" content="${t}"><meta property="og:description" content="${d}"><meta property="og:url" content="${self}">
+<meta property="og:image" content="${img}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${t}"><meta name="twitter:description" content="${d}"><meta name="twitter:image" content="${img}">
+<meta http-equiv="refresh" content="0;url=${to}"><script>location.replace(${JSON.stringify(to)})</script>
+</head><body><a href="${to}">${escHtml(label)}</a></body></html>`;
+  return new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=86400' } });
+}
+function kantarShare(url) {
+  const m = url.pathname.match(/^\/kantar\/s\/(\d{1,2})-(\d{1,2})\/?$/);
+  if (!m) return Response.redirect(url.origin + '/kantar/', 302);
+  const you = Number(m[1]), rival = Number(m[2]), q = url.searchParams;
+  const res = { w: 'w', l: 'l', d: 'd' }[q.get('r')] || (you > rival ? 'w' : you < rival ? 'l' : 'd');
+  const master = q.get('lv') !== 'a', narh = q.get('m') !== 'c', tr = q.get('l') === 'tr';
+  const who = tr ? (master ? 'Usta' : 'Çırak') : (master ? 'the Master' : 'the Apprentice');
+  const title = tr
+    ? (res === 'w' ? `Kantar · ${who}’yı ${you}–${rival} yendim` : res === 'l' ? `Kantar · ${who}’ya ${you}–${rival} yenildim` : `Kantar · ${who} ile ${you}–${rival} berabere`)
+    : (res === 'w' ? `Kantar · I beat ${who} ${you}–${rival}` : res === 'l' ? `Kantar · ${who} beat me ${rival}–${you}` : `Kantar · ${you}–${rival} draw with ${who}`);
+  const desc = tr
+    ? `Kapalıçarşı'da iki tüccar, bir terazi${narh ? ' (narh)' : ''}. Sen bölersin, rakip seçer. Sen de dene: 10 dakikalık bir düello.`
+    : `Two merchants, one brass scale in the Grand Bazaar${narh ? ' (narh rules)' : ''}. You divide, your rival chooses. Can you do better? A 10-minute duel.`;
+  return sharePage(url, { title, desc, image: '/og-kantar.jpg', game: '/kantar/', label: 'Play Kantar' });
+}
+const POLDER_REGIONS = { friesland: 'Friesland', zeeland: 'Zeeland', holland: 'Holland', zuiderzee: 'Zuiderzee', free: 'Free play' };
+function polderShare(url) {
+  const m = url.pathname.match(/^\/polder\/s\/([a-z]+)\/(\d)\/?$/);
+  if (!m || !POLDER_REGIONS[m[1]]) return Response.redirect(url.origin + '/polder/', 302);
+  const q = url.searchParams, n = Math.min(9, Math.max(1, Number(q.get('n')) || 3)), stars = Math.min(n, Number(m[2]));
+  const f = Number(q.get('f')), fields = Number.isInteger(f) && f >= 0 && f < 10000 ? f : null, hard = q.get('h') === '1';
+  const title = `Polder · ${POLDER_REGIONS[m[1]]}${hard ? ' (Hard)' : ''} ${'★'.repeat(stars)}${'☆'.repeat(n - stars)}${fields != null ? ` · ${fields} fields` : ''}`;
+  const desc = 'Build dikes, drain the sea and survive seven centuries of Dutch storms, from the terps of 1200 to the flood of 1953. Can you hold the line?';
+  return sharePage(url, { title, desc, image: '/og-polder.jpg', game: '/polder/', label: 'Play Polder' });
+}
 
 // ---------------------------------------------------------------- Borderlines share links
 // /borderlines/s/247?d=12 → link previews show public/borderlines/og/247.png; people are sent on to the game.

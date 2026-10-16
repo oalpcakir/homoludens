@@ -1,14 +1,14 @@
 {
   "name": "homoludens",
   "compatibility_date": "2025-09-01",
-  // worker.js serves /api/* and the Borderlines share links (/borderlines/s/*); everything else comes straight from ./public
+  // worker.js serves /api/* and the share links (/borderlines/s/*, /kantar/s/*, /polder/s/*); everything else comes straight from ./public
   "main": "worker.js",
   // keep variables and secrets set in the Cloudflare dashboard when deploying from Git
   "keep_vars": true,
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*", "/borderlines/s/*"]
+    "run_worker_first": ["/api/*", "/borderlines/s/*", "/kantar/s/*", "/polder/s/*"]
   },
   // New-game email list. Create a KV namespace called "homoludens-subscribers" in the Cloudflare dashboard
   // (Storage & Databases → KV), then put its id here and remove the // in front of the three lines.

@@ -1,16 +1,15 @@
 """Build Polder (run from this folder: python3 build_polder.py).
 
-polder.html is the whole game in one self-contained page (font embedded). This script writes two builds:
-  1. the Homo Ludens site: ../../public/polder/  (+ shared head: meta tags, icon, analytics, feedback button)
-  2. CrazyGames:           ../../dist/crazygames/polder/index.html and polder-crazygames.zip
-     (CrazyGames SDK v3, window.POLDER_CG = true: saves go through the SDK Data module, no site links,
-      gameplayStart/Stop, happytime, a midgame ad between regions and an optional rewarded ad.)
+polder.html is the whole game in one self-contained page (font embedded). This script writes the site build:
+../../public/polder/ (+ shared head: meta tags, icon, analytics, feedback button).
+The itch.io and CrazyGames packages are made from it by src/platform/build_platforms.py (window.POLDER_CG = true
+there: saves through the SDK Data module, no site links, gameplayStart/Stop, happytime, a midgame ad between
+regions and an optional rewarded ad).
 """
-import os, shutil, zipfile
+import os, shutil
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 OUT = os.path.join(ROOT, "public", "polder")
-CG_OUT = os.path.join(ROOT, "dist", "crazygames", "polder")
 import sys
 sys.path.insert(0, os.path.normpath(os.path.join(H, "..")))
 from site_config import SITE, canonical, analytics_head  # noqa: E402
@@ -32,27 +31,20 @@ head = f'''<meta name="description" content="{desc}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{SITE}/polder/">
-<meta property="og:image" content="{SITE}/og-polder.png">
+<meta property="og:image" content="{SITE}/og-polder.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="{SITE}/og-polder.png">
+<meta name="twitter:image" content="{SITE}/og-polder.jpg">
 {canonical("/polder/")}
 {icon}
 {ph}
-<script src="/feedback.js" defer data-game="polder"></script>'''
+<script src="/feedback.js" defer data-game="polder"></script>
+<script src="/next.js" defer data-game="polder"></script>'''
 os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(src.replace(anchor, anchor + "\n" + head, 1))
 shutil.copy(os.path.join(H, "portal-plate.jpg"), os.path.join(OUT, "img", "portal-plate.jpg"))
-shutil.copy(os.path.join(H, "og-polder.png"), os.path.join(ROOT, "public", "og-polder.png"))
+shutil.copy(os.path.join(H, "og-polder.jpg"), os.path.join(ROOT, "public", "og-polder.jpg"))
 
-# 2. CrazyGames build (single file, relative paths only)
-cg_head = f'''{icon}
-<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
-<script>window.POLDER_CG = true;</script>'''
-os.makedirs(CG_OUT, exist_ok=True)
-cg_html = src.replace(anchor, anchor + "\n" + cg_head, 1)
-open(os.path.join(CG_OUT, "index.html"), "w", encoding="utf-8").write(cg_html)
-with zipfile.ZipFile(os.path.join(ROOT, "dist", "crazygames", "polder-crazygames.zip"), "w", zipfile.ZIP_DEFLATED) as z:
-    z.write(os.path.join(CG_OUT, "index.html"), "index.html")
-print("built", OUT, "and", CG_OUT)
+# Platform packages (itch.io, CrazyGames) are built from public/ by src/platform/build_platforms.py.
+print("built", OUT)

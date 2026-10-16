@@ -211,3 +211,19 @@ test('admin has a stats endpoint for every game in games.json', async () => {
   const site = seen.slice(before).join('\n');
   for (const id of ['kantar_game_start', 'polder_level_start', 'tea_scene_start']) assert.ok(site.includes(id), 'overview/visitors miss ' + id);
 });
+
+test('Kantar and Polder share links: preview names the result, escapes input, forwards to the game', async () => {
+  const { env } = setup();
+  let r = await call(env, '/kantar/s/18-14?r=w&lv=m&m=n&l=en');
+  let h = await r.text();
+  assert.match(h, /<meta property="og:title" content="Kantar · I beat the Master 18–14">/);
+  assert.match(h, /og-kantar\.jpg/); assert.match(h, /location\.replace\("https:\/\/hl\.test\/kantar\/"\)/);
+  h = await (await call(env, '/kantar/s/12-15?r=l&lv=a&l=tr')).text();
+  assert.match(h, /Çırak’ya 12–15 yenildim/);
+  r = await call(env, '/kantar/s/<script>');
+  assert.equal(r.status, 302);
+  h = await (await call(env, '/polder/s/zeeland/3?n=5&f=42&h=1&x="><b>')).text();
+  assert.match(h, /Polder · Zeeland \(Hard\) ★★★☆☆ · 42 fields/);
+  assert.doesNotMatch(h, /"><b>/);
+  assert.equal((await call(env, '/polder/s/atlantis/3')).status, 302);
+});

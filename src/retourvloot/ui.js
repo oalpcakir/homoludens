@@ -532,6 +532,7 @@ function showEnd() {
       <span>Came home</span><b class="num">${num(S.humans.returned)} (${S.humans.sent ? Math.round(S.humans.returned / S.humans.sent * 100) : 0}%)</b>
     </div></div>
     <div class="hist"><b>The real Company</b>About a million people sailed east for the VOC between 1602 and 1795; roughly a third came home. It paid an average dividend of around 18% a year on its original capital, from 1730 mostly with money it did not earn. At nationalisation its debt is usually put at about ƒ120 million; sources vary.</div>
+    <div data-hl-next></div>
     <div class="actions"><button type="button" class="btn" id="m-new">Start a new company</button></div>`);
   $('m-new').addEventListener('click', () => { S = newState(); save(); closeSheet(); syncInputs(); render(); track('game_start', { restart: true }); openQueued(); });
 }

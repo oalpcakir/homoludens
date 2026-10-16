@@ -32,15 +32,16 @@ for n, (path, title, desc) in SCENES.items():
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{url}">
-<meta property="og:image" content="{SITE}/og-cupoftea.png">
+<meta property="og:image" content="{SITE}/og-cupoftea.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="{SITE}/og-cupoftea.png">
+<meta name="twitter:image" content="{SITE}/og-cupoftea.jpg">
 {canonical("/cupoftea/" + path)}
 {icon}
 {ph}
-<script src="/feedback.js" defer data-game="cupoftea"></script>'''
+<script src="/feedback.js" defer data-game="cupoftea"></script>
+<script src="/next.js" defer data-game="cupoftea"></script>'''
     anchor = '<meta name="viewport" content="width=device-width, initial-scale=1">'
     assert anchor in src, n
     html = src.replace(anchor, anchor + "\n" + head, 1).replace("{{SITE}}", SITE)
@@ -52,6 +53,6 @@ os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 for f in ("portal-plate.jpg", "flor-de-cuba.jpg"):
     if os.path.exists(os.path.join(H, f)):
         shutil.copy(os.path.join(H, f), os.path.join(OUT, "img", f))
-if os.path.exists(os.path.join(H, "og-cupoftea.png")):
-    shutil.copy(os.path.join(H, "og-cupoftea.png"), os.path.join(ROOT, "public", "og-cupoftea.png"))
+if os.path.exists(os.path.join(H, "og-cupoftea.jpg")):
+    shutil.copy(os.path.join(H, "og-cupoftea.jpg"), os.path.join(ROOT, "public", "og-cupoftea.jpg"))
 print("built", OUT)

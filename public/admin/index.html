@@ -249,6 +249,8 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
         table('Where visitors come from', j.sources, [['source', 'Source', function (v) { return sourceCell(srcName(v), v); }, false, true], ['visitors', 'Visitors']]) +
         table('Countries', j.countries, [['country', 'Country', countryCell, false, true], ['visitors', 'Visitors']]) +
         table('Portal → game clicks', j.clicks, [['game', 'Game', gameCell, false, true], ['clicks', 'Clicks'], ['players', 'People']]) + '</div>';
+      h += '<div class="grid">' + table('“Next game” card at the end of a game', j.next, [['src', 'Finished', gameCell, false, true], ['dst', 'Suggested', function (v) { return v === 'portal' ? 'All games' : gameCell(v); }, true, true],
+        ['shown', 'Seen'], ['clicks', 'Clicks'], ['clicks', 'Click %', function (v, r) { return pct(v, r.shown); }]], 'Seen = the card scrolled into view. “All games” clicks go to the portal and have no Seen count of their own.') + '</div>';
       return h;
     },
     rv: function (j) {
@@ -288,13 +290,18 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
       var f = (j.funnel || [])[0] || {}, rate = function (r) { return pct(r.wins + 0.5 * (r.draws || 0), r.games); };
       var h = tiles([[f.players || 0, 'started a game'], [f.finishers || 0, 'finished one', 'People; ' + (f.ends || 0) + ' games finished of ' + (f.starts || 0) + ' started'],
         [pct(f.ends, f.starts), 'of games finished'], [f.resumes || 0, 'resumed a saved game'], [pct((f.wins || 0) + 0.5 * (f.draws || 0), f.ends), 'player win rate', 'Draws count half'],
-        [f.statsOpen || 0, 'opened their stats']]);
+        [f.statsOpen || 0, 'opened their stats'], [f.sharers || 0, 'shared a result', (f.shares || 0) + ' shares'], [f.leaves || 0, 'games left unfinished', 'The page was closed mid-game']]);
       var MODE = { classic: 'Classic', narh: 'Narh' }, LEVEL = { master: 'Master', apprentice: 'Apprentice' };
       h += '<div class="grid" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr)">' +
         table('Finished games by setting', j.setups, [['mode', 'Mode', function (v) { return MODE[v] || v; }], ['level', 'Rival', function (v) { return LEVEL[v] || v; }, true], ['teacher', 'Teacher', function (v) { return v ? 'on' : 'off'; }, true],
           ['players', 'People'], ['games', 'Games'], ['wins', 'Won'], ['losses', 'Lost'], ['draws', 'Drawn'], ['games', 'Win %', function (v, r) { return rate(r); }], ['you', 'Avg you'], ['rival', 'Avg rival']],
           'Win % counts draws as half. The bots: Master beats Apprentice about 70% of the time, so a human win rate far above that against Master means the rival is too soft.') +
         table('Games finished per person', j.depth, [['games', 'Games'], ['players', 'People']], 'People who started at least once; 0 = never finished a game.') + '</div>';
+      var MIN = function (v) { return v == null ? '–' : v + ' min'; };
+      h += '<div class="grid">' + table('Teacher and game length', (j.teacher || []).map(function (r) { return Object.assign({ who: r.teacher ? 'Teacher on' : 'Teacher off' }, r); }),
+          [['who', 'Games'], ['games', 'Finished'], ['moves', 'Moves compared'], ['best', 'Best move', function (v, r) { return pct(v, r.moves); }], ['gap', 'Avg points lost'], ['applied', 'Used suggestion'], ['tut', 'Teaching round'], ['minutes', 'Avg', MIN], ['medianMinutes', 'Median', MIN]],
+          'Best move = the player\'s move matched the Master\'s choice (compared on every move while the teacher shows). Points lost = how far the move was from the best, on average. Older games without these fields are left out.') +
+        table('Left unfinished, by turn', j.leaves, [['turn', 'Turn', function (v) { return (v + 1) + ' of 6'; }], ['games', 'Games'], ['margin', 'Player ahead by']], 'Closing the page mid-game. A negative lead means they were behind when they left.') + '</div>';
       var seal = (j.seals || [])[0] || {};
       h += '<div class="grid">' +
         table('Who divided first', j.first, [['mode', 'Mode', function (v) { return MODE[v] || v; }], ['first', 'First divider', function (v) { return v === 'you' ? 'Player' : v === 'rival' ? 'Rival' : v; }, true], ['games', 'Games'], ['wins', 'Win %', function (v, r) { return rate(r); }]],

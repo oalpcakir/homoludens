@@ -2,3 +2,5 @@
   Access-Control-Allow-Origin: *
 /borderlines/tiers.json
   Access-Control-Allow-Origin: *
+/games.json
+  Access-Control-Allow-Origin: *

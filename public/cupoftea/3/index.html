@@ -8,11 +8,11 @@
 <meta property="og:title" content="A Cup of Tea · Scene 3: The tea">
 <meta property="og:description" content="Two ounces of Congou, 5d. Cross-examine two witnesses to find what the tea itself was worth, and how heavy the duty on it really was.">
 <meta property="og:url" content="https://homoludens.oalpcakir.workers.dev/cupoftea/3/">
-<meta property="og:image" content="https://homoludens.oalpcakir.workers.dev/og-cupoftea.png">
+<meta property="og:image" content="https://homoludens.oalpcakir.workers.dev/og-cupoftea.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://homoludens.oalpcakir.workers.dev/og-cupoftea.png">
+<meta name="twitter:image" content="https://homoludens.oalpcakir.workers.dev/og-cupoftea.jpg">
 <link rel="canonical" href="https://homoludens.oalpcakir.workers.dev/cupoftea/3/">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%233b2a1e'/%3E%3Cpath d='M7 12h15v5a7 7 0 0 1-7 7h-1a7 7 0 0 1-7-7z' fill='%23efe5cc'/%3E%3Cpath d='M22 14h2a3 3 0 0 1 0 6h-2' fill='none' stroke='%23efe5cc' stroke-width='2'/%3E%3Cpath d='M5 26h21' stroke='%23a7622f' stroke-width='2'/%3E%3C/svg%3E">
 <!-- Analytics: PostHog (US), cookieless; the game's own anonymous player id is the distinct id -->
@@ -35,7 +35,7 @@
       borderlines: { game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
       retourvloot: { game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
       cupoftea: { tea_scene_start: "game_started", tea_scene_done: "game_completed" },
-      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed" },
+      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed", kantar_share: "result_shared" },
       polder: { polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
       portal: { portal_play: "next_game_clicked" }
     }[GAME] || {};
@@ -66,6 +66,7 @@
   })();
 </script>
 <script src="/feedback.js" defer data-game="cupoftea"></script>
+<script src="/next.js" defer data-game="cupoftea"></script>
 <title>A Cup of Tea · Scene 3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -315,7 +316,7 @@ canvas.rc{display:block;width:100%;max-width:420px;height:auto;margin:10px auto 
   <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button></div>
   <p>At home she pours boiling water over the leaves a second time. There is nothing left in them for a third.</p>
   <p>Five of her twenty farthings went to China. Nobody in these papers says who picked the leaves, or what they were paid.</p>
-  <p style="font-style:italic;color:var(--ink2)">Scene 4, Canton and the Wuyi hills, is still being written.</p><a class="nextbtn" href="/">Back to Homo Ludens</a>
+  <p style="font-style:italic;color:var(--ink2)">Scene 4, Canton and the Wuyi hills, is still being written.</p><div data-hl-next></div><a class="nextbtn" href="/">Back to Homo Ludens</a>
   <button onclick="document.getElementById('door').classList.remove('on')">Back to the ledger</button>
 </div></div>
 <div class="toast" id="toast"></div>

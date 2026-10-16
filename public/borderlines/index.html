@@ -43,7 +43,7 @@
       borderlines: { game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
       retourvloot: { game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
       cupoftea: { tea_scene_start: "game_started", tea_scene_done: "game_completed" },
-      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed" },
+      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed", kantar_share: "result_shared" },
       polder: { polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
       portal: { portal_play: "next_game_clicked" }
     }[GAME] || {};
@@ -74,6 +74,7 @@
   })();
 </script>
 <script src="/feedback.js" defer data-game="borderlines"></script>
+<script src="/next.js" defer data-game="borderlines"></script>
 <style>html,body{margin:0}[hidden]{display:none!important}</style>
 <title>Borderlines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -360,6 +361,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     <div class="share" id="eShare"></div>
     <p class="next" id="eNext"></p>
     <div class="actions"><span class="sharewrap"><button id="btnShare" type="button" class="primary" aria-haspopup="true" aria-expanded="false">Share</button><span id="shareMenu" class="sharemenu card" hidden><a id="shX" target="_blank" rel="noopener">X / Twitter</a><a id="shWa" target="_blank" rel="noopener">WhatsApp</a><a id="shRd" target="_blank" rel="noopener">Reddit</a><a id="shFb" target="_blank" rel="noopener">Facebook</a></span></span><button id="btnCopy" type="button" class="primary">Copy result</button><button id="btnAgain" type="button">Practice</button><button id="btnMenu" type="button">Menu</button><a id="btnMore" class="morelink" href="/" hidden>More games</a></div>
+    <div data-hl-next></div>
   </div>
 
   <div class="zoomctl card" id="zoomctl"><button id="zIn" type="button" aria-label="Zoom in">+</button><button id="zOut" type="button" aria-label="Zoom out">−</button></div>
@@ -403,11 +405,14 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
   // The page itself only knows how many dailies exist and each one's difficulty tiers.
   const NDAYS = (DATA.days || DATA.daily).length;
   const DAYS_URL = (window.BORDERLINES_CONFIG || {}).daysUrl || "days/";
+  // platform packages: the live site first (new dailies arrive without a re-upload), then the copies in the package
+  const DAYS_FALLBACK = (window.BORDERLINES_CONFIG || {}).daysFallback || "";
   const dayCache = {};
+  const fetchDay = (base, i) => fetch(base + (i + 1) + ".json").then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
   function getDay(i) {
     if (DATA.daily) return Promise.resolve(DATA.daily[i]);
-    if (!dayCache[i]) dayCache[i] = fetch(DAYS_URL + (i + 1) + ".json")
-      .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    if (!dayCache[i]) dayCache[i] = fetchDay(DAYS_URL, i)
+      .catch((e) => { if (DAYS_FALLBACK) return fetchDay(DAYS_FALLBACK, i); throw e; })
       .catch((e) => { delete dayCache[i]; throw e; });
     return dayCache[i];
   }
@@ -920,8 +925,9 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     }
     $("eLine").textContent = `You averaged ${Math.round(avg)} out of 100 across five realms.`;
     $("eRounds").innerHTML = Q.map((q, i) => `<div><span class="y">${q.yearLabel}</span><span>${q.label}</span><span class="s">${state.scores[i] ?? 0}</span></div>`).join("");
-    const site = (window.BORDERLINES_CONFIG || {}).siteUrl || "https://homoludens.oalpcakir.workers.dev/borderlines/";
-    $("eShare").textContent = `Borderlines ${isDaily ? "#" + (state.day + 1) : "Practice"} · ${total}/${max}\n${Q.map((q, i) => emoji(state.scores[i] ?? 0)).join("")}\n${site}s/${total}${isDaily ? "?d=" + (state.day + 1) : ""}`;
+    const cfgSite = (window.BORDERLINES_CONFIG || {}).siteUrl;
+    const site = cfgSite === "" ? "" : cfgSite || "https://homoludens.oalpcakir.workers.dev/borderlines/";
+    $("eShare").textContent = `Borderlines ${isDaily ? "#" + (state.day + 1) : "Practice"} · ${total}/${max}\n${Q.map((q, i) => emoji(state.scores[i] ?? 0)).join("")}${site ? `\n${site}s/${total}${isDaily ? "?d=" + (state.day + 1) : ""}` : ""}`;
     const st = streak();
     $("eNext").textContent = state.mode === "daily" ? `Streak: ${st} ${st === 1 ? "day" : "days"} · Next challenge in ${untilMidnight()}` : "";
     $("btnAgain").textContent = state.mode === "practice" ? "Play again" : "Practice";

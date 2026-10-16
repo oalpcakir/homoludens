@@ -15,11 +15,11 @@ og = f'''<meta name="description" content="{desc}">
 <meta property="og:title" content="Retourvloot">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{SITE}/retourvloot/">
-<meta property="og:image" content="{SITE}/og-retourvloot.png">
+<meta property="og:image" content="{SITE}/og-retourvloot.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="{SITE}/og-retourvloot.png">
+<meta name="twitter:image" content="{SITE}/og-retourvloot.jpg">
 {canonical("/retourvloot/")}'''
 icon = "<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2326457d'/%3E%3Cpath d='M6 20h20l-3 5H9z M15 6v13 M15 7l7 9h-7z M14 9l-6 8h6z' fill='%23e9e8e1' stroke='%23e9e8e1' stroke-width='1.2'/%3E%3C/svg%3E\">"
 body = r("body.html").replace('<span class="row"><button type="button" class="btn ghost small" id="credits">',
@@ -33,6 +33,7 @@ html = f'''<!doctype html>
 {icon}
 {ph}
 <script src="/feedback.js" defer data-game="retourvloot"></script>
+<script src="/next.js" defer data-game="retourvloot"></script>
 <style>html,body{{margin:0}}</style>
 {r("head.html")}
 </head>
@@ -52,6 +53,6 @@ os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 open(os.path.join(OUT, "index.html"), "w", encoding="utf-8", newline="\n").write(html)
 for f in os.listdir(os.path.join(H, "img")):
     shutil.copy(os.path.join(H, "img", f), os.path.join(OUT, "img", f))
-if os.path.exists(os.path.join(H, "og-retourvloot.png")):
-    shutil.copy(os.path.join(H, "og-retourvloot.png"), os.path.join(ROOT, "public", "og-retourvloot.png"))
+if os.path.exists(os.path.join(H, "og-retourvloot.jpg")):
+    shutil.copy(os.path.join(H, "og-retourvloot.jpg"), os.path.join(ROOT, "public", "og-retourvloot.jpg"))
 print("built", OUT)

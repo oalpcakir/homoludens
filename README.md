@@ -41,4 +41,6 @@ node --test tests/*.test.mjs  # worker and game-model tests
 npm ci && npm run smoke       # every page in headless Chromium
 ```
 
+The same games are packaged for itch.io and CrazyGames by `src/platform/build_platforms.py` (one small adapter, no forked game code).
+
 Details for each game, the analytics events and the deploy are in [`src/README.md`](src/README.md).

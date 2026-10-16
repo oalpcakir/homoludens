@@ -29,15 +29,16 @@ head = f'''<meta name="description" content="{desc}">
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="{SITE}/kantar/">
-<meta property="og:image" content="{SITE}/og-kantar.png">
+<meta property="og:image" content="{SITE}/og-kantar.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="{SITE}/og-kantar.png">
+<meta name="twitter:image" content="{SITE}/og-kantar.jpg">
 {canonical("/kantar/")}
 {icon}
 {analytics_head("kantar")}
-<script src="/feedback.js" defer data-game="kantar"></script>'''
+<script src="/feedback.js" defer data-game="kantar"></script>
+<script src="/next.js" defer data-game="kantar"></script>'''
 src = open(os.path.join(H, "kantar.html"), encoding="utf-8").read()
 anchor = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
 assert anchor in src
@@ -45,5 +46,5 @@ os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8", newline="\n") as fh:
     fh.write(src.replace(anchor, anchor + "\n" + head, 1))
 shutil.copy(os.path.join(H, f"plate-{ART}.jpg"), os.path.join(OUT, "img", "portal-plate.jpg"))
-shutil.copy(os.path.join(H, f"og-{ART}.png"), os.path.join(ROOT, "public", "og-kantar.png"))
+shutil.copy(os.path.join(H, f"og-{ART}.jpg"), os.path.join(ROOT, "public", "og-kantar.jpg"))
 print("built", OUT)

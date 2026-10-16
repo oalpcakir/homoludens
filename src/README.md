@@ -10,10 +10,11 @@ python3 build.py --check    # same, and fail if public/ differs from what is com
 python3 validate.py         # only the checks: games.json, links and assets, placeholders, sitemap
 node --test tests/*.test.mjs  # worker (mocked KV, Resend, Turnstile, Discord) and Retourvloot model tests
 npm ci && npx playwright install chromium   # once, for the browser tests
-npm run smoke                 # every page in headless Chromium: no JS errors or missing files, games start, Polder save/resume/reset
+npm run smoke                 # every page in headless Chromium: no JS errors or missing files, games start, Polder save/resume/reset, Kantar first visit
+python3 src/platform/build_platforms.py && npm run platforms   # the itch.io / CrazyGames packages
 ```
 
-Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` only pins Playwright and D3 for the browser tests. `.github/workflows/check.yml` (build + unit tests) and `smoke.yml` (browser tests) run on every push and pull request. Neither deploys.
+Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` only pins Playwright and D3 for the browser tests. `.github/workflows/check.yml` runs on every push and pull request: build + unit tests, then the browser smoke tests and the platform packages (uploaded as a build artifact). It never deploys.
 `src/site_config.py` holds the site origin (`SITE`) for every builder: OG tags, canonical links, sitemap.xml and robots.txt. For the homoludens.games switch, change it there and run `python3 build.py`.
 
 ## portal/
@@ -32,27 +33,31 @@ Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` o
 
 ## retourvloot/ (No. 2)
 - Plain HTML/JS: `model.js`, `events.js`, `images.js`, `tut.js`, `ui.js`, `head.html`, `body.html`; images in `img/`.
-- `build_retourvloot.py` — writes `public/retourvloot/` and `public/og-retourvloot.png`. `node test.js` runs a headless balance test.
+- `build_retourvloot.py` — writes `public/retourvloot/` and `public/og-retourvloot.jpg`. `node test.js` runs a headless balance test.
 - See `retourvloot/README.md` for details.
 
 ## cupoftea/ (No. 3)
 - `scene1.html`, `scene2.html`, `scene3.html` — one self-contained page per scene (data, puzzle logic, Web Audio sound, the reprinted-receipt card). Design notes and the solution tables live in the project's TASARIM.md.
-- `build_cupoftea.py` — adds the shared head (meta tags, icon, analytics, feedback button) and writes `public/cupoftea/` (scene 1), `public/cupoftea/2/`, `public/cupoftea/3/`, plus `public/og-cupoftea.png` and the portal plate.
+- `build_cupoftea.py` — adds the shared head (meta tags, icon, analytics, feedback button) and writes `public/cupoftea/` (scene 1), `public/cupoftea/2/`, `public/cupoftea/3/`, plus `public/og-cupoftea.jpg` and the portal plate.
 - Progress is kept in the player's browser under `cupoftea.v1` (scenes solved, blots per scene); the portal reads it for the "Continue" card.
 
 ## polder/ (No. 4)
 - `polder.html` — the whole game in one self-contained page (canvas, Web Audio sound and music, the Netherlands menu map, the Chronicle).
-- `build_polder.py` — adds the shared head (meta tags, icon, analytics, feedback button) and writes `public/polder/`, `public/og-polder.png` and the portal plate.
+- `build_polder.py` — adds the shared head (meta tags, icon, analytics, feedback button) and writes `public/polder/`, `public/og-polder.jpg` and the portal plate.
 - `nlmap_gen.py` — regenerates the menu map's region outlines (needs Natural Earth via the `world-atlas` npm package and shapely); paste its output into `NLGEO` in `polder.html`.
 - A saved run is checked before Continue is offered (`validRun`); damaged or unknown saves are left alone and not offered. The run also stores the random-number state (`rp`, `rs`), so a reload continues the same pieces and storms. `window.__polderTest.snapshot()` is a read-only hook for the smoke tests.
 - Kept in the player's browser: `polder.progress.v1` (stars and best fields per region, Chronicle pages `_seen`, achievements `_ach`, `_campaign`), `polder.run.v1` (the game in progress), `polder.settings.v1` (sound, music). The portal reads the first two.
 - PostHog events: polder_menu, polder_level_start, polder_resume, polder_goal, polder_upgrade, polder_storm, polder_level_end, polder_quit, polder_share, polder_book, polder_achievement, polder_reset.
 
-- CrazyGames build: `build_polder.py` also writes `dist/crazygames/polder/index.html` and `dist/crazygames/polder-crazygames.zip` (upload the zip). Same `polder.html`, with the CrazyGames SDK v3 and `window.POLDER_CG = true`: saves go through the SDK Data module, gameplayStart/Stop follow the modal state, `happytime` on a region win, a midgame ad between regions, an optional rewarded ad for one extra finger, the platform's mute setting is respected, and site links (feedback, sidebar Discord, share URL) are left out. Store art (3 covers, 2 preview videos) is in `dist/crazygames/assets/`; checklist in the project's `polder/CRAZYGAMES.md`.
+- Platform packages: `polder.html` runs unchanged in the itch.io and CrazyGames packages (see `platform/README.md`); with `window.POLDER_CG = true` saves go through the SDK Data module, gameplayStart/Stop follow the modal state, `happytime` on a region win, a midgame ad between regions, an optional rewarded ad for one extra finger, the platform's mute setting is respected, and site links (feedback, sidebar Discord, share URL) are left out. Store art (3 covers, 2 preview videos) is in `dist/crazygames/assets/` on the build machine; checklist in the project's `polder/CRAZYGAMES.md`.
 ## kantar/ (No. 5)
 - `kantar.html` — the whole game in one self-contained page (English and Turkish, AI rival and teacher, Web Audio sound, inline art).
-- `build_kantar.py` — adds the shared head (meta tags, canonical, icon, analytics, feedback button) and writes `public/kantar/`, `public/og-kantar.png` and the portal plate (`ART` picks the home-page art).
+- `build_kantar.py` — adds the shared head (meta tags, canonical, icon, analytics, feedback button) and writes `public/kantar/`, `public/og-kantar.jpg` and the portal plate (`ART` picks the home-page art).
 - Rules, AI, balance numbers, save keys and analytics events: see `kantar/STATUS.md`. `tests/kantar.test.mjs` checks the AI uses only public information.
+
+## platform/ (itch.io and CrazyGames)
+- `build_platforms.py` makes all ten upload ZIPs from `public/` (`dist/platforms/<platform>/<game>-<platform>.zip`); `platform.js` is the adapter they share (SDK, saves, sound, gameplay events, ads, links). `npm run platforms` tests the packages with a mocked CrazyGames SDK. Settings for both stores and what is still open: `platform/README.md`.
+- `public/next.js` — the "next game" card at the end of every game (`<div data-hl-next>`); in itch packages it links to the site.
 
 ## Deploy & feedback
 - `wrangler.jsonc` deploys `public/` to Cloudflare Workers; pushes to main redeploy.

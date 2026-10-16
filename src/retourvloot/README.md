@@ -7,7 +7,7 @@ VOC idle/management game, 1602–1799. Plain HTML/JS, no build tools.
 - `tut.js` guided first ship, contextual tips, PostHog `track()` helper, sources sheet
 - `ui.js` interface, map, accounts; `head.html` / `body.html` page shell
 - `test.js` headless balance test: `node test.js`
-- Build: `python3 build_retourvloot.py` → `public/retourvloot/index.html`, `public/retourvloot/img/`, `public/og-retourvloot.png`. Uses `../borderlines/posthog_head.html`.
+- Build: `python3 build_retourvloot.py` → `public/retourvloot/index.html`, `public/retourvloot/img/`, `public/og-retourvloot.jpg`. Uses `../borderlines/posthog_head.html`.
 
 PostHog events (all carry `game: "retourvloot"` and `year`): game_start, game_resume, tutorial_step, tutorial_done, tutorial_skip, first_ship, tip, event_choice, decade, game_end.
 
