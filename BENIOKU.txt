@@ -1,0 +1,8 @@
+Kantar entegrasyonu - tam dosyalar (c8e0aad uzerine)
+
+1) Bu zip'in icindeki her seyi homoludens klasorunun ICINE cikart, "dosyalari degistir" de.
+   Klasor yapisi depodakiyle ayni (build.py, public\..., src\..., tests\..., worker.js).
+2) Su dosyayi SIL (resim src\kantar\preziosi-grand-bazaar.jpg olarak tasindi):
+   public\kantar\img\Amadeo_Preziosi_-_The_Grand_Bazaar_-_Google_Art_Project.jpg
+3) Istersen: python build.py  -> "validate: OK" gormelisin.
+4) GitHub Desktop'ta 27 degisiklik gorursun (hepsi "degisti" ya da "eklendi"; kirmizi silinme yalnizca yukaridaki jpg).

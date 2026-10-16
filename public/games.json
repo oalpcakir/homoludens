@@ -38,5 +38,15 @@
     "image": "/og-polder.png",
     "short": "Build dikes, drain the sea, and survive seven centuries of Dutch storms, from the terp mounds of 1200 to the flood of 1953.",
     "announce": "Place dike pieces, close them into rings and watch the water drain away into fields, sheep and windmills. Then the real storms come: St. Elizabeth's Flood, the Christmas Flood, the North Sea Flood of 1953. Play four regions of the Netherlands, each with its own challenge: link the Frisian terps, win back Zeeland's drowned villages, tame North Holland's waterwolf and close off the Zuiderzee. Every turn brings a page of Dutch history for your Chronicle. Best on a laptop or desktop; about 15 minutes per region."
+  },
+  {
+    "id": "kantar",
+    "no": 5,
+    "version": "2026.10",
+    "title": "Kantar",
+    "url": "/kantar/",
+    "image": "/og-kantar.png",
+    "short": "A two-player duel in the Grand Bazaar of Istanbul. You divide three goods between two pans; your rival chooses.",
+    "announce": "Istanbul, the Grand Bazaar. Saffron, silk, coffee and copper come to the stall over six rounds, and you share them with a rival merchant. You put three goods into the pans of a brass scale; your rival takes one pan and leaves you the other. Win the majority in a good to earn its price, but carry too much and you lose the light-load bonus. Two wax seals, a narh price that moves with supply, a teacher that explains the best move at every step, and your own stats. Easy to learn, hard to master; about 10 minutes a game, in English or Turkish, on any screen."
   }
 ]

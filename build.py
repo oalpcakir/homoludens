@@ -15,6 +15,7 @@ STEPS = [
     "src/retourvloot/build_retourvloot.py",
     "src/cupoftea/build_cupoftea.py",
     "src/polder/build_polder.py",
+    "src/kantar/build_kantar.py",
 ]
 
 

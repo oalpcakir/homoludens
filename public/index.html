@@ -39,6 +39,7 @@
       borderlines: { game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
       retourvloot: { game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
       cupoftea: { tea_scene_start: "game_started", tea_scene_done: "game_completed" },
+      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed" },
       polder: { polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
       portal: { portal_play: "next_game_clicked" }
     }[GAME] || {};
@@ -266,11 +267,24 @@ footer a { color: var(--ink-soft); }
           <span class="cap">c. 1670 · The Windmill at Wijk bij Duurstede</span>
         </a>
         <div class="body">
-          <span class="numeral">No. 4 · New</span>
+          <span class="numeral">No. 4</span>
           <h3>Polder</h3>
           <p>Build dikes, close them into rings and drain the sea, from the terp mounds of 1200 to the North Sea flood of 1953. Four regions of the Netherlands, each with its own storms, lakes and drowned villages.</p>
           <div class="tags"><span class="tag">Puzzle</span><span class="tag">15-minute regions</span><span class="tag">Desktop</span></div>
           <div class="row"><a class="btn" href="/polder/" data-from="card">Play</a></div>
+        </div>
+      </article>
+      <article class="game wide">
+        <a class="plate" href="/kantar/" data-from="card" aria-label="Play Kantar">
+          <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi" loading="lazy">
+          <span class="cap">19th c. · The Grand Bazaar, Istanbul</span>
+        </a>
+        <div class="body">
+          <span class="numeral">No. 5 · New</span>
+          <h3>Kantar</h3>
+          <p>A two-player duel in the Grand Bazaar of Istanbul. Put three goods into the pans of a brass scale; your rival takes one pan and leaves you the other. Win the majority in saffron, silk, coffee and copper, but don't carry too much. A teacher explains the best move at every step while you learn.</p>
+          <div class="tags"><span class="tag">Card duel</span><span class="tag">10-minute game</span><span class="tag">English · Türkçe</span></div>
+          <div class="row"><a class="btn" href="/kantar/" data-from="card">Play</a></div>
         </div>
       </article>
     </div>
@@ -441,6 +455,17 @@ footer a { color: var(--ink-soft); }
   }
   document.querySelectorAll("a[href='/polder/']").forEach(function (a) {
     a.addEventListener("click", function () { track("portal_play", { game: "polder", from: a.getAttribute("data-from") }); });
+  });
+
+  // Kantar: games against the rival merchant (summary written by the game)
+  var KR = get("kantar.record.v1");
+  if (KR && KR.v === 1 && KR.played) {
+    tiles.push(["<b>" + KR.won + "/" + KR.played + "</b><span>Kantar games won</span><small>" + (KR.master && KR.master.played ? KR.master.won + " against the Master" : "try the Master next") + "</small>"]);
+    document.getElementById("record").innerHTML = tiles.map(function (x) { return "<div>" + x[0] + "</div>"; }).join("");
+    document.getElementById("recordSec").hidden = false;
+  }
+  document.querySelectorAll("a[href='/kantar/']").forEach(function (a) {
+    a.addEventListener("click", function () { track("portal_play", { game: "kantar", from: a.getAttribute("data-from") }); });
   });
 
   // New games by email (shown only when the server side is configured)

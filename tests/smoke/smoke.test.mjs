@@ -38,7 +38,7 @@ async function open(path, { viewport = { width: 1400, height: 900 }, storage } =
 }
 const store = page => page.evaluate(() => Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])));
 
-const PAGES = ['/', '/borderlines/', '/retourvloot/', '/cupoftea/', '/cupoftea/2/', '/cupoftea/3/', '/polder/', '/privacy/'];
+const PAGES = ['/', '/borderlines/', '/retourvloot/', '/cupoftea/', '/cupoftea/2/', '/cupoftea/3/', '/polder/', '/kantar/', '/privacy/'];
 for (const p of PAGES) {
   test(`loads cleanly: ${p}`, async () => {
     const t = await open(p);
@@ -163,6 +163,31 @@ test('Polder: reset wipes only Polder progress', async () => {
   const s = await store(t.page);
   assert.ok(!s['polder.progress.v1'] || s['polder.progress.v1'] === '{}', 'Polder progress kept');
   assert.equal(s['cupoftea.v1'], '{"done":[1]}'); assert.equal(s['retourvloot.v1'], '{"v":1}');
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('Kantar: a round can be played, the game saves and offers to resume', async () => {
+  const t = await open('/kantar/', { storage: { 'kantar-set': JSON.stringify({ teach: false, snd: false, tut: false }) } });
+  await t.page.click('#playBtn');
+  await t.page.waitForFunction(() => typeof G !== 'undefined' && G.phase === 'split' && G.splitter === 0 && !ui.busy);
+  for (let i = 0; i < 3; i++) await t.page.evaluate(() => document.querySelector('#market [data-drag]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+  await t.page.click('#offer');
+  await t.page.waitForFunction(() => G.turn === 1, null, { timeout: 15000 });
+  await t.page.waitForTimeout(600);
+  assert.ok((await store(t.page))['kantar-game-v04'], 'no save');
+  await t.page.reload(); await t.page.waitForTimeout(600);
+  assert.ok(await t.page.isVisible('#resumeSaved'), 'no resume button');
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('Kantar: Turkish switch translates the running game', async () => {
+  const t = await open('/kantar/', { storage: { 'kantar-set': JSON.stringify({ teach: true, snd: false }) } });
+  await t.page.click('#playBtn'); await t.page.waitForTimeout(1500);
+  await t.page.selectOption('#languageSelect', 'tr'); await t.page.waitForTimeout(300);
+  const text = await t.page.innerText('body');
+  assert.match(text, /Tezgâh/); assert.doesNotMatch(text, /Market Stall|Round \d\/6/);
   assert.deepEqual(t.problems, []);
   await t.close();
 });

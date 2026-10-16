@@ -1,0 +1,13 @@
+# Kantar — status (No. 5, added 2026-10-16)
+
+Two-player "I divide, you choose" duel in the Grand Bazaar, against an AI rival. One self-contained page, English (default) and Turkish.
+
+- **Source:** `src/kantar/kantar.html` is the site copy of the standalone v2.7 build (Claude project): same game plus the portal link, history notes in the rules and resume analytics. `build_kantar.py` adds meta/canonical/icon/analytics/feedback and writes `public/kantar/`, the portal plate and `public/og-kantar.png`.
+- **Rules:** 24 goods (Saffron 4×5, Silk 5×4, Coffee 7×3, Copper 8×2), 3 face up + 3 face down out of the game, a stall of 5, the divider puts 3 on the scale (2–1 or 3–0), the chooser takes a pan, the caravan (next 3) is visible. Seals once each: Three Pans, Cut. Majority per good scores its value; fewer goods in total +3 (light load). Narh mode: 2+ of a good on the scale −1, each burned good +1 (range 1–7). Compensation coin to the second divider: Classic +1 (ties go to them), Narh +2 (ties to the Saffron leader). Optional teaching round (seals from round 2).
+- **AI:** alpha-beta; Master looks two rounds ahead (small noise), Apprentice one round with more noise. Teacher mode uses the Master search from the player's seat. Both use only public information (tests/kantar.test.mjs reshuffles hidden cards and checks no evaluation changes).
+- **Balance (Master vs Master, 300–400 bot games):** Classic first/second divider 47/53, Narh 49/46 (5% draws). Master beats Apprentice ~70–72%.
+- **Saves:** `kantar-set` (settings), `kantar-lang`, `kantar-game-v04` (game in progress, v5 format), `kantar.stats.v1` (last 500 games), `kantar.record.v1` (summary read by the portal "Your record" strip).
+- **Analytics:** `kantar_game_start`, `kantar_game_end`, `kantar_resume`, `kantar_rules`, `kantar_stats_open`; mapped to `game_started` / `game_completed` in posthog_head.
+- **Home-page art:** `ART` in build_kantar.py: "b" (default) = Amadeo Preziosi, *The Grand Bazaar* (19th c., Pera Museum, public domain; original kept as preziosi-grand-bazaar.jpg, cropped to plate-b.jpg / og-b.png), "a" = the game's scale over its own background (plate-a.jpg / og-a.png). The portal caption lives in src/portal/portal.html.
+- **CSS:** one stylesheet, cleaned 2026-10-16 (39.9 KB → 31.9 KB, !important 91 → 11) with zero computed-style differences across 36 states and 3 sizes, and pixel-identical screenshots at 5 more widths.
+- **Art:** commodity art re-extracted from the approved portrait cards (GrabCut, decontaminated edges, 384² canvases, optically centred), square card back, wax seal, bazaar background (WebP). Sounds are synthesised (Web Audio).
