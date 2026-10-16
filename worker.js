@@ -471,6 +471,7 @@ const GAME_SQL = {
         uniqIf(distinct_id, event IN ('game_start', 'game_resume') AND properties.game = 'retourvloot') AS retourvloot,
         uniqIf(distinct_id, event = 'tea_scene_start') AS cupoftea,
         uniqIf(distinct_id, event IN ('polder_level_start', 'polder_resume')) AS polder,
+        uniqIf(distinct_id, event IN ('kantar_game_start', 'kantar_resume')) AS kantar,
         countIf(event = 'newsletter_signup') AS signups
       FROM events WHERE ${R90} GROUP BY date ORDER BY date DESC`,
     sources: `SELECT coalesce(nullIf(toString(properties.$referring_domain), ''), '$direct') AS source, uniq(distinct_id) AS visitors
@@ -499,6 +500,8 @@ const GAME_SQL = {
         max(if(properties.game = 'retourvloot', toInt(properties.year), 0)) AS rvYear,
         countIf(event = 'tea_scene_start') AS teaStarts, countIf(event = 'tea_scene_done') AS teaDone,
         countIf(event IN ('polder_level_start', 'polder_resume')) AS pdStarts, countIf(event = 'polder_level_end') AS pdDone,
+        countIf(event IN ('kantar_game_start', 'kantar_resume')) AS kaStarts, countIf(event = 'kantar_game_end') AS kaDone,
+        countIf(event = 'kantar_game_end' AND properties.result = 'win') AS kaWins,
         countIf(event = 'newsletter_signup') AS signups, countIf(event LIKE 'share%' OR event = 'polder_share') AS shares
       FROM events WHERE ${R90} GROUP BY id ORDER BY first DESC`,
     spots: `SELECT toString(properties.game) AS game, coalesce(toString(properties.from), '?') AS spot, count() AS clicks, uniq(distinct_id) AS people
@@ -548,6 +551,45 @@ const GAME_SQL = {
       FROM events WHERE event = 'polder_upgrade' AND ${R90} GROUP BY upgrade ORDER BY n DESC`,
     storms: `SELECT toString(properties.level) AS level, count() AS storms, round(avg(toFloat(properties.breaches)), 2) AS breaches
       FROM events WHERE event = 'polder_storm' AND ${R90} GROUP BY level`,
+  },
+  // Kantar: kantar_game_start {mode: classic|narh, diff: usta|other, teacher, first: you|rival},
+  // kantar_game_end {+ result: win|loss|draw, you, rival, uc, cut (seal used by the player)}, kantar_resume, kantar_stats_open.
+  kantar: {
+    funnel: `SELECT uniqIf(distinct_id, event = 'kantar_game_start') AS players, countIf(event = 'kantar_game_start') AS starts,
+        uniqIf(distinct_id, event = 'kantar_game_end') AS finishers, countIf(event = 'kantar_game_end') AS ends,
+        countIf(event = 'kantar_resume') AS resumes, uniqIf(distinct_id, event = 'kantar_stats_open') AS statsOpen,
+        countIf(event = 'kantar_game_end' AND properties.result = 'win') AS wins,
+        countIf(event = 'kantar_game_end' AND properties.result = 'loss') AS losses,
+        countIf(event = 'kantar_game_end' AND properties.result = 'draw') AS draws
+      FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end', 'kantar_resume', 'kantar_stats_open') AND ${R90}`,
+    // one row per setting combination; win rates show whether Apprentice/Master and the teacher feel right
+    setups: `SELECT toString(properties.mode) AS mode, if(toString(properties.diff) = 'usta', 'master', 'apprentice') AS level,
+        if(toString(properties.teacher) IN ('true', '1'), 1, 0) AS teacher,
+        uniq(distinct_id) AS players, count() AS games,
+        countIf(properties.result = 'win') AS wins, countIf(properties.result = 'loss') AS losses, countIf(properties.result = 'draw') AS draws,
+        round(avg(toFloat(properties.you)), 1) AS you, round(avg(toFloat(properties.rival)), 1) AS rival
+      FROM events WHERE event = 'kantar_game_end' AND ${R90} GROUP BY mode, level, teacher ORDER BY games DESC`,
+    // first divider advantage against the bot balance numbers (Classic 47/53, Narh 49/46)
+    first: `SELECT toString(properties.mode) AS mode, toString(properties.first) AS first, count() AS games,
+        countIf(properties.result = 'win') AS wins, countIf(properties.result = 'draw') AS draws
+      FROM events WHERE event = 'kantar_game_end' AND ${R90} GROUP BY mode, first ORDER BY mode, first`,
+    seals: `SELECT countIf(toString(properties.uc) IN ('true', '1')) AS uc, countIf(toString(properties.uc) IN ('true', '1') AND properties.result = 'win') AS ucWins,
+        countIf(toString(properties.cut) IN ('true', '1')) AS cut, countIf(toString(properties.cut) IN ('true', '1') AND properties.result = 'win') AS cutWins,
+        countIf(toString(properties.uc) NOT IN ('true', '1') AND toString(properties.cut) NOT IN ('true', '1')) AS neither,
+        countIf(toString(properties.uc) NOT IN ('true', '1') AND toString(properties.cut) NOT IN ('true', '1') AND properties.result = 'win') AS neitherWins,
+        count() AS games
+      FROM events WHERE event = 'kantar_game_end' AND ${R90}`,
+    // how many games each player finished: the replay curve
+    depth: `SELECT multiIf(n = 0, '0', n = 1, '1', n = 2, '2', n <= 4, '3–4', n <= 9, '5–9', '10+') AS games, count() AS players
+      FROM (SELECT distinct_id, countIf(event = 'kantar_game_end') AS n FROM events
+        WHERE event IN ('kantar_game_start', 'kantar_game_end') AND ${R90} GROUP BY distinct_id)
+      GROUP BY games ORDER BY min(n)`,
+    lang: `SELECT coalesce(nullIf(toString(properties.lang), ''), '?') AS lang, uniq(distinct_id) AS players, countIf(event = 'kantar_game_end') AS games
+      FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end') AND ${R90} GROUP BY lang ORDER BY players DESC`,
+    daily: `SELECT toString(toDate(toTimeZone(timestamp, 'Europe/Amsterdam'))) AS date,
+        uniqIf(distinct_id, event IN ('kantar_game_start', 'kantar_resume')) AS players,
+        countIf(event = 'kantar_game_start') AS starts, countIf(event = 'kantar_game_end') AS ends
+      FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end', 'kantar_resume') AND ${R90} GROUP BY date ORDER BY date DESC`,
   },
 };
 

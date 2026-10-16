@@ -187,3 +187,27 @@ test('preview renders for every game', async () => {
     assert.ok(html.includes(g.title.replace(/'/g, '&#39;')) && html.includes(ORIGIN + g.image), g.id);
   }
 });
+
+test('admin has a stats endpoint for every game in games.json', async () => {
+  const { env } = setup();
+  env.POSTHOG_API_KEY = 'ph';
+  const seen = [];
+  const prev = globalThis.fetch;
+  globalThis.fetch = async (u, init) => {
+    if (String(u).includes('/query/')) { seen.push(JSON.parse(init.body).query.query); return new Response(JSON.stringify({ columns: [], results: [] })); }
+    return prev(u, init);
+  };
+  globalThis.caches = { default: { match: async () => null, put: async () => {} } };
+  for (const g of GAMES) {
+    const path = g.id === 'borderlines' ? '/api/admin/borderlines' : '/api/admin/games/' + g.id;
+    const r = await admin(env, path);
+    assert.equal(r.status, 200, g.id + ' has no admin stats');
+    assert.equal((await r.json()).ok, true, g.id);
+  }
+  // the site-wide tables count every game too
+  const before = seen.length;
+  await admin(env, '/api/admin/games/overview');
+  await admin(env, '/api/admin/games/visitors');
+  const site = seen.slice(before).join('\n');
+  for (const id of ['kantar_game_start', 'polder_level_start', 'tea_scene_start']) assert.ok(site.includes(id), 'overview/visitors miss ' + id);
+});

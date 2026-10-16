@@ -49,6 +49,11 @@ Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` o
 - PostHog events: polder_menu, polder_level_start, polder_resume, polder_goal, polder_upgrade, polder_storm, polder_level_end, polder_quit, polder_share, polder_book, polder_achievement, polder_reset.
 
 - CrazyGames build: `build_polder.py` also writes `dist/crazygames/polder/index.html` and `dist/crazygames/polder-crazygames.zip` (upload the zip). Same `polder.html`, with the CrazyGames SDK v3 and `window.POLDER_CG = true`: saves go through the SDK Data module, gameplayStart/Stop follow the modal state, `happytime` on a region win, a midgame ad between regions, an optional rewarded ad for one extra finger, the platform's mute setting is respected, and site links (feedback, sidebar Discord, share URL) are left out. Store art (3 covers, 2 preview videos) is in `dist/crazygames/assets/`; checklist in the project's `polder/CRAZYGAMES.md`.
+## kantar/ (No. 5)
+- `kantar.html` — the whole game in one self-contained page (English and Turkish, AI rival and teacher, Web Audio sound, inline art).
+- `build_kantar.py` — adds the shared head (meta tags, canonical, icon, analytics, feedback button) and writes `public/kantar/`, `public/og-kantar.png` and the portal plate (`ART` picks the home-page art).
+- Rules, AI, balance numbers, save keys and analytics events: see `kantar/STATUS.md`. `tests/kantar.test.mjs` checks the AI uses only public information.
+
 ## Deploy & feedback
 - `wrangler.jsonc` deploys `public/` to Cloudflare Workers; pushes to main redeploy.
 - `worker.js` handles `/api/feedback` (Turnstile, rate limit, Discord), `/api/newsletter/*` (double opt-in list in KV), `/api/admin/*` (stats, announcement email) and `/borderlines/s/<score>` share pages. Announcement sends are locked, marked before sending, and carry a Resend idempotency key, so a double click or a retry never emails anyone twice. Tests: `tests/worker.test.mjs`.

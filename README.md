@@ -12,6 +12,7 @@ Small games about the past: short history games with one mechanic, one idea, and
 | 2 | [**Retourvloot**](https://homoludens.oalpcakir.workers.dev/retourvloot/) | Run the Dutch East India Company from Amsterdam, 1602–1799. Letters from Batavia take a year. | 30–80 minutes, desktop |
 | 3 | [**A Cup of Tea**](https://homoludens.oalpcakir.workers.dev/cupoftea/) | A grocer's receipt, London 1850: find out who got every farthing, from the Customs House to Havana. | 3 scenes, desktop |
 | 4 | [**Polder**](https://homoludens.oalpcakir.workers.dev/polder/) | Build dikes and drain the sea across four Dutch regions, from the terps of 1200 to the North Sea flood of 1953. | ~15 minutes per region, desktop |
+| 5 | [**Kantar**](https://homoludens.oalpcakir.workers.dev/kantar/) | A two-player duel in the Grand Bazaar of Istanbul: put three goods on a brass scale, your rival takes a pan, you keep the other. A teacher explains the best move as you learn. | ~10 minutes, any screen, English or Turkish |
 
 ## Spotted a mistake?
 
@@ -23,6 +24,7 @@ History is messy and some of it is disputed. Use the **Feedback** button on any 
 - **Retourvloot:** all images from the [Rijksmuseum](https://www.rijksmuseum.nl/), public domain (CC0); full list in the game's Sources page.
 - **A Cup of Tea:** prices and quotations from Hansard, Henry Mayhew's Morning Chronicle letters, Dickens's Household Narrative, S. P. Day, Sir George Staunton, R. R. Madden and Engels (each cited in the game); engravings from Wikimedia Commons (public domain); the grocer's receipt and the Havana shipping note are invented game documents.
 - **Polder:** flood dates and drainage history checked against the sources listed in the game's Chronicle (Sources tab); map of the Netherlands from [Natural Earth](https://www.naturalearthdata.com/) (public domain), region borders drawn by hand; music and sound generated in the browser.
+- **Kantar:** home-page art is Amadeo Preziosi, *The Grand Bazaar* (19th century, Pera Museum, Istanbul; public domain); sound generated in the browser; the rival and the teacher are a small search over public information only, so they never see hidden cards.
 - Fonts via Google Fonts.
 
 ## Licence
@@ -31,4 +33,12 @@ Game code is released under GPL-3.0, matching the historical borders dataset Bor
 
 ## How it's made
 
-Plain HTML, CSS and JavaScript, with no framework. Each game lives in its own folder under `public/`; data sources and build scripts are in `src/`.
+Plain HTML, CSS and JavaScript, with no framework and no npm packages on the site. Each game is one self-contained page under `public/<game>/`, built from `src/<game>/` by its own Python script; `public/games.json` lists the games for the portal, the newsletter and the admin page. A Cloudflare Worker (`worker.js`) serves the site and handles feedback, the newsletter and the admin stats.
+
+```
+python3 build.py              # build every page from src/ into public/, then validate
+node --test tests/*.test.mjs  # worker and game-model tests
+npm ci && npm run smoke       # every page in headless Chromium
+```
+
+Details for each game, the analytics events and the deploy are in [`src/README.md`](src/README.md).
