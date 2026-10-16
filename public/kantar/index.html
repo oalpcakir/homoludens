@@ -32,11 +32,11 @@
     // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
     // the matching standard event is sent once next to it, with legacy_event naming the original.
     var STD = {
-      borderlines: { game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
-      retourvloot: { game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
-      cupoftea: { tea_scene_start: "game_started", tea_scene_done: "game_completed" },
-      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed", kantar_share: "result_shared" },
-      polder: { polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
+      borderlines: { first_paint: "first_action", game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
+      retourvloot: { first_ship: "first_action", game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
+      cupoftea: { tea_first_entry: "first_action", tea_scene_start: "game_started", tea_scene_done: "game_completed" },
+      kantar: { kantar_first_move: "first_action", kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed", kantar_share: "result_shared" },
+      polder: { polder_first_dike: "first_action", polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
       portal: { portal_play: "next_game_clicked" }
     }[GAME] || {};
     function standard(ev) {
@@ -584,7 +584,20 @@ button.seal.on{background:linear-gradient(#f1d99a,#d2a650);color:#2b1e14;border-
 #welcome .welcome-note{font-size:.86rem;line-height:1.5;max-width:48ch;margin:12px 0 20px}
 #setupDetails{border-top:1px solid rgba(120,86,38,.25);margin-top:18px;padding-top:14px}
 #setupDetails>summary{cursor:pointer;font-weight:600;padding:6px 0}
-#learnBtn{min-height:48px;font-size:1rem}
+#setupDetails .optgrid{margin-top:10px}
+.rules-full{border-top:1px solid rgba(120,86,38,.25);margin-top:16px;padding-top:6px}
+#learnBtn,#quickPlay,#quickResume{min-height:48px;font-size:1rem}
+.start-main{display:grid;justify-items:start;gap:4px;margin-top:6px}
+.start-alt{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin-top:4px}
+.sheet .muted{color:#6e5a44}
+.linkbtn{background:none;border:0;padding:6px 0;font:inherit;font-size:14px;color:#6b3412;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.linkbtn:focus-visible{outline:2px solid #a8843e;outline-offset:2px}
+.t-main{margin:4px 0 2px;color:#f3e7cf;font-size:14.5px;line-height:1.45}
+.t-more{margin:2px 0 4px}
+.t-more>summary{cursor:pointer;color:#9fd8cf;font-size:13px;padding:2px 0;list-style:none}
+.t-more>summary::-webkit-details-marker{display:none}
+.t-more>summary::before{content:'▸ '}
+.t-more[open]>summary::before{content:'▾ '}
 #welcome[hidden]{display:none}
 </style>
 <meta name="description" content="Kantar: Kapalıçarşı düellosu. Dört renkli mal, tek terazi.">
@@ -656,29 +669,28 @@ button.seal.on{background:linear-gradient(#f1d99a,#d2a650);color:#2b1e14;border-
 <div class="modal" id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
   <div class="sheet">
     <h2 id="rulesTitle" data-i18n="rulesTitle"></h2>
+    <!-- The start sheet. First visit: what Kantar is, in three steps, then "Learn with the teacher".
+         Returning (saved settings): "Play" with those settings. A match in progress: "Continue".
+         The full rules, history notes and every option stay one click away in #setupDetails. -->
     <section id="welcome" aria-label="Kantar introduction">
       <p class="welcome-lead" data-i18n="welcomeLead"></p>
-      <ol class="welcome-steps">
+      <ol class="welcome-steps" id="welcomeSteps">
         <li data-i18n="welcomePick"></li>
         <li data-i18n="welcomeSplit"></li>
         <li data-i18n="welcomeScore"></li>
       </ol>
-      <button class="btn primary" id="learnBtn" data-i18n="learnPlay"></button>
-      <p class="muted welcome-note" data-i18n="learnNote"></p>
+      <div class="start-main">
+        <button class="btn primary" id="learnBtn" data-i18n="learnPlay"></button>
+        <button class="btn primary" id="quickResume" data-i18n="resumeMatch" hidden></button>
+        <button class="btn primary" id="quickPlay" data-i18n="playSaved" hidden></button>
+        <p class="muted welcome-note" id="startNote"></p>
+      </div>
+      <div class="start-alt">
+        <button class="btn" id="noTeachBtn" data-i18n="noTeach"></button>
+        <button class="btn" id="learnAgain" data-i18n="learnPlay" hidden></button>
+      </div>
     </section>
-    <div class="goods" id="rulesGoods"></div>
     <details id="setupDetails"><summary data-i18n="moreOptions"></summary>
-    <p data-i18n="rulesIntro"></p>
-    <ul>
-      <li data-i18n-html="rStall"></li>
-      <li data-i18n-html="rDivide"></li>
-      <li class="narhOnly" data-i18n-html="rNarh"></li>
-      <li data-i18n-html="rThree"></li>
-      <li data-i18n-html="rCut"></li>
-      <li data-i18n-html="rScore"></li>
-      <li data-i18n-html="rComp"></li>
-    </ul>
-    <details class="hist"><summary data-i18n="histTitle"></summary><p data-i18n-html="hist1"></p><p data-i18n-html="hist2"></p><p class="credit" data-i18n-html="hist3"></p></details>
     <div class="optgrid">
       <span data-i18n="optRival"></span><div class="seg" data-set="diff"><button data-v="cirak" data-i18n="apprentice"></button><button data-v="usta" data-i18n="master"></button></div>
       <span data-i18n="optRules"></span><div class="seg" data-set="mode"><button data-v="classic" data-i18n="classicLong"></button><button data-v="narh" data-i18n="narhLong"></button></div>
@@ -690,6 +702,20 @@ button.seal.on{background:linear-gradient(#f1d99a,#d2a650);color:#2b1e14;border-
       </div>
     </div>
     <div class="opts"><button class="btn" id="resumeSaved" style="display:none" data-i18n="resumeSaved"></button><span style="flex:1"></span><button class="btn" id="resumeBtn" style="display:none" data-i18n="resume"></button><button class="btn primary" id="playBtn"></button></div>
+    <div class="rules-full">
+    <div class="goods" id="rulesGoods"></div>
+    <p data-i18n="rulesIntro"></p>
+    <ul>
+      <li data-i18n-html="rStall"></li>
+      <li data-i18n-html="rDivide"></li>
+      <li class="narhOnly" data-i18n-html="rNarh"></li>
+      <li data-i18n-html="rThree"></li>
+      <li data-i18n-html="rCut"></li>
+      <li data-i18n-html="rScore"></li>
+      <li data-i18n-html="rComp"></li>
+    </ul>
+    <details class="hist"><summary data-i18n="histTitle"></summary><p data-i18n-html="hist1"></p><p data-i18n-html="hist2"></p><p class="credit" data-i18n-html="hist3"></p></details>
+    </div>
     </details>
   </div>
 </div>
@@ -1120,22 +1146,32 @@ const STR={
  }
 };
 Object.assign(STR.en,{
- welcomeLead:'You divide. Your rival chooses. Who gets the better deal?',
+ welcomeLead:'A duel of fair shares in the Grand Bazaar: you divide the goods, your rival chooses first.',
+ noTeach:'Play without the teacher',playSaved:'Play',resumeMatch:'Continue your match',
+ tWhy:n=>n===1?'One more reason':`${n} more reasons`,
+ startNoteLearn:'An Apprentice rival and Classic rules. The teacher shows the best move and why, in a line or two; switch it off any time.',
+ startNoteSaved:(d,m,te)=>`Your settings: ${d} · ${m} · teacher ${te?'on':'off'}.`,
+ startNoteResume:r=>`Your match is saved at round ${r} of 6.`,
  welcomePick:'Pick three goods from the stall.',
  welcomeSplit:'Split them between two pans. Your rival takes one; you keep the other.',
  welcomeScore:'Collect more of each good than your rival to score. Six rounds, about ten minutes.',
- learnPlay:'Learn as you play',
+ learnPlay:'Learn with the teacher',
  learnNote:'An Apprentice rival, fixed prices and step-by-step advice. Special seals unlock in round 2.',
- moreOptions:'Full rules & game options'
+ moreOptions:'Settings and full rules'
 });
 Object.assign(STR.tr,{
- welcomeLead:'Sen böl, rakibin seçsin. Kim daha kârlı çıkacak?',
+ welcomeLead:'Kapalıçarşı’da bir paylaşma düellosu: malları sen bölersin, önce rakibin seçer.',
+ noTeach:'Öğretmensiz oyna',playSaved:'Oyna',resumeMatch:'Maça devam et',
+ tWhy:n=>n===1?'Bir neden daha':`${n} neden daha`,
+ startNoteLearn:'Çırak rakip ve Klasik kurallar. Öğretmen en iyi hamleyi ve nedenini bir iki satırda gösterir; istediğin an kapatabilirsin.',
+ startNoteSaved:(d,m,te)=>`Ayarların: ${d} · ${m} · öğretmen ${te?'açık':'kapalı'}.`,
+ startNoteResume:r=>`Maçın ${r}. turda kayıtlı.`,
  welcomePick:'Tezgâhtan üç mal seç.',
  welcomeSplit:'İki kefeye böl. Rakibin birini alsın, diğeri sende kalsın.',
  welcomeScore:'Puan kazanmak için her malda rakibinden fazla topla. Altı tur, yaklaşık on dakika.',
- learnPlay:'Öğrenerek oyna',
+ learnPlay:'Öğretmenle öğren',
  learnNote:'Çırak rakip, sabit fiyatlar ve adım adım öneriler. Özel mühürler 2. turda açılır.',
- moreOptions:'Tüm kurallar ve oyun seçenekleri'
+ moreOptions:'Ayarlar ve tüm kurallar'
 });
 function t(k,...a){const v=(STR[language]&&k in STR[language])?STR[language][k]:STR.en[k];if(v===undefined){console.warn('i18n missing',k);return k}return typeof v==='function'?v(...a):v}
 const gname=c=>t('g_'+c);
@@ -1163,7 +1199,7 @@ function logText(e){
   return '';
 }
 const priceOf=c=>G?G.price[c]:SD[c].p;
-let teachMode=false;
+let teachMode=set.teach===undefined?true:!!set.teach; // the header button shows the teacher the next game will use; reset at every start
 function setTeach(on){teachMode=!!on;set.teach=teachMode;saveSet();TCH.key=null;TCH.data=null;if(G)render()}
 
 /* ================= Teacher mode: a suggestion and the reason for it, at every decision =================
@@ -1180,14 +1216,14 @@ Object.assign(STR.en,{
   tSplit3:(a,b,c)=>`Press <b>Three Pans</b>: <b>${a}</b> · <b>${b}</b> · <b>${c}</b>.`,
   tChoose:(k,g)=>`Take <b>pan ${k}</b> (${g}).`,tCutChoose:(g,k)=>`Use <b>Cut</b> to burn ${g}, then take <b>pan ${k}</b>.`,
   tRest:(k,g)=>`Take <b>pan ${k}</b> (${g}); the other burns.`,
-  rBalanced:(d,p)=>`The pans are almost equal for you (difference ≈ ${d}), so whichever your rival takes, you lose little: that is the heart of “I divide, you choose”. They will most likely take ${p}.`,
-  rRivalTakes:(p,q)=>`Your rival will most likely take ${p} and leave you ${q}. Even then this split is your best.`,
-  rWin:g=>`You take the majority in ${g}.`,rSecure:g=>`Your lead can no longer be caught in ${g}: not enough is left in the game.`,
+  rBalanced:(d,p)=>`Both pans are worth about the same to you (≈ ${d} apart), so you lose little whichever your rival takes. They will probably take ${p}.`,
+  rRivalTakes:(p,q)=>`Your rival will probably take ${p} and leave you ${q}; this is still your best split.`,
+  rWin:g=>`You take the majority in ${g}.`,rSecure:g=>`Your lead in ${g} can no longer be caught.`,
   rKeep:g=>`You keep your lead in ${g}.`,rRivalGains:g=>`Your rival gets the lead in ${g}; it costs less than the alternatives.`,
   rLightYes:(a,b)=>`You stay lighter (${a} against ${b} goods), so the +3 light load is on your side.`,
-  rLightNo:(a,b)=>`Your load grows (${a} against ${b}); the +3 light load leans to your rival, but the majorities are worth more here.`,
+  rLightNo:(a,b)=>`You carry more (${a} against ${b}) and may lose the +3 light load, but the majorities matter more here.`,
   rNarhRival:g=>`The narh of ${g} falls, and your rival leads in it: their points shrink.`,
-  rNarhMine:g=>`The narh of ${g} falls although you lead in it; a small price for the rest of the deal.`,
+  rNarhMine:g=>`The narh of ${g} falls although you lead in it; a small price for the rest.`,
   rNarhUp:g=>`Burning raises the narh of ${g}.`,
   rLeft:g=>`${g} stays on the stall: your rival divides next round and will use it.`,
   rSealUse:(s,v)=>`${s} is worth it now (≈ +${v} compared with not using it).`,
@@ -1207,12 +1243,12 @@ Object.assign(STR.tr,{
   tSplit3:(a,b,c)=>`<b>Üç Kefe</b> mührünü bas: <b>${a}</b> · <b>${b}</b> · <b>${c}</b>.`,
   tChoose:(k,g)=>`<b>${k}. kefeyi</b> al (${g}).`,tCutChoose:(g,k)=>`Önce <b>Kesinti</b> ile bir ${g} yak, sonra <b>${k}. kefeyi</b> al.`,
   tRest:(k,g)=>`<b>${k}. kefeyi</b> al (${g}); öteki yanar.`,
-  rBalanced:(d,p)=>`İki kefe senin için neredeyse eşit (fark ≈ ${d}); rakip hangisini alırsa alsın az kaybedersin. “Ben bölerim, sen seçersin”in özü bu. Rakip büyük ihtimalle ${p} alır.`,
-  rRivalTakes:(p,q)=>`Rakip büyük ihtimalle ${p} alır ve sana ${q} bırakır. O durumda bile en iyi bölüş bu.`,
+  rBalanced:(d,p)=>`İki kefe senin için neredeyse eşit (fark ≈ ${d}); rakip hangisini alsa az kaybedersin. Büyük ihtimalle ${p} alır.`,
+  rRivalTakes:(p,q)=>`Rakip büyük ihtimalle ${p} alır, sana ${q} kalır; yine de en iyi bölüş bu.`,
   rWin:g=>`Çoğunluğu alıyorsun: ${g}.`,rSecure:g=>`Üstünlüğün artık yakalanamaz: ${g} (oyunda yeterince kalmadı).`,
   rKeep:g=>`${g} malındaki önderliğini koruyorsun.`,rRivalGains:g=>`Rakip öne geçiyor: ${g}; ama bu, diğer seçeneklerden ucuza geliyor.`,
   rLightYes:(a,b)=>`Daha hafif kalıyorsun (sende ${a}, rakipte ${b} mal); +3 hafif yük senden yana.`,
-  rLightNo:(a,b)=>`Yükün artıyor (sende ${a}, rakipte ${b} mal); hafif yük rakibe kayıyor ama burada çoğunluklar daha değerli.`,
+  rLightNo:(a,b)=>`Yükün artıyor (sende ${a}, rakipte ${b}); +3 hafif yükü kaybedebilirsin ama çoğunluklar daha değerli.`,
   rNarhRival:g=>`${g} narhı düşüyor ve o malda rakip önde: onun puanı azalıyor.`,
   rNarhMine:g=>`${g} narhı düşüyor, oysa o malda sen öndesin; anlaşmanın geri kalanı için küçük bir bedel.`,
   rNarhUp:g=>`Yakmak ${g} narhını artırıyor.`,
@@ -1225,10 +1261,10 @@ Object.assign(STR.tr,{
   fbOff:d=>`Öğretmen: öneriden yaklaşık ${d} puan geride. Yukarıdaki nedenlere bir daha bak.`,
   est:'Tahminler, Usta\u2019nın yalnızca görünen bilgiyle iki tur ileri bakmasından geliyor.'
 });
-const TCH={key:null,data:null,pending:false};
+const TCH={key:null,data:null,pending:false,open:false};
 /* per-game analytics: start time, teacher moves compared / best / total gap, suggestions applied */
 let KS={t0:0,tm:0,tb:0,tg:0,ap:0,left:false};
-const teachOn=()=>teachMode&&!!G;
+const teachOn=()=>teachMode&&!!G&&started;
 function mirrorS(s){const n=cl(s);n.tab=[{...s.tab[1]},{...s.tab[0]}];n.seals=[{...s.seals[1]},{...s.seals[0]}];n.splitter=1-s.splitter;n.first=1-s.first;return n}
 function stateKey(s){return [s.turn,s.phase,s.market.join(''),JSON.stringify(s.piles),JSON.stringify(s.seals),JSON.stringify(s.tab)].join('|')}
 const fmt1=v=>(Math.round(v*10)/10).toFixed(1);
@@ -1302,9 +1338,14 @@ function teacherHTML(){
   if(d.phase==='split'){const ne=a.piles.filter(p=>p.length);rec=a.piles.length===3?t('tSplit3',...a.piles.map(pileStr)):ne.length===1?t('tSplit30',pileStr(ne[0])):t('tSplit',pileStr(a.piles[0]),pileStr(a.piles[1]))}
   else if(d.phase==='choose'){const pile=G.piles[a.pick];if(a.cut){const c=G.piles[a.cut[0]][a.cut[1]];const rest=G.piles[a.pick].slice();if(a.cut[0]===a.pick)rest.splice(a.cut[1],1);rec=t('tCutChoose',gtag(c),a.pick+1)}else rec=t('tChoose',a.pick+1,pileStr(pile))}
   else rec=t('tRest',a.pick+1,pileStr(G.piles[a.pick]));
-  return `<div class="t-head">${t('tHead')}</div><div class="t-rec">${rec}</div><ul class="t-why">${d.reasons.map(r=>`<li>${r}</li>`).join('')}</ul>
-   <div class="t-acts"><button class="btn primary" id="tApply">${t('tApply')}</button><button class="btn" id="tSkip">${t('tSkip')}</button></div><div class="t-est">${t('est')}</div>`;
+  // the move, then its main reason in one line; the other reasons (at most three) and the note on the estimates fold out
+  const R=d.reasons,more=R.slice(1,4);
+  return `<div class="t-head">${t('tHead')}</div><div class="t-rec">${rec}</div>${R[0]?`<p class="t-main">${R[0]}</p>`:''}`+
+   (more.length?`<details class="t-more"${TCH.open?' open':''}><summary>${t('tWhy',more.length)}</summary><ul class="t-why">${more.map(r=>`<li>${r}</li>`).join('')}</ul><div class="t-est">${t('est')}</div></details>`:'')+
+   `<div class="t-acts"><button class="btn primary" id="tApply">${t('tApply')}</button><button class="btn" id="tSkip">${t('tSkip')}</button></div>`;
 }
+// the teacher's extra reasons stay open (or closed) across moves once the player has chosen
+document.addEventListener('toggle',e=>{if(e.target.classList&&e.target.classList.contains('t-more'))TCH.open=e.target.open},true);
 function applySuggestion(){
   const d=TCH.data;if(!d||TCH.key!==stateKey(G))return;const a=d.best.act;KS.ap++;
   if(d.phase==='split'){
@@ -1691,6 +1732,8 @@ document.addEventListener('keydown',e=>{const el=e.target.closest&&e.target.clos
 /* ---- turn flow ---- */
 function playerOffer(){
   const idxs=ui.sel.map(x=>x.mi),piles=selPiles(),pb=G.price;
+  // first real move of a game: how long it took and whether the teacher's suggestion was used
+  if(!KS.first&&KS.t0){KS.first=1;track('kantar_first_move',{ms:Date.now()-KS.t0,teacher:teachMode,applied:KS.ap>0,mode:G.mode,diff:set.diff})}
   if(TCH.key===stateKey(G))teacherFeedback('split',{piles});
   actSplit(idxs,piles);
   const price=priceDiff(pb,G.price);
@@ -1784,6 +1827,7 @@ function applyStatic(){
   $('goodsKey').innerHTML=`<table><tr><th>${gh[0]}</th><th>${gh[1]}</th><th>${gh[2]}</th></tr>${SU.map(c=>`<tr><td>${gtag(c)}</td><td>${SD[c].n}</td><td>${SD[c].p}</td></tr>`).join('')}</table>`;
   $('rulesGoods').innerHTML=SU.map(c=>card(c)).join('');
   $('playBtn').textContent=started?t('newWith'):t('open');
+  if(typeof renderStart==='function'&&$('welcome')&&!$('welcome').hidden)renderStart();
   $('languageSelect').value=language;
 }
 function setLanguage(l){
@@ -1808,7 +1852,23 @@ function beginFromSetup(learning=false){
   requestAnimationFrame(()=>{const b=document.querySelector('#market button');if(b)b.focus({preventScroll:true})});
 }
 $('learnBtn').onclick=()=>beginFromSetup(true);
+$('learnAgain').onclick=()=>beginFromSetup(true);
 $('playBtn').onclick=()=>beginFromSetup();
+$('quickPlay').onclick=()=>beginFromSetup();
+// "Play without the teacher": the same gentle start, teacher off (it can be switched on again in the game's header)
+$('noTeachBtn').onclick=()=>{set.teach=false;syncOpts();beginFromSetup()};
+$('setupDetails').addEventListener('toggle',e=>{if(e.target.open){syncOpts();requestAnimationFrame(()=>e.target.scrollIntoView({behavior:'smooth',block:'start'}))}});
+/* which start the sheet offers: first visit, saved settings, or a match in progress */
+var startMode='first';
+function renderStart(){
+  const first=startMode==='first',resume=startMode==='resume';
+  $('welcomeSteps').hidden=!first;
+  $('learnBtn').hidden=!first;$('noTeachBtn').hidden=!first;
+  $('quickPlay').hidden=startMode!=='saved';$('quickResume').hidden=!resume;$('learnAgain').hidden=first;
+  const te=set.teach===undefined?true:!!set.teach;
+  $('startNote').textContent=first?t('startNoteLearn'):resume?t('startNoteResume',Math.min(6,((previousSave&&previousSave.G&&previousSave.G.turn)||0)+1))
+    :t('startNoteSaved',set.diff==='usta'?t('master'):t('apprentice'),set.mode==='narh'?t('modeNarh'):t('modeClassic'),te);
+}
 $('resumeBtn').onclick=()=>{$('rules').classList.add('hide');if(G)render()};
 $('rulesBtn').onclick=()=>{$('welcome').hidden=true;$('setupDetails').open=true;applyStatic();$('resumeBtn').style.display=started?'':'none';syncOpts();$('rules').classList.remove('hide')};
 $('statsBtn').onclick=openStats;
@@ -1819,10 +1879,14 @@ $('teachBtn').onclick=()=>setTeach(!teachMode);
 $('optTeach').onchange=e=>{set.teach=e.target.checked;saveSet()};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('endM').classList.contains('hide'))$('endM').classList.add('hide');else if(started&&!$('rules').classList.contains('hide')){$('rules').classList.add('hide');render()}}});
 applyStatic();syncOpts();
-$('welcome').hidden=hasSavedSettings;
-$('setupDetails').open=hasSavedSettings;
+// the short start sheet is always first; the full rules and options stay folded until asked for
+$('welcome').hidden=false;$('setupDetails').open=false;
+startMode=hasSavedSettings?'saved':'first';
 G=newGame(0,set.mode,set.tut);initIds();resetUi();fit();draw();
-const previous=readSave();if(previous){$('welcome').hidden=true;$('setupDetails').open=true;$('resumeSaved').style.display='';$('resumeSaved').onclick=()=>{$('rules').classList.add('hide');ac();restoreGame(previous)};}
+const previous=readSave();var previousSave=previous;
+if(previous){startMode='resume';const go=()=>{$('rules').classList.add('hide');ac();restoreGame(previous)};
+  $('resumeSaved').style.display='';$('resumeSaved').onclick=go;$('quickResume').onclick=go;}
+renderStart();
 
 </script>
 </body>

@@ -24,7 +24,7 @@ async function open({ storage, viewport = { width: 1400, height: 900 } } = {}) {
 }
 const settings = page => page.evaluate(() => JSON.parse(localStorage.getItem('kantar-set') || 'null'));
 
-test('first visit: short welcome with "Learn as you play" in view, details closed, gentle defaults', async () => {
+test('first visit: short welcome with "Learn with the teacher" in view, details closed, gentle defaults', async () => {
   for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 700 }]) {
     const t = await open({ viewport });
     assert.ok(await t.page.isVisible('#welcome'), 'welcome hidden');
@@ -38,7 +38,7 @@ test('first visit: short welcome with "Learn as you play" in view, details close
   }
 });
 
-test('"Learn as you play" starts Apprentice, Classic, teacher, teaching round, preview; player divides first; sound kept', async () => {
+test('"Learn with the teacher" starts Apprentice, Classic, teacher, teaching round, preview; player divides first; sound kept', async () => {
   const t = await open({ storage: { 'kantar-lang': 'en' } });
   await t.page.evaluate(() => { set.snd = false; });
   await t.page.click('#learnBtn');
@@ -51,13 +51,41 @@ test('"Learn as you play" starts Apprentice, Classic, teacher, teaching round, p
   await t.close();
 });
 
-test('saved settings skip the welcome and are kept; Play uses them', async () => {
+test('saved settings: the start sheet offers "Play" with them (and names them); the options are one click away', async () => {
   const t = await open({ storage: { 'kantar-set': JSON.stringify({ diff: 'usta', mode: 'narh', teach: false, snd: false, tut: false, pv: false }) } });
-  assert.equal(await t.page.isVisible('#welcome'), false);
-  assert.equal(await t.page.evaluate(() => document.getElementById('setupDetails').open), true);
-  await t.page.click('#playBtn');
-  await t.page.waitForFunction(() => typeof G !== 'undefined' && G && G.phase);
+  assert.ok(await t.page.isVisible('#quickPlay'), 'no Play button');
+  assert.equal(await t.page.isVisible('#welcomeSteps'), false, 'first-visit steps shown again');
+  assert.match(await t.page.innerText('#startNote'), /Master · Narh · teacher off/);
+  assert.equal(await t.page.evaluate(() => document.getElementById('setupDetails').open), false);
+  await t.page.click('#setupDetails summary');
+  assert.ok(await t.page.isVisible('#playBtn'), 'options did not open');
+  await t.page.click('#quickPlay');
+  await t.page.waitForFunction(() => typeof G !== 'undefined' && G && G.phase && started);
   assert.deepEqual(await t.page.evaluate(() => [G.mode, set.diff, set.teach]), ['narh', 'usta', false]);
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('first visit: "Play without the teacher" starts the same gentle game with the teacher off', async () => {
+  const t = await open();
+  await t.page.click('#noTeachBtn');
+  await t.page.waitForFunction(() => typeof G !== 'undefined' && G && G.phase === 'split' && started);
+  assert.deepEqual(await t.page.evaluate(() => [set.teach, teachMode, set.diff, G.mode, !!document.querySelector('#teacher.on')]), [false, false, 'cirak', 'classic', false]);
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('teacher box: the move and one reason; the rest fold out and stay open across moves', async () => {
+  const t = await open();
+  await t.page.click('#learnBtn');
+  await t.page.waitForFunction(() => !!document.querySelector('#teacher .t-rec:not(.muted)'), null, { timeout: 15000 });
+  assert.equal(await t.page.locator('#teacher .t-main').count(), 1, 'no main reason line');
+  const more = t.page.locator('#teacher details.t-more');
+  if (await more.count()) {
+    assert.equal(await more.evaluate(d => d.open), false, 'extra reasons open by default');
+    await more.locator('summary').click(); await t.page.waitForTimeout(200);
+    assert.ok(await t.page.evaluate(() => TCH.open), 'open state not kept');
+  }
   assert.deepEqual(t.problems, []);
   await t.close();
 });
@@ -72,20 +100,22 @@ test('broken settings fall back to the first-visit welcome without errors', asyn
   }
 });
 
-test('a game in progress shows Resume, not the welcome; Rules reopens the full set-up; language switch translates it', async () => {
+test('a game in progress: "Continue your match" first; Rules reopens the full set-up; language switch translates it', async () => {
   const t = await open();
   await t.page.click('#learnBtn');
   await t.page.waitForFunction(() => typeof G !== 'undefined' && G && G.phase === 'split' && !ui.busy);
   await t.page.evaluate(() => saveGame());
   await t.page.reload(); await t.page.waitForTimeout(700);
-  assert.equal(await t.page.isVisible('#welcome'), false);
-  assert.ok(await t.page.isVisible('#resumeSaved'), 'no resume button');
-  await t.page.click('#resumeSaved'); await t.page.waitForTimeout(500);
+  assert.ok(await t.page.isVisible('#quickResume'), 'no continue button');
+  assert.equal(await t.page.isVisible('#learnBtn'), false);
+  assert.match(await t.page.innerText('#startNote'), /round 1 of 6/);
+  await t.page.click('#quickResume'); await t.page.waitForTimeout(500);
+  assert.ok(await t.page.evaluate(() => started && document.getElementById('rules').classList.contains('hide')), 'match not resumed');
   await t.page.click('#rulesBtn'); await t.page.waitForTimeout(300);
   assert.equal(await t.page.isVisible('#welcome'), false);
   assert.equal(await t.page.evaluate(() => document.getElementById('setupDetails').open), true);
   await t.page.selectOption('#languageSelect', 'tr'); await t.page.waitForTimeout(300);
-  assert.match(await t.page.innerText('#setupDetails summary'), /Tüm kurallar/);
+  assert.match(await t.page.innerText('#setupDetails summary'), /Ayarlar ve tüm kurallar/);
   assert.deepEqual(t.problems, []);
   await t.close();
 });

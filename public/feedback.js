@@ -62,6 +62,12 @@
     var dc = el('<a class="hlfb-dc" href="https://discord.gg/7PcDfAMdr5" target="_blank" rel="noopener" aria-label="Join the Homo Ludens Discord"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18.3 18.3 0 0 0-5.6 0L8.6 3a19.5 19.5 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1A19.7 19.7 0 0 0 6.1 21l1.3-2a12.8 12.8 0 0 1-2-1l.5-.4a14 14 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2a19.6 19.6 0 0 0 6-3c.5-5.2-.9-9.7-3.6-13.6zM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>');
     dc.addEventListener('click', function () { try { if (window.posthog && window.posthog.capture) window.posthog.capture('discord_click', { game: GAME, page: location.pathname }); } catch (e) {} });
     document.body.appendChild(dc); document.body.appendChild(btn); document.body.appendChild(ov);
+    // on a phone, step aside while one of the game's own dialogs (aria-modal) is open, so they never cover its buttons
+    setInterval(function () {
+      var small = window.innerWidth < 700, open = false;
+      if (small) [].forEach.call(document.querySelectorAll('[aria-modal="true"]'), function (d) { if (d !== ov && !d.closest('.hlfb-ov') && d.offsetParent !== null && getComputedStyle(d).visibility !== 'hidden') open = true; });
+      dc.style.display = btn.style.display = open ? 'none' : '';
+    }, 400);
     var form = ov.querySelector('form'), msg = ov.querySelector('#hlfb-msg'), status = ov.querySelector('#hlfb-st'), send = ov.querySelector('.hlfb-send');
     var lastFocus = null, extraContext = '';
     var title = ov.querySelector('#hlfb-t'), intro = ov.querySelector('#hlfb-intro');

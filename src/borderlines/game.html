@@ -632,6 +632,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     try { stage.setPointerCapture(e.pointerId); } catch (_) {}
     live = { type: "stroke", r: SIZES[sizeIdx] / zoomT.k, erase: tool === "erase", pts: [toWorld(e)], id: e.pointerId };
     actions.push(live); render();
+    if (!state.firstPaint) { state.firstPaint = true; track("first_paint", { mode: state.mode, round: state.round }); }
   });
   stage.addEventListener("pointermove", (e) => moveBrush(e));
   window.addEventListener("pointermove", (e) => {
@@ -871,7 +872,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     if (mode !== "tutorial" && !store.get("tutorialDone")) { state.afterTutorial = [mode, day]; return startTutorial(); }
     const qs = await loadRealms(() => (mode === "practice" ? practiceSet() : getDay(day)));
     if (!qs) return;
-    state.mode = mode; state.round = 0; state.scores = []; state.raw = []; state.hints = [];
+    state.mode = mode; state.round = 0; state.scores = []; state.raw = []; state.hints = []; state.firstPaint = false;
     track("game_start", { mode, day: mode === "practice" ? null : day });
     setSize(1);
     if (mode !== "practice") state.day = day;

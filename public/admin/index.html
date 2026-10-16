@@ -288,7 +288,7 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
     },
     ka: function (j) {
       var f = (j.funnel || [])[0] || {}, rate = function (r) { return pct(r.wins + 0.5 * (r.draws || 0), r.games); };
-      var h = tiles([[f.players || 0, 'started a game'], [f.finishers || 0, 'finished one', 'People; ' + (f.ends || 0) + ' games finished of ' + (f.starts || 0) + ' started'],
+      var h = tiles([[f.players || 0, 'started a game'], [f.firstMovers || 0, 'made a first move', 'Median time from start to the first offer: ' + (f.firstMoveSec != null ? f.firstMoveSec + ' s' : '–')], [f.finishers || 0, 'finished one', 'People; ' + (f.ends || 0) + ' games finished of ' + (f.starts || 0) + ' started'],
         [pct(f.ends, f.starts), 'of games finished'], [f.resumes || 0, 'resumed a saved game'], [pct((f.wins || 0) + 0.5 * (f.draws || 0), f.ends), 'player win rate', 'Draws count half'],
         [f.statsOpen || 0, 'opened their stats'], [f.sharers || 0, 'shared a result', (f.shares || 0) + ' shares'], [f.leaves || 0, 'games left unfinished', 'The page was closed mid-game']]);
       var MODE = { classic: 'Classic', narh: 'Narh' }, LEVEL = { master: 'Master', apprentice: 'Apprentice' };

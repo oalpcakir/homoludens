@@ -694,6 +694,7 @@ function placeAt(slot,id){
   if(!CLUES[id]) return;
   if(rid==="f1"){ if(S.done) return; S.place[slot]=id; S.sel=null; checkFinal(); renderLedger(); renderChips(); return; }
   if(S.locked.has(rid)) return;
+  if(!window.__teaFirst){ window.__teaFirst=1; track("tea_first_entry",{scene:SCENE}); }
   S.place[slot]=id; S.sel=null;
   checkRow(rid); renderLedger(); renderChips(); progress();
 }

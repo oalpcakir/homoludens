@@ -21,7 +21,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 {{POSTHOG}}
 <style>
-/* Layout: a single editorial column, like the front matter of an atlas: wordmark, today's play, the games, a colophon. Shares Borderlines' ink and sea so the series reads as one family. */
+/* Plates: the historical picture; on hover (desktop) a screenshot of the game itself fades in.
+   Layout: a single editorial column, like the front matter of an atlas: wordmark, today's play, the games, a colophon. Shares Borderlines' ink and sea so the series reads as one family. */
 :root {
   --paper: #f7f6f2;
   --card: #ffffff;
@@ -81,6 +82,10 @@ section > .eyebrow { display: block; margin-bottom: 16px; }
 .plate .land { fill-rule: evenodd; fill: var(--paper); stroke: var(--coast); stroke-width: .8; }
 .plate .realm { fill: var(--accent); fill-opacity: .55; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
 .plate .grat { stroke: #c7d4d8; stroke-width: 1; }
+.plate .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; opacity: 0; transition: opacity .25s ease; }
+.plate .inplay { position: absolute; right: 12px; top: 10px; font: 500 10.5px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--paper); background: rgba(31,43,74,.85); padding: 3px 6px; opacity: 0; transition: opacity .25s ease; }
+@media (hover: hover) { .game:hover .plate .shot, .game:hover .plate .inplay, .plate:focus-visible .shot, .plate:focus-visible .inplay { opacity: 1; } .game:hover .plate .cap { opacity: 0; } }
+.plate .cap { transition: opacity .25s ease; }
 .plate .cap { position: absolute; left: 14px; bottom: 12px; font: 500 11px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); background: rgba(247,246,242,.85); padding: 4px 7px; }
 .game .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
 .game h3 { font-family: var(--f-display); font-weight: 400; font-size: 34px; line-height: 1; margin: 0; }
@@ -159,6 +164,7 @@ footer a { color: var(--ink-soft); }
             <path class="land" d="{{LAND}}"/>
             <path class="realm" d="{{REALM}}"/>
           </svg>
+          <img class="shot" src="/shots/borderlines.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">1 BC · Roman Empire</span>
         </a>
         <div class="body">
@@ -173,6 +179,7 @@ footer a { color: var(--ink-soft); }
       <article class="game top">
         <a class="plate" href="/kantar/" data-from="card" aria-label="Play Kantar">
           <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi" loading="lazy">
+          <img class="shot" src="/shots/kantar.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">19th c. · The Grand Bazaar, Istanbul</span>
         </a>
         <div class="body">
@@ -186,6 +193,7 @@ footer a { color: var(--ink-soft); }
       <article class="game top">
         <a class="plate" href="/polder/" data-from="card" aria-label="Play Polder">
           <img src="/polder/img/portal-plate.jpg" alt="The Windmill at Wijk bij Duurstede, painted by Jacob van Ruisdael around 1670" loading="lazy">
+          <img class="shot" src="/shots/polder.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">c. 1670 · The Windmill at Wijk bij Duurstede</span>
         </a>
         <div class="body">
@@ -200,6 +208,7 @@ footer a { color: var(--ink-soft); }
       <article class="game pair">
         <a class="plate" href="/retourvloot/" data-from="card" aria-label="Play Retourvloot">
           <img src="/retourvloot/img/portal-plate.jpg" alt="The Castle of Batavia, painted by Andries Beeckman around 1661" loading="lazy">
+          <img class="shot" src="/shots/retourvloot.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">c. 1661 · The Castle of Batavia</span>
         </a>
         <div class="body">
@@ -214,6 +223,7 @@ footer a { color: var(--ink-soft); }
       <article class="game pair">
         <a class="plate" href="/cupoftea/" data-from="card" aria-label="Play A Cup of Tea">
           <img src="/cupoftea/img/portal-plate.jpg" alt="The Flor de Cuba sugar estate in Cuba, with the chimneys of its boiling houses; lithograph by Eduardo Laplante, 1857" loading="lazy">
+          <img class="shot" src="/shots/cupoftea.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">1857 · A Cuban sugar estate</span>
         </a>
         <div class="body">

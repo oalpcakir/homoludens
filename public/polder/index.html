@@ -32,11 +32,11 @@
     // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
     // the matching standard event is sent once next to it, with legacy_event naming the original.
     var STD = {
-      borderlines: { game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
-      retourvloot: { game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
-      cupoftea: { tea_scene_start: "game_started", tea_scene_done: "game_completed" },
-      kantar: { kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed", kantar_share: "result_shared" },
-      polder: { polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
+      borderlines: { first_paint: "first_action", game_start: "game_started", round_submit: "game_progress", game_complete: "game_completed", share_copy: "result_shared", share_link: "result_shared", share_native: "result_shared" },
+      retourvloot: { first_ship: "first_action", game_start: "game_started", game_resume: "game_started", tutorial_done: "tutorial_completed", decade: "game_progress", game_end: "game_completed" },
+      cupoftea: { tea_first_entry: "first_action", tea_scene_start: "game_started", tea_scene_done: "game_completed" },
+      kantar: { kantar_first_move: "first_action", kantar_game_start: "game_started", kantar_resume: "game_started", kantar_game_end: "game_completed", kantar_share: "result_shared" },
+      polder: { polder_first_dike: "first_action", polder_level_start: "game_started", polder_resume: "game_started", polder_goal: "game_progress", polder_level_end: "game_completed", polder_share: "result_shared" },
       portal: { portal_play: "next_game_clicked" }
     }[GAME] || {};
     function standard(ev) {
@@ -943,6 +943,7 @@ function computePreview(){
 async function place(){
   if(!ghost||!ghost.ok) { sfx.nope(); return; }
   S.busy=true; const cells=ghost.cells; ghost=null; preview=null;
+  if(!S.firstDike){ S.firstDike=1; track('polder_first_dike',{level:LV.id,year:S.year}); }
   for(const[x,y]of cells){ const i=idx(x,y); G[i]=DIKE; crack[i]=0; armor[i]=upLv('stone')?1:(S.stoneFree>0?(S.stoneFree--,1):0); S.dikes++; for(let k=0;k<3;k++) parts.push(P(x+.5,y+.5,'dust')); }
   sfx.pop();
   S.queue.shift(); S.queue.push(genPiece()); S.rot=0;

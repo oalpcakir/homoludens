@@ -170,7 +170,7 @@ test('Polder: reset wipes only Polder progress', async () => {
 
 test('Kantar: a round can be played, the game saves and offers to resume', async () => {
   const t = await open('/kantar/', { storage: { 'kantar-set': JSON.stringify({ teach: false, snd: false, tut: false }) } });
-  await t.page.click('#playBtn');
+  await t.page.click('#quickPlay');
   await t.page.waitForFunction(() => typeof G !== 'undefined' && G.phase === 'split' && G.splitter === 0 && !ui.busy);
   for (let i = 0; i < 3; i++) await t.page.evaluate(() => document.querySelector('#market [data-drag]').dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
   await t.page.click('#offer');
@@ -179,14 +179,14 @@ test('Kantar: a round can be played, the game saves and offers to resume', async
   await t.page.waitForFunction(() => !!localStorage.getItem('kantar-game-v04'), null, { timeout: 20000 }).catch(() => {});
   assert.ok((await store(t.page))['kantar-game-v04'], 'no save');
   await t.page.reload(); await t.page.waitForTimeout(600);
-  assert.ok(await t.page.isVisible('#resumeSaved'), 'no resume button');
+  assert.ok(await t.page.isVisible('#quickResume'), 'no resume button');
   assert.deepEqual(t.problems, []);
   await t.close();
 });
 
 test('Kantar: Turkish switch translates the running game', async () => {
   const t = await open('/kantar/', { storage: { 'kantar-set': JSON.stringify({ teach: true, snd: false }) } });
-  await t.page.click('#playBtn'); await t.page.waitForTimeout(1500);
+  await t.page.click('#quickPlay'); await t.page.waitForTimeout(1500);
   await t.page.selectOption('#languageSelect', 'tr'); await t.page.waitForTimeout(300);
   const text = await t.page.innerText('body');
   assert.match(text, /Tezgâh/); assert.doesNotMatch(text, /Market Stall|Round \d\/6/);

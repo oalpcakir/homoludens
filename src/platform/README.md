@@ -71,6 +71,11 @@ Kind of project: **HTML**. Upload the ZIP, tick **This file will be played in th
 "Click to play" can stay on (sound starts on that click anyway). Limits checked by the builder: < 1000 files,
 relative paths only, `index.html` at the root.
 
+## Store screenshots
+
+`src/platform/screenshots/<game>-1280x720.jpg`: one real gameplay screenshot per game for the itch.io page and the
+CrazyGames submission (the portal's smaller copies are in `src/portal/shots/`). Covers and preview videos still need making.
+
 ## CrazyGames submission (Developer Portal)
 
 - Upload: HTML5, the `-crazygames.zip`. Orientation: landscape (all five).

@@ -740,6 +740,7 @@ document.getElementById("sndBtn").addEventListener("click",e=>{
 function placeAt(slot,id){
   const [rid]=slot.split(".");
   if(S.locked.has(rid)||!CLUES[id]) return;
+  if(!window.__teaFirst){ window.__teaFirst=1; track("tea_first_entry",{scene:SCENE}); }
   S.place[slot]=id; S.sel=null;
   checkRow(rid); renderLedger(); renderChips(); progress();
 }

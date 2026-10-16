@@ -28,6 +28,11 @@ def build():
     with open(dst, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(out)
     print(f"built {dst}")
+    # gameplay screenshots shown on the cards (hover): src/portal/shots/*.jpg -> public/shots/
+    import shutil
+    os.makedirs(os.path.join(ROOT, "public", "shots"), exist_ok=True)
+    for f in sorted(os.listdir(os.path.join(H, "shots"))):
+        shutil.copy(os.path.join(H, "shots", f), os.path.join(ROOT, "public", "shots", f))
     # sitemap.xml and robots.txt carry the site origin too
     for name in ("sitemap.xml", "robots.txt"):
         t = open(os.path.join(H, name), encoding="utf-8").read().replace("{{SITE}}", SITE)

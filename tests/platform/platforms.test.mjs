@@ -132,7 +132,7 @@ test('crazygames · kantar: progress goes to SDK data and survives a reload (res
   assert.ok(log.includes('data.set:kantar-game-v04'), 'game not saved through SDK data');
   assert.ok(log.includes('data.set:kantar-set'), 'settings not saved through SDK data');
   await t.page.reload({ waitUntil: 'domcontentloaded' }); await t.page.waitForFunction(() => !!window.HLP); await t.page.evaluate(() => HLP.ready); await t.page.waitForTimeout(500);
-  assert.ok(await t.page.isVisible('#resumeSaved'), 'no resume after reload');
+  assert.ok(await t.page.isVisible('#quickResume'), 'no resume after reload');
   assert.deepEqual(t.problems, []);
   await t.close();
 });

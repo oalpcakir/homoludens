@@ -569,8 +569,9 @@ const GAME_SQL = {
         countIf(event = 'kantar_game_end' AND properties.result = 'win') AS wins,
         countIf(event = 'kantar_game_end' AND properties.result = 'loss') AS losses,
         countIf(event = 'kantar_game_end' AND properties.result = 'draw') AS draws,
-        countIf(event = 'kantar_leave') AS leaves, countIf(event = 'kantar_share') AS shares, uniqIf(distinct_id, event = 'kantar_share') AS sharers
-      FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end', 'kantar_resume', 'kantar_stats_open', 'kantar_leave', 'kantar_share') AND ${R90}`,
+        countIf(event = 'kantar_leave') AS leaves, countIf(event = 'kantar_share') AS shares, uniqIf(distinct_id, event = 'kantar_share') AS sharers,
+        uniqIf(distinct_id, event = 'kantar_first_move') AS firstMovers, round(quantileIf(0.5)(toFloat(properties.ms), event = 'kantar_first_move') / 1000) AS firstMoveSec
+      FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end', 'kantar_resume', 'kantar_stats_open', 'kantar_leave', 'kantar_share', 'kantar_first_move') AND ${R90}`,
     // games with the teacher on: how often the player's move matched its best move, and how long games take
     teacher: `SELECT if(toString(properties.teacher) IN ('true', '1'), 1, 0) AS teacher, count() AS games,
         sum(toInt(properties.tm)) AS moves, sum(toInt(properties.tbest)) AS best, round(avg(toFloat(properties.tgap)), 2) AS gap,
