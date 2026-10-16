@@ -42,12 +42,12 @@ html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-body); line-height: 1.5; }
 a { color: inherit; }
 [hidden] { display: none !important; }
-.wrap { max-width: 920px; margin: 0 auto; padding-inline: 20px; padding-block: 48px 40px; }
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 40px; }
 .eyebrow { font: 500 11px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
 
-header.mast { display: grid; gap: 14px; padding-bottom: 28px; border-bottom: 1px solid var(--ink); }
+header.mast { display: grid; gap: 8px; padding-bottom: 20px; border-bottom: 1px solid var(--ink); }
 .mast .topline { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(56px, 13vw, 128px); line-height: .9; letter-spacing: -.01em; margin: 4px 0 0; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(48px, 9vw, 88px); line-height: .9; letter-spacing: -.01em; margin: 2px 0 0; }
 .lede { font-family: var(--f-text); font-size: clamp(18px, 2.4vw, 21px); line-height: 1.5; max-width: 34em; margin: 6px 0 0; text-wrap: pretty; }
 .lede em { font-style: italic; }
 
@@ -64,7 +64,16 @@ section > .eyebrow { display: block; margin-bottom: 16px; }
 .btn.ghost:hover { background: #eef0f3; }
 .btn:focus-visible, a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
-.games { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.games { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px; }
+.game.top { grid-column: span 2; }
+.game.pair { grid-column: span 3; }
+.game.pair .plate { aspect-ratio: 16 / 7; }
+.resume { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-top: 6px; font: 500 12px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
+.resume a { display: inline-flex; gap: 6px; align-items: center; padding: 7px 10px; border: 1px solid var(--ink); border-radius: 2px; color: var(--ink); text-decoration: none; letter-spacing: .04em; }
+.resume a:hover { background: #eef0f3; }
+.cardnote { font: 12.5px var(--f-mono); color: var(--ink-soft); }
+.game.top h3 { font-size: 30px; }
+.game.top p { font-size: 14.5px; }
 .game { background: var(--card); border: 1px solid var(--rule); display: grid; grid-template-rows: auto 1fr; min-width: 0; text-decoration: none; }
 .game .plate { background: var(--sea); border-bottom: 1px solid var(--rule); aspect-ratio: 620 / 453; max-width: 100%; position: relative; overflow: hidden; }
 .game .plate svg { display: block; width: 100%; height: 100%; }
@@ -115,9 +124,16 @@ footer a { color: var(--ink-soft); }
 .news .msg { font-size: 14px; min-height: 20px; }
 .news .msg.ok { color: #2c6a47; } .news .msg.err { color: #962f2a; }
 @media (max-width: 720px) { .news { grid-template-columns: 1fr; } .record { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 960px) and (min-width: 721px) {
+  .games { grid-template-columns: 1fr 1fr; }
+  .game.top, .game.pair { grid-column: auto; }
+  .game.top:nth-child(3) { grid-column: 1 / -1; grid-template-columns: 1.15fr 1fr; grid-template-rows: auto; }
+  .game.top:nth-child(3) .plate { border-bottom: 0; border-right: 1px solid var(--rule); aspect-ratio: auto; min-height: 100%; }
+}
 @media (max-width: 720px) {
   .wrap { padding-block: 28px 32px; padding-inline: 16px; }
   .games { grid-template-columns: 1fr; }
+  .game.top, .game.pair { grid-column: auto; }
   .game.wide { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
   .game.wide .plate { border-right: 0; border-bottom: 1px solid var(--rule); aspect-ratio: 620 / 453; }
   .today { grid-template-columns: 1fr; }
@@ -130,11 +146,90 @@ footer a { color: var(--ink-soft); }
   <header class="mast">
     <div class="topline"><span class="eyebrow">Small games about the past</span></div>
     <h1>Homo Ludens</h1>
-    <p class="lede">Short history games, from a five-minute daily puzzle to an evening at the helm of the Dutch East India Company or a detective's desk in 1850 London. One mechanic, one idea, and a note on what really happened. Named after Johan Huizinga's 1938 book, which argued that play is older than culture.</p>
+    <p class="lede">Short history games. One mechanic, one idea, and a note on what really happened.</p>
+    <nav class="resume" id="resumeBar" aria-label="Continue where you left off" hidden><span>Continue</span></nav>
   </header>
 
+  <section aria-labelledby="gamesLabel">
+    <span class="eyebrow" id="gamesLabel">The games</span>
+    <div class="games">
+      <article class="game top">
+        <a class="plate" href="/borderlines/" data-from="card" aria-label="Play Borderlines">
+          <svg viewBox="0 0 {{W}} {{H}}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The Roman Empire in 1 BC, painted on a map of the Mediterranean">
+            <path class="land" d="{{LAND}}"/>
+            <path class="realm" d="{{REALM}}"/>
+          </svg>
+          <span class="cap">1 BC · Roman Empire</span>
+        </a>
+        <div class="body">
+          <span class="numeral">No. 1</span>
+          <h3>Borderlines</h3>
+          <p>You get a year and a realm. Paint the land it ruled on a map with no modern borders, then see how close you came.</p>
+          <div class="tags"><span class="tag">Map puzzle</span><span class="tag">5-minute daily</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
+          <div class="cardnote" id="blCardNote"></div>
+          <div class="row"><a class="btn" href="/borderlines/" data-from="card">Play</a></div>
+        </div>
+      </article>
+      <article class="game top">
+        <a class="plate" href="/kantar/" data-from="card" aria-label="Play Kantar">
+          <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi" loading="lazy">
+          <span class="cap">19th c. · The Grand Bazaar, Istanbul</span>
+        </a>
+        <div class="body">
+          <span class="numeral">No. 5 · New</span>
+          <h3>Kantar</h3>
+          <p>A two-player duel in the Grand Bazaar of Istanbul. Put three goods on a brass scale; your rival takes one pan and you keep the other. A teacher shows the best move while you learn.</p>
+          <div class="tags"><span class="tag">Card duel</span><span class="tag">10-minute game</span><span class="tag">English · Türkçe</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
+          <div class="row"><a class="btn" href="/kantar/" data-from="card">Play</a></div>
+        </div>
+      </article>
+      <article class="game top">
+        <a class="plate" href="/polder/" data-from="card" aria-label="Play Polder">
+          <img src="/polder/img/portal-plate.jpg" alt="The Windmill at Wijk bij Duurstede, painted by Jacob van Ruisdael around 1670" loading="lazy">
+          <span class="cap">c. 1670 · The Windmill at Wijk bij Duurstede</span>
+        </a>
+        <div class="body">
+          <span class="numeral">No. 4</span>
+          <h3>Polder</h3>
+          <p>Build dikes, close them into rings and drain the sea, from the terp mounds of 1200 to the North Sea flood of 1953, across four regions of the Netherlands.</p>
+          <div class="tags"><span class="tag">Puzzle</span><span class="tag">15-minute regions</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
+          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
+          <div class="row"><a class="btn" href="/polder/" data-from="card">Play</a></div>
+        </div>
+      </article>
+      <article class="game pair">
+        <a class="plate" href="/retourvloot/" data-from="card" aria-label="Play Retourvloot">
+          <img src="/retourvloot/img/portal-plate.jpg" alt="The Castle of Batavia, painted by Andries Beeckman around 1661" loading="lazy">
+          <span class="cap">c. 1661 · The Castle of Batavia</span>
+        </a>
+        <div class="body">
+          <span class="numeral">No. 2</span>
+          <h3>Retourvloot</h3>
+          <p>Run the Dutch East India Company from Amsterdam, 1602 to 1799. Send silver east, wait a year for letters from Batavia, and keep the shareholders paid.</p>
+          <div class="tags"><span class="tag">Idle strategy</span><span class="tag">30–80 minute run</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
+          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
+          <div class="row"><a class="btn" href="/retourvloot/" data-from="card">Play</a></div>
+        </div>
+      </article>
+      <article class="game pair">
+        <a class="plate" href="/cupoftea/" data-from="card" aria-label="Play A Cup of Tea">
+          <img src="/cupoftea/img/portal-plate.jpg" alt="The Flor de Cuba sugar estate in Cuba, with the chimneys of its boiling houses; lithograph by Eduardo Laplante, 1857" loading="lazy">
+          <span class="cap">1857 · A Cuban sugar estate</span>
+        </a>
+        <div class="body">
+          <span class="numeral">No. 3</span>
+          <h3>A Cup of Tea</h3>
+          <p>A grocer's receipt from East London, 1850: a pound of sugar and two ounces of tea. Read the papers of the day, do the sums, and find out who got every farthing, from the Customs House to a sugar estate outside Havana.</p>
+          <div class="tags"><span class="tag">Detective</span><span class="tag">Scene by scene</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
+          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
+          <div class="row"><a class="btn" id="teaPlay" href="/cupoftea/" data-from="card">Play</a></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
   <section aria-labelledby="todayLabel">
-    <span class="eyebrow" id="todayLabel">Today</span>
+    <span class="eyebrow" id="todayLabel">Today and where you left off</span>
     <div class="today">
       <div>
         <div class="eyebrow">Borderlines · Daily challenge</div>
@@ -167,88 +262,19 @@ footer a { color: var(--ink-soft); }
       </div>
       <a class="btn" id="teaGo" href="/cupoftea/" data-from="today">Continue</a>
     </div>
+    <div class="today" id="kaToday" hidden>
+      <div>
+        <div class="eyebrow">Kantar · Your match</div>
+        <h2 id="kaTitle">Round 1 of 6</h2>
+        <div class="meta" id="kaMeta"></div>
+      </div>
+      <a class="btn" id="kaGo" href="/kantar/" data-from="today">Continue</a>
+    </div>
   </section>
 
   <section aria-labelledby="recordLabel" id="recordSec" hidden>
     <span class="eyebrow" id="recordLabel">Your record</span>
     <div class="record" id="record"></div>
-  </section>
-
-  <section aria-labelledby="gamesLabel">
-    <span class="eyebrow" id="gamesLabel">The games</span>
-    <div class="games">
-      <article class="game">
-        <a class="plate" href="/borderlines/" data-from="card" aria-label="Play Borderlines">
-          <svg viewBox="0 0 {{W}} {{H}}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The Roman Empire in 1 BC, painted on a map of the Mediterranean">
-            <path class="land" d="{{LAND}}"/>
-            <path class="realm" d="{{REALM}}"/>
-          </svg>
-          <span class="cap">1 BC · Roman Empire</span>
-        </a>
-        <div class="body">
-          <span class="numeral">No. 1</span>
-          <h3>Borderlines</h3>
-          <p>You get a year and a realm. Paint the land it ruled on a map with no modern borders, then see how close you came.</p>
-          <div class="tags"><span class="tag">Map puzzle</span><span class="tag">5-minute daily</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
-          <div class="row"><a class="btn" href="/borderlines/" data-from="card">Play</a></div>
-        </div>
-      </article>
-      <article class="game">
-        <a class="plate" href="/retourvloot/" data-from="card" aria-label="Play Retourvloot">
-          <img src="/retourvloot/img/portal-plate.jpg" alt="The Castle of Batavia, painted by Andries Beeckman around 1661" loading="lazy">
-          <span class="cap">c. 1661 · The Castle of Batavia</span>
-        </a>
-        <div class="body">
-          <span class="numeral">No. 2</span>
-          <h3>Retourvloot</h3>
-          <p>Run the Dutch East India Company from Amsterdam, 1602 to 1799. Send silver east, wait a year for letters from Batavia, and keep the shareholders paid.</p>
-          <div class="tags"><span class="tag">Idle strategy</span><span class="tag">30–80 minute run</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
-          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
-          <div class="row"><a class="btn" href="/retourvloot/" data-from="card">Play</a></div>
-        </div>
-      </article>
-      <article class="game">
-        <a class="plate" href="/cupoftea/" data-from="card" aria-label="Play A Cup of Tea">
-          <img src="/cupoftea/img/portal-plate.jpg" alt="The Flor de Cuba sugar estate in Cuba, with the chimneys of its boiling houses; lithograph by Eduardo Laplante, 1857" loading="lazy">
-          <span class="cap">1857 · A Cuban sugar estate</span>
-        </a>
-        <div class="body">
-          <span class="numeral">No. 3</span>
-          <h3>A Cup of Tea</h3>
-          <p>A grocer's receipt from East London, 1850: a pound of sugar and two ounces of tea. Read the papers of the day, do the sums, and find out who got every farthing, from the Customs House to a sugar estate outside Havana.</p>
-          <div class="tags"><span class="tag">Detective</span><span class="tag">Scene by scene</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
-          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
-          <div class="row"><a class="btn" id="teaPlay" href="/cupoftea/" data-from="card">Play</a></div>
-        </div>
-      </article>
-      <article class="game">
-        <a class="plate" href="/polder/" data-from="card" aria-label="Play Polder">
-          <img src="/polder/img/portal-plate.jpg" alt="The Windmill at Wijk bij Duurstede, painted by Jacob van Ruisdael around 1670" loading="lazy">
-          <span class="cap">c. 1670 · The Windmill at Wijk bij Duurstede</span>
-        </a>
-        <div class="body">
-          <span class="numeral">No. 4</span>
-          <h3>Polder</h3>
-          <p>Build dikes, close them into rings and drain the sea, from the terp mounds of 1200 to the North Sea flood of 1953. Four regions of the Netherlands, each with its own storms, lakes and drowned villages.</p>
-          <div class="tags"><span class="tag">Puzzle</span><span class="tag">15-minute regions</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
-          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
-          <div class="row"><a class="btn" href="/polder/" data-from="card">Play</a></div>
-        </div>
-      </article>
-      <article class="game wide">
-        <a class="plate" href="/kantar/" data-from="card" aria-label="Play Kantar">
-          <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi" loading="lazy">
-          <span class="cap">19th c. · The Grand Bazaar, Istanbul</span>
-        </a>
-        <div class="body">
-          <span class="numeral">No. 5 · New</span>
-          <h3>Kantar</h3>
-          <p>A two-player duel in the Grand Bazaar of Istanbul. Put three goods into the pans of a brass scale; your rival takes one pan and leaves you the other. Win the majority in saffron, silk, coffee and copper, but don't carry too much. A teacher explains the best move at every step while you learn.</p>
-          <div class="tags"><span class="tag">Card duel</span><span class="tag">10-minute game</span><span class="tag">English · Türkçe</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
-          <div class="row"><a class="btn" href="/kantar/" data-from="card">Play</a></div>
-        </div>
-      </article>
-    </div>
   </section>
 
   <section aria-labelledby="newsLabel" id="newsSec" hidden>
@@ -275,7 +301,7 @@ footer a { color: var(--ink-soft); }
   <section class="about" aria-labelledby="aboutLabel">
     <span class="eyebrow" id="aboutLabel">About</span>
     <div>
-      <p>Homo Ludens is a small, independent collection of history games, made in Rotterdam. Each game takes one historical idea and turns it into something you can play in a few minutes.</p>
+      <p>Homo Ludens is a small, independent collection of history games, made in Rotterdam: from a five-minute daily map puzzle to an evening at the helm of the Dutch East India Company or a detective's desk in 1850 London. Each game takes one historical idea and turns it into something you can play. The name comes from Johan Huizinga's 1938 book, which argued that play is older than culture.</p>
       <p>Spotted a mistake? Every game has a way to report it, and corrections are welcome.</p>
       <p>Come and talk history, share your results and hear about new games first on the <a href="https://discord.gg/7PcDfAMdr5" target="_blank" rel="noopener">Homo Ludens Discord</a>.</p>
     </div>
@@ -419,6 +445,13 @@ footer a { color: var(--ink-soft); }
   });
 
   // Kantar: games against the rival merchant (summary written by the game)
+  // a match in progress (the game's own save, "kantar-game-v04"): offer to continue it
+  var KS = get("kantar-game-v04"), KG = KS && KS.G;
+  if (KG && typeof KG.turn === "number" && KG.phase && KG.phase !== "end") {
+    document.getElementById("kaTitle").textContent = "Round " + Math.min(6, KG.turn + 1) + " of 6";
+    document.getElementById("kaMeta").textContent = (KG.mode === "narh" ? "Narh rules" : "Classic rules") + " · your match is saved where you left it";
+    document.getElementById("kaToday").hidden = false;
+  }
   var KR = get("kantar.record.v1");
   if (KR && KR.v === 1 && KR.played) {
     tiles.push(["<b>" + KR.won + "/" + KR.played + "</b><span>Kantar games won</span><small>" + (KR.master && KR.master.played ? KR.master.won + " against the Master" : "try the Master next") + "</small>"]);
@@ -431,6 +464,20 @@ footer a { color: var(--ink-soft); }
 
   // New games by email (shown only when the server side is configured)
   var SITE_KEY = "0x4AAAAAAFRMZwiuLLLgZLqX", token = null, wid = null;
+  // the "continue" strip: one link per game with something in progress (from the cards below)
+  (function () {
+    var bar = document.getElementById("resumeBar"), n = 0;
+    [["rvToday", "rvPlay", "Retourvloot"], ["polToday", "polGo", "Polder"], ["teaToday", "teaGo", "A Cup of Tea"], ["kaToday", "kaGo", "Kantar"]].forEach(function (x) {
+      var box = document.getElementById(x[0]), go = document.getElementById(x[1]);
+      if (!box || box.hidden || !go) return;
+      var a = document.createElement("a"); a.href = go.getAttribute("href"); a.setAttribute("data-from", "resume");
+      a.textContent = x[2] + " →"; bar.appendChild(a); n++;
+      a.addEventListener("click", function () { track("portal_play", { game: x[1].replace(/Go|Play/, "").replace("rv", "retourvloot").replace("pol", "polder").replace("tea", "cupoftea").replace("ka", "kantar"), from: "resume" }); });
+    });
+    if (n) bar.hidden = false;
+    var dt = document.getElementById("dTitle"), dm = document.getElementById("dMeta"), note = document.getElementById("blCardNote");
+    if (note && dt) note.textContent = "Today: " + dt.textContent + (/Done today/.test(dm.textContent) ? " · done" : "");
+  })();
   fetch("/api/newsletter/status").then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) {
     if (!j || !j.enabled) return;
     document.getElementById("newsSec").hidden = false;

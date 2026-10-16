@@ -17,7 +17,7 @@
      for a midgame ad (the SDK itself allows at most one every 3 minutes).
    - Links: root-relative links to the Homo Ludens site open the site in a new tab (itch) or are hidden (CG).
 
-   Config (window.HL_PLATFORM, written by the builder): { id, game, site, playing, adBefore, hide, keys, timeout } */
+   Config (window.HL_PLATFORM, written by the builder): { id, game, site, sdk, playing, adBefore, hide, keys, timeout } */
 (function () {
   'use strict';
   var C = window.HL_PLATFORM || {};
@@ -82,7 +82,7 @@
   // ---------------------------------------------------------------- gameplay, ads
   var playing = false;
   HLP.gameplay = function (on) {
-    on = !!on && !HLP.adPlaying && !document.hidden;
+    on = !!on && !HLP.adPlaying && !HLP.adPending && !document.hidden;
     if (on === playing) return; playing = on; log('gameplay', on);
     try { if (HLP.sdk) HLP.sdk.game[on ? 'gameplayStart' : 'gameplayStop'](); } catch (e) {}
   };
@@ -90,23 +90,53 @@
   function poll() { if (check) { var v = false; try { v = !!check(); } catch (e) {} HLP.gameplay(v); } }
   HLP.happytime = function () { try { if (HLP.sdk) HLP.sdk.game.happytime(); } catch (e) {} };
   HLP.canAd = function () { return !!(HLP.sdk && HLP.sdk.ad); };
+  // One ad at a time. From the request until the ad is over (finished, failed, unfilled or timed out) the game is
+  // "in an ad": gameplay is reported stopped and cannot restart, sound is off once the ad starts, and a
+  // transparent layer takes every click, tap and key, so the player cannot act or ask for a second ad.
+  // Each request has an id; callbacks that arrive after their request was closed (e.g. adStarted after the
+  // 10 s no-answer limit) are ignored, so a late ad can never leave the game silent or locked.
+  var current = null, reqId = 0, shield = null;
+  function lock(on) {
+    if (on && !shield) {
+      shield = document.createElement('div');
+      shield.setAttribute('aria-hidden', 'true');
+      shield.style.cssText = 'position:fixed;inset:0;z-index:2147483646;background:transparent;cursor:wait';
+      ['pointerdown', 'pointerup', 'click', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'wheel', 'contextmenu'].forEach(function (t) {
+        shield.addEventListener(t, function (e) { e.preventDefault(); e.stopPropagation(); }, { passive: false });
+      });
+      document.body.appendChild(shield);
+    } else if (!on && shield) { shield.remove(); shield = null; }
+  }
+  window.addEventListener('keydown', function (e) { if (current) { e.preventDefault(); e.stopImmediatePropagation(); } }, true);
+  HLP.adPending = false;
   HLP.ad = function (kind) {
-    return new Promise(function (res) {
-      if (!HLP.canAd()) return res(false);
-      var done = false, started = false, was = playing;
-      HLP.gameplay(false);
-      var fin = function (ok) { if (done) return; done = true; HLP.adPlaying = false; applyAudio(); log('ad', kind, ok); res(ok); if (was) poll(); };
-      // no answer at all (blocked script, no callbacks): carry on after 10 s; a started ad gets 3 minutes
-      setTimeout(function () { if (!started) fin(false); }, 10000);
-      setTimeout(function () { fin(false); }, 180000);
-      try {
-        HLP.sdk.ad.requestAd(kind, {
-          adStarted: function () { started = true; HLP.adPlaying = true; applyAudio(); },
-          adFinished: function () { fin(true); },
-          adError: function (e) { log('adError', e && e.code); fin(false); }
-        });
-      } catch (e) { fin(false); }
-    });
+    if (!HLP.canAd()) return Promise.resolve(false);
+    if (current) return current.promise.then(function () { return false; }); // a second request while one is open gets nothing
+    var id = ++reqId, was = playing, res;
+    var promise = new Promise(function (r) { res = r; });
+    current = { id: id, promise: promise };
+    HLP.adPending = true; HLP.gameplay(false); lock(true);
+    var t1 = null, t2 = null;
+    var fin = function (ok) {
+      if (!current || current.id !== id) return;          // closed already: ignore late callbacks
+      current = null; clearTimeout(t1); clearTimeout(t2);
+      HLP.adPending = false; HLP.adPlaying = false; lock(false); applyAudio();
+      log('ad', kind, ok); res(ok); if (was) poll();
+    };
+    // no answer at all (blocked script, no callbacks): carry on after 10 s; a started ad gets 3 minutes
+    t1 = setTimeout(function () { fin(false); }, 10000);
+    try {
+      HLP.sdk.ad.requestAd(kind, {
+        adStarted: function () {
+          if (!current || current.id !== id) return;
+          clearTimeout(t1); t2 = setTimeout(function () { fin(false); }, 180000);
+          HLP.adPlaying = true; applyAudio();
+        },
+        adFinished: function () { fin(true); },
+        adError: function (e) { log('adError', e && e.code); fin(false); }
+      });
+    } catch (e) { fin(false); }
+    return promise;
   };
   HLP.midgame = function () { return HLP.ad('midgame'); };
   // rewarded: the callback runs at most once, and only after a finished ad
@@ -170,15 +200,29 @@
       });
     }, Promise.resolve());
   }
+  // The SDK file is loaded here (not with a blocking <script> tag), so a slow or failing download cannot hang the
+  // page: loading and init() share one time limit (C.timeout, 8 s), after which the game starts without the SDK.
+  function loadSDK(url) {
+    return new Promise(function (res) {
+      if (window.CrazyGames && window.CrazyGames.SDK) return res(true);
+      var s = document.createElement('script'); s.src = url; s.async = true;
+      s.onload = function () { res(!!(window.CrazyGames && window.CrazyGames.SDK)); };
+      s.onerror = function () { log('SDK script failed'); res(false); };
+      document.head.appendChild(s);
+    });
+  }
   function initSDK() {
     return new Promise(function (res) {
       if (!CG) return res(null);
-      var S = window.CrazyGames && window.CrazyGames.SDK; if (!S) return res(null);
-      var t = setTimeout(function () { log('SDK init timed out'); res(null); }, C.timeout || 8000);
-      Promise.resolve().then(function () { return S.init(); }).then(function () {
-        clearTimeout(t); HLP.env = S.environment;
-        res(S.environment === 'crazygames' || S.environment === 'local' ? S : null);
-      }, function (e) { clearTimeout(t); log('SDK init failed', e); res(null); });
+      var over = false, end = function (v) { if (!over) { over = true; res(v); } };
+      setTimeout(function () { log('SDK load/init timed out'); end(null); }, C.timeout || 8000);
+      loadSDK(C.sdk).then(function (ok) {
+        var S = ok && window.CrazyGames && window.CrazyGames.SDK; if (!S) return end(null);
+        return Promise.resolve().then(function () { return S.init(); }).then(function () {
+          HLP.env = S.environment;
+          end(S.environment === 'crazygames' || S.environment === 'local' ? S : null);
+        }, function (e) { log('SDK init failed', e); end(null); });
+      });
     });
   }
   HLP.ready = new Promise(function (done) {

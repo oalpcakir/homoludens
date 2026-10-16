@@ -327,10 +327,16 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
   // platform packages: the live site first (new dailies arrive without a re-upload), then the copies in the package
   const DAYS_FALLBACK = (window.BORDERLINES_CONFIG || {}).daysFallback || "";
   const dayCache = {};
-  const fetchDay = (base, i) => fetch(base + (i + 1) + ".json").then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); });
+  // with a fallback, the remote copy gets 4 s (an unanswered request must not hold the game)
+  const fetchDay = (base, i, ms) => {
+    const ac = ms && window.AbortController ? new AbortController() : null, t = ac && setTimeout(() => ac.abort(), ms);
+    return fetch(base + (i + 1) + ".json", ac ? { signal: ac.signal } : undefined)
+      .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .finally(() => t && clearTimeout(t));
+  };
   function getDay(i) {
     if (DATA.daily) return Promise.resolve(DATA.daily[i]);
-    if (!dayCache[i]) dayCache[i] = fetchDay(DAYS_URL, i)
+    if (!dayCache[i]) dayCache[i] = fetchDay(DAYS_URL, i, DAYS_FALLBACK ? 4000 : 0)
       .catch((e) => { if (DAYS_FALLBACK) return fetchDay(DAYS_FALLBACK, i); throw e; })
       .catch((e) => { delete dayCache[i]; throw e; });
     return dayCache[i];

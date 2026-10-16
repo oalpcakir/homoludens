@@ -28,7 +28,7 @@
     } catch (e) {}
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     // Every page is tagged with its game and version (filled in by the builders from games.json).
-    var GAME = "polder", VERSION = "2026.10";
+    var GAME = "polder", VERSION = "2026.10.16";
     // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
     // the matching standard event is sent once next to it, with legacy_event naming the original.
     var STD = {
@@ -46,6 +46,9 @@
         var props = { legacy_event: ev.event }, src = ev.properties || {};
         for (var k in src) if (k.charAt(0) !== "$" && k !== "token" && k !== "distinct_id") props[k] = src[k];
         if (/resume/.test(ev.event)) props.resume = true;
+        // what a "completed" covers, so whole games are not compared with single scenes or regions:
+        // game (a Borderlines daily or practice set, a Retourvloot company, a Kantar match, Tea scene 3), scene (Tea 1-2), level (a Polder region)
+        if (name === "game_completed") props.completion_scope = GAME === "polder" ? "level" : GAME === "cupoftea" ? (Number(src.scene) === 3 ? "game" : "scene") : "game";
         setTimeout(function () { posthog.capture(name, props); }, 0);
       } catch (e) {}
       return ev;
@@ -410,7 +413,8 @@ const PF={
   loadStart(){ try{ CGSDK&&CGSDK.game.loadingStart(); }catch(e){} }, loadStop(){ try{ CGSDK&&CGSDK.game.loadingStop(); }catch(e){} },
   happy(){ try{ CGSDK&&CGSDK.game.happytime(); }catch(e){} },
   canAd(){ return !!(CGSDK&&CGSDK.ad); },
-  ad(kind){ return new Promise(res=>{ if(!this.canAd()) return res(false); let done=false; const fin=ok=>{ if(done) return; done=true; adMuted=false; applyMute(); res(ok); };
+  // in a platform package the shared adapter runs the ad (one at a time, input locked, late callbacks ignored)
+  ad(kind){ if(window.HLP&&HLP.ad) return HLP.ad(kind); return new Promise(res=>{ if(!this.canAd()) return res(false); let done=false; const fin=ok=>{ if(done) return; done=true; adMuted=false; applyMute(); res(ok); };
     try{ CGSDK.ad.requestAd(kind,{ adStarted:()=>{ adMuted=true; applyMute(); }, adFinished:()=>fin(true), adError:()=>fin(false) }); }catch(e){ fin(false); } }); },
 };
 const STORE={
@@ -431,7 +435,7 @@ function validRun(d){ const n=COLS*ROWS, arr=k=>Array.isArray(d[k])&&d[k].length
     &&d.S&&typeof d.S==='object'&&Array.isArray(d.S.queue)&&Array.isArray(d.structs)&&Array.isArray(d.houses)&&Array.isArray(d.sheep)); }
 function loadRun(){ let d=null; try{ const v=STORE.get('polder.run.v1'); if(v) d=JSON.parse(v); }catch(e){} if(!d) d=MEMRUN; return validRun(d)?d:null; }
 // Read-only view for the browser smoke tests (tests/smoke); the game never reads it.
-window.__polderTest={ snapshot:()=>S&&LV?{lv:LV.id,year:S.year,busy:!!S.busy,piece:S.piece,queue:JSON.stringify(S.queue),G:Array.from(G).join(''),rp:rngP.state(),rs:rngS.state()}:null };
+window.__polderTest={ get cell(){ return CS; }, snapshot:()=>S&&LV?{lv:LV.id,year:S.year,busy:!!S.busy,piece:S.piece,queue:JSON.stringify(S.queue),G:Array.from(G).join(''),rp:rngP.state(),rs:rngS.state()}:null };
 function clearRun(){ MEMRUN=null; STORE.remove('polder.run.v1'); }
 function resumeRun(d){
   inLevel=true;
@@ -955,8 +959,11 @@ async function waitDecade(){
 }
 async function useFinger(i){
   if(S.fingers<=0){
-    if(PF.canAd()&&!S.adFinger){ S.busy=true; const r=await card({yr:'Out of fingers',title:'One more finger?',text:'Watch a short ad and a villager comes running to plug this crack. Once per region.',btn:'▶ Watch ad',btn2:'No thanks'}); S.busy=false;
-      if(r===1){ const ok=await PF.ad('rewarded'); if(ok){ S.adFinger=1; S.fingers++; } else { toast('No ad right now. Try plugging cracks with a second row of dikes.'); return; } } else return; }
+    if(PF.canAd()&&!S.adFinger){ S.busy=true; const r=await card({yr:'Out of fingers',title:'One more finger?',text:'Watch a short ad and a villager comes running to plug this crack. Once per region.',btn:'▶ Watch ad',btn2:'No thanks'});
+      if(r!==1){ S.busy=false; return; }
+      // the board stays locked (S.busy) until the ad is over; the finger is given only for a finished ad, once
+      const ok=await PF.ad('rewarded'); S.busy=false;
+      if(ok&&!S.adFinger){ S.adFinger=1; S.fingers++; } else { toast('No ad right now. Try plugging cracks with a second row of dikes.'); return; } }
     else { toast('No fingers left! They recharge every century.'); sfx.nope(); return; } }
   S.fingers--; crack[i]=0; S.plugs=(S.plugs||0)+1; sfx.plug(); achCheck();
   for(let k=0;k<8;k++) parts.push(P(cx(i)+.5,cy(i)+.5,'spark'));
@@ -1050,7 +1057,8 @@ function end(){
     list:qlist+`<button class="sharebtn" id="shareBtn">${!CG&&navigator.share&&matchMedia('(pointer:coarse)').matches?'Share result':'Copy result to share'}</button>`+(CG?'':'<div data-hl-next></div>'), btn:nowOpen?`Next: ${nextL.name}`:'Try again', btn2:'All regions',
     onShow:b=>{ const sb=b.querySelector('#shareBtn'); sb.onclick=()=>{ if(!CG&&navigator.share&&matchMedia('(pointer:coarse)').matches){ track('polder_share',{level:LV.id,stars:st,how:'native'}); navigator.share({text:shareTxt.split('\n')[0],url:shareUrl}).catch(()=>{}); return; } copyText(shareTxt).then(ok=>{ sb.textContent=ok?'Copied!':'Could not copy'; track('polder_share',{level:LV.id,stars:st}); }); }; }
   }).then(async r=>{
-    if(PF.canAd()) await PF.ad('midgame');
+    // a midgame ad only on the way into the next round of play, never on the "All regions" navigation button
+    if(r!==2&&PF.canAd()) await PF.ad('midgame');
     if(epi){ await card({yr:'After 1953',art:'dam',title:'The Delta Works',text:"After the flood of 1953 the Dutch began the Delta Works: dams, sluices and storm-surge barriers across the river mouths of Zeeland and South Holland. The last great piece, the Maeslantkering near Rotterdam, was finished in 1997.",eff:'You won every region. The whole map is yours.',btn:'See the map'}); levelSelect(); return; }
     if(r===2) levelSelect(); else startLevel(nowOpen?nextL.id:LV.id); });
 }
@@ -1542,7 +1550,7 @@ let last=performance.now();
 function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; update(dt); draw(); requestAnimationFrame(frame); }
 window.addEventListener('resize',resize);
 newGame('friesland'); resize(); requestAnimationFrame(frame);
-window.__polder={PF,dbg:{preview:()=>preview,storm,setYear:y=>{S.year=y;updateUI();},structs:()=>structs,houses:()=>houses,spawnAnimal,refresh:()=>{open=computeOpen(G);computeLakes();updateUI();},tag:()=>tag},startLevel,levelSelect,checkQuests,applyUp,card,get S(){return S},get G(){return G},place,placement,setHover:(x,y)=>setHover({x,y}),waitDecade};
+window.__polder={PF,dbg:{preview:()=>preview,storm,end:()=>end(),crack:i=>{ if(G[i]===DIKE) crack[i]=1; },setYear:y=>{S.year=y;updateUI();},structs:()=>structs,houses:()=>houses,spawnAnimal,refresh:()=>{open=computeOpen(G);computeLakes();updateUI();},tag:()=>tag},startLevel,levelSelect,checkQuests,applyUp,card,get S(){return S},get G(){return G},place,placement,setHover:(x,y)=>setHover({x,y}),waitDecade};
 
 // a damaged or unknown run save also counts as "not new": it is left alone (not cleared by an automatic start)
 function isNewPlayer(){ const pr=loadProg(); let raw=null; try{ raw=STORE.get('polder.run.v1'); }catch(e){} return !raw&&!loadRun()&&!LEVELS.some(L=>pr[L.id])&&!Object.keys(pr._seen||{}).length; }

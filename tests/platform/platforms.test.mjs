@@ -22,14 +22,20 @@ before(async () => {
 after(async () => { await browser?.close(); Object.values(servers).forEach(s => s.close()); });
 
 // storage: 'ok' | 'blocked' (every localStorage call throws, as in a third-party iframe with storage off)
-async function open(platform, game, { cg = {}, storage = 'ok', seed, path = '/index.html', viewport = { width: 1400, height: 900 } } = {}) {
+// net: { sdk: 'hang' | 'fail', site: 'hang' } — the SDK file or the Homo Ludens site never answers / fails
+async function open(platform, game, { cg = {}, storage = 'ok', seed, path = '/index.html', viewport = { width: 1400, height: 900 }, net = {} } = {}) {
   const srv = servers[platform + game];
   const ctx = await browser.newContext({ viewport });
   const external = [];
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => {
     const u = r.request().url();
-    if (u.startsWith('https://sdk.crazygames.com/')) return r.fulfill({ body: MOCK, contentType: 'text/javascript' });
+    if (u.startsWith('https://sdk.crazygames.com/')) {
+      if (net.sdk === 'hang') return; // never answered
+      if (net.sdk === 'fail') return r.abort();
+      return r.fulfill({ body: MOCK, contentType: 'text/javascript' });
+    }
     external.push(u);
+    if (net.site === 'hang' && /homoludens/.test(u)) return; // never answered
     return r.fulfill({ status: 204, body: '' });
   });
   await ctx.addInitScript(([c, st, sd]) => {
@@ -50,7 +56,7 @@ async function open(platform, game, { cg = {}, storage = 'ok', seed, path = '/in
   page.on('pageerror', e => problems.push('JS error: ' + e.message));
   page.on('console', m => { if (m.type() === 'error' && !/status of 204|Failed to load resource/.test(m.text())) problems.push('console: ' + m.text()); });
   page.on('response', r => { if (r.url().startsWith(srv.url) && r.status() >= 400) problems.push(`HTTP ${r.status()} ${r.url()}`); });
-  await page.goto(srv.url + path);
+  await page.goto(srv.url + path, { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => !!(window.HLP && window.HLP.ready), null, { timeout: 5000 });
   await page.evaluate(() => window.HLP.ready);
   await page.waitForTimeout(400);
@@ -125,7 +131,7 @@ test('crazygames · kantar: progress goes to SDK data and survives a reload (res
   const log = await cgLog(t.page);
   assert.ok(log.includes('data.set:kantar-game-v04'), 'game not saved through SDK data');
   assert.ok(log.includes('data.set:kantar-set'), 'settings not saved through SDK data');
-  await t.page.reload(); await t.page.evaluate(() => HLP.ready); await t.page.waitForTimeout(500);
+  await t.page.reload({ waitUntil: 'domcontentloaded' }); await t.page.waitForFunction(() => !!window.HLP); await t.page.evaluate(() => HLP.ready); await t.page.waitForTimeout(500);
   assert.ok(await t.page.isVisible('#resumeSaved'), 'no resume after reload');
   assert.deepEqual(t.problems, []);
   await t.close();
@@ -174,27 +180,123 @@ test('crazygames: the platform mute setting and ads suspend the game\'s sound; i
   await t.close();
 });
 
-test('crazygames · polder: rewarded finger only after a finished ad, never after an unfilled one', async () => {
-  for (const [ad, expect] of [['finish', 1], ['unfilled', 0]]) {
+// Polder's real "one more finger" path: a cracked dike, no fingers left, click it, choose "Watch ad"
+async function polderFingerOffer(t) {
+  await START.polder(t.page);
+  // a dike piece next to the village, then crack one of its squares
+  const box = await t.page.locator('#cv').boundingBox();
+  let i = -1;
+  for (let row = 11; row >= 4 && i < 0; row--) for (let col = 1; col < 25 && i < 0; col += 2) {
+    await t.page.mouse.click(box.x + box.width * (col + .5) / 26, box.y + box.height * (row + .5) / 16);
+    await t.page.waitForTimeout(150);
+    i = await t.page.evaluate(() => window.__polder.G.findIndex(v => v === 5)); // DIKE
+  }
+  assert.ok(i >= 0, 'could not place a dike');
+  await t.page.evaluate(i => { window.__polder.dbg.crack(i); window.__polder.S.fingers = 0; window.__polder.S.adFinger = 0; }, i);
+  const cs = await t.page.evaluate(() => window.__polderTest.cell);
+  const r = await t.page.locator('#cv').boundingBox();
+  const x = i % 26, y = Math.floor(i / 26);
+  await t.page.mouse.move(r.x + (x + .5) * cs, r.y + (y + .5) * cs); await t.page.waitForTimeout(100);
+  await t.page.mouse.click(r.x + (x + .5) * cs, r.y + (y + .5) * cs);
+  await t.page.getByRole('button', { name: '▶ Watch ad' }).click();
+}
+test('crazygames · polder: the real "one more finger" flow rewards once after a finished ad, never after an unfilled one; board locked meanwhile', async () => {
+  for (const [ad, expect] of [['slow', 1], ['unfilled', 0]]) {
     const t = await open('crazygames', 'polder', { cg: { ad } });
-    await START.polder(t.page);
-    const got = await t.page.evaluate(async () => {
-      const P = window.__polder; const S = P.S; S.fingers = 0; S.adFinger = 0;
-      const before = S.fingers;
-      const ok = await P.PF.ad('rewarded');
-      if (ok) { S.adFinger = 1; S.fingers++; }
-      return S.fingers - before;
-    });
-    assert.equal(got, expect, 'ad ' + ad);
+    await polderFingerOffer(t);
+    await t.page.waitForTimeout(300);
+    if (ad === 'slow') {
+      // still waiting for the ad to start: the board is busy and the adapter holds input
+      assert.deepEqual(await t.page.evaluate(() => [window.__polder.S.busy, HLP.adPending]), [true, true]);
+    }
+    await waitLog(t.page, "l => l.includes('adFinished') || l.includes('adError')");
+    await t.page.waitForTimeout(300);
+    const got = await t.page.evaluate(() => [window.__polder.S.fingers, window.__polder.S.adFinger, window.__polder.S.busy, HLP.adPending]);
+    assert.equal(got[0], 0, 'the extra finger was not used on the crack');  // given (+1) and spent on the crack (-1)
+    assert.equal(got[1], expect, 'ad ' + ad);
+    const modal = await t.page.evaluate(() => !document.getElementById('modal').classList.contains('hidden') && document.getElementById('mbox').innerText.slice(0, 80));
+    assert.equal(got[2] && !modal, false, 'board still locked: ' + modal); assert.equal(got[3], false);
+    const log = await cgLog(t.page);
+    assert.equal(log.filter(x => x === 'requestAd:rewarded').length, 1);
+    assert.deepEqual(t.problems, []);
     await t.close();
   }
 });
 
-test('crazygames · cupoftea: scenes link inside the package and progress carries over', async () => {
+test('crazygames · polder: "All regions" after a region shows no ad; the next region does', async () => {
+  for (const [btn, wantAd] of [['All regions', false], ['next', true]]) {
+    const t = await open('crazygames', 'polder');
+    await START.polder(t.page);
+    // finish the region at once through the game's own end-of-region card
+    await t.page.evaluate(() => window.__polder.dbg.end());
+    await t.page.waitForFunction(() => /goals/.test(document.getElementById('mbox')?.innerText || ''), null, { timeout: 15000 });
+    await t.page.waitForTimeout(400);
+    if (btn === 'All regions') await t.page.click('#mOk2'); else await t.page.click('#mOk');
+    await t.page.waitForTimeout(1200);
+    const ads = (await cgLog(t.page)).filter(x => x === 'requestAd:midgame').length;
+    assert.equal(ads > 0, wantAd, btn);
+    await t.close();
+  }
+});
+
+test('crazygames: while an ad is pending, gameplay cannot restart, clicks are held and a second request gets nothing', async () => {
+  const t = await open('crazygames', 'kantar', { cg: { ad: 'slow' } });
+  await START.kantar(t.page);
+  await waitLog(t.page, "l => l.includes('gameplayStart')");
+  const p = t.page.evaluate(() => HLP.midgame());
+  await t.page.waitForTimeout(900); // 2 poll ticks, ad not started yet
+  let log = await cgLog(t.page);
+  const req = log.indexOf('requestAd:midgame');
+  assert.ok(req >= 0);
+  assert.ok(!log.slice(req).includes('gameplayStart'), 'gameplayStart while the ad was pending: ' + log.join(','));
+  assert.equal(await t.page.evaluate(() => HLP.adPending), true);
+  // a click on the stall goes to the shield, not the game; a second ad request returns false without a new request
+  const before = await t.page.evaluate(() => (ui.sel || []).length);
+  await t.page.mouse.click(700, 760);
+  assert.equal(await t.page.evaluate(() => (ui.sel || []).length), before, 'the click reached the game during the ad');
+  assert.equal(await t.page.evaluate(() => HLP.ad('midgame')), false);
+  assert.equal(await p, true);
+  log = await cgLog(t.page);
+  assert.equal(log.filter(x => x === 'requestAd:midgame').length, 1, 'second request reached the SDK');
+  await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStart'");
+  assert.equal(lastGp(await cgLog(t.page)), 'gameplayStart', 'gameplay did not resume after the ad');
+  assert.deepEqual(await t.page.evaluate(() => [HLP.adPending, HLP.adPlaying, !!document.querySelector('[style*="2147483646"]')]), [false, false, false]);
+  await t.close();
+});
+
+test('crazygames: an ad that starts after the 10 s limit is ignored; sound and input are not left locked', async () => {
+  const t = await open('crazygames', 'kantar', { cg: { ad: 'late' } });
+  await START.kantar(t.page);
+  const st = await t.page.evaluate(async () => {
+    const c = new AudioContext(); await c.resume();
+    const ok = await HLP.midgame();                       // gives up at 10 s
+    await new Promise(r => setTimeout(r, 1200));          // the late adStarted (10.5 s) and adFinished (10.8 s) arrive
+    return { ok, playing: HLP.adPlaying, pending: HLP.adPending, audio: c.state, shield: !!document.querySelector('[style*="2147483646"]') };
+  });
+  assert.deepEqual(st, { ok: false, playing: false, pending: false, audio: 'running', shield: false });
+  await t.close();
+});
+
+for (const sdk of ['hang', 'fail']) {
+  test(`crazygames: an SDK file that ${sdk === 'hang' ? 'never loads' : 'fails to load'} still starts the game`, async () => {
+    const t0 = Date.now();
+    const t = await open('crazygames', 'kantar', { net: { sdk } });
+    assert.ok(Date.now() - t0 < 12000, 'too slow');
+    assert.equal(await t.page.evaluate(() => HLP.sdk), null);
+    await START.kantar(t.page);
+    assert.deepEqual(t.problems, []);
+    await t.close();
+  });
+}
+
+test('crazygames · cupoftea: the "next scene" link asks for a midgame ad, then opens scene 2 inside the package; progress carries over', async () => {
   const t = await open('crazygames', 'cupoftea');
-  await t.page.evaluate(() => { localStorage.setItem('cupoftea.v1', JSON.stringify({ done: [1], cur: 1 })); });
-  await t.page.goto(t.page.url().replace(/index\.html$/, '2/index.html'));
+  await START.cupoftea(t.page);
+  await t.page.evaluate(() => { const s = JSON.parse(localStorage.getItem('cupoftea.v1') || '{}'); s.done = [1]; localStorage.setItem('cupoftea.v1', JSON.stringify(s)); document.getElementById('door').classList.add('on'); });
+  await t.page.click('#door a.nextbtn');
+  await t.page.waitForURL(/\/2\/index\.html$/, { timeout: 15000 });
   await t.page.evaluate(() => HLP.ready); await t.page.waitForTimeout(400);
+  assert.ok((await cgLog(t.page)).length >= 0);
   const snav = await t.page.evaluate(() => [...document.querySelectorAll('#snav a')].map(a => a.getAttribute('href')));
   assert.deepEqual(snav, ['../index.html', '../2/index.html', '../3/index.html']);
   assert.match(await t.page.evaluate(() => localStorage.getItem('cupoftea.v1')), /"done":\[1/);
@@ -202,13 +304,13 @@ test('crazygames · cupoftea: scenes link inside the package and progress carrie
   await t.close();
 });
 
-test('itch · borderlines: dailies come from the package when the site does not answer', async () => {
-  const t = await open('itch', 'borderlines');
-  await START.borderlines(t.page);
-  await t.page.waitForTimeout(800);
-  // the first daily of a first visit is the tutorial; the daily file itself must load from days/
-  const ok = await t.page.evaluate(() => fetch('days/1.json').then(r => r.ok));
-  assert.ok(ok);
+test('itch · borderlines: with the site not answering, a real daily round opens from the package copy', async () => {
+  const t = await open('itch', 'borderlines', { net: { site: 'hang' }, seed: { 'borderlines:tutorialDone': 'true' } });
+  const t0 = Date.now();
+  await t.page.click('#btnDaily');
+  // the round's realm name appears in the cartouche once the day file has loaded
+  await t.page.waitForFunction(() => !document.getElementById('cartouche').hidden && document.getElementById('cartouche').innerText.trim().length > 3, null, { timeout: 12000 });
+  assert.ok(Date.now() - t0 < 9000, 'waited too long for the site');
   assert.deepEqual(t.problems, []);
   await t.close();
 });

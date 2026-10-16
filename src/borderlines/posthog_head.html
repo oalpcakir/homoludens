@@ -29,6 +29,9 @@
         var props = { legacy_event: ev.event }, src = ev.properties || {};
         for (var k in src) if (k.charAt(0) !== "$" && k !== "token" && k !== "distinct_id") props[k] = src[k];
         if (/resume/.test(ev.event)) props.resume = true;
+        // what a "completed" covers, so whole games are not compared with single scenes or regions:
+        // game (a Borderlines daily or practice set, a Retourvloot company, a Kantar match, Tea scene 3), scene (Tea 1-2), level (a Polder region)
+        if (name === "game_completed") props.completion_scope = GAME === "polder" ? "level" : GAME === "cupoftea" ? (Number(src.scene) === 3 ? "game" : "scene") : "game";
         setTimeout(function () { posthog.capture(name, props); }, 0);
       } catch (e) {}
       return ev;

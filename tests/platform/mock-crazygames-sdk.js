@@ -2,7 +2,7 @@
    It follows the documented v3 surface only: SDK.init(), environment, game.{gameplayStart, gameplayStop,
    loadingStart, loadingStop, happytime, settings, addSettingsChangeListener}, ad.requestAd(kind, callbacks),
    data.{getItem, setItem, removeItem, clear}, user.systemInfo.
-   Behaviour is set with localStorage "mockcg:cfg" = {initMs, initFail, initHang, ad: "finish"|"unfilled"|"silent", mute, locale}.
+   Behaviour is set with localStorage "mockcg:cfg" = {initMs, initFail, initHang, ad: "finish"|"slow"|"late"|"unfilled"|"silent", mute, locale}.
    Every call is recorded in window.__cg.log; saved data lives in localStorage under "mockcg:data:". */
 (function () {
   var cfg = {}; try { cfg = JSON.parse(localStorage.getItem('mockcg:cfg') || '{}'); } catch (e) {}
@@ -31,12 +31,14 @@
         L('requestAd:' + kind);
         var mode = cfg.ad || 'finish';
         if (mode === 'silent') return;
+        // slow: the ad starts 1.5 s after the request; late: it starts after the adapter's 10 s no-answer limit
+        var wait = mode === 'slow' ? 1500 : mode === 'late' ? 10500 : 100;
         setTimeout(function () {
           if (mode === 'unfilled') { L('adError'); cb.adError && cb.adError({ code: 'unfilled', message: 'No ad available' }); return; }
           L('adStarted'); cb.adStarted && cb.adStarted();
           window.__cg.audioDuringAd = (window.__cg.ctxStates || function () { return []; })();
           setTimeout(function () { L('adFinished'); cb.adFinished && cb.adFinished(); }, 300);
-        }, 100);
+        }, wait);
       },
       hasAdblock: function () { return Promise.resolve(false); }
     },

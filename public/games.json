@@ -2,7 +2,7 @@
   {
     "id": "borderlines",
     "no": 1,
-    "version": "2026.10",
+    "version": "2026.10.16",
     "title": "Borderlines",
     "url": "/borderlines/",
     "devices": "any",
@@ -14,7 +14,7 @@
   {
     "id": "retourvloot",
     "no": 2,
-    "version": "2026.10",
+    "version": "2026.10.16",
     "title": "Retourvloot",
     "url": "/retourvloot/",
     "devices": "desktop",
@@ -26,7 +26,7 @@
   {
     "id": "cupoftea",
     "no": 3,
-    "version": "2026.10",
+    "version": "2026.10.16",
     "title": "A Cup of Tea",
     "url": "/cupoftea/",
     "devices": "desktop",
@@ -38,7 +38,7 @@
   {
     "id": "polder",
     "no": 4,
-    "version": "2026.10",
+    "version": "2026.10.16",
     "title": "Polder",
     "url": "/polder/",
     "devices": "desktop",
@@ -50,7 +50,7 @@
   {
     "id": "kantar",
     "no": 5,
-    "version": "2026.10",
+    "version": "2026.10.16",
     "title": "Kantar",
     "url": "/kantar/",
     "devices": "any",

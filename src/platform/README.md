@@ -24,10 +24,18 @@ Nothing in a game is forked. Each package is the built site page plus:
   natural breaks for an ad, what to hide.
 - paths rewritten so every file is inside the package (relative, `index.html` spelled out, D3 shipped locally).
 
+Ads: one at a time. From the request until it is over (finished, failed, unfilled, or no answer within 10 s) the
+adapter reports gameplay stopped and will not restart it, puts a transparent layer over the page that takes every
+click, tap and key, and answers a second request with "no ad". Each request has an id, so callbacks that arrive
+late (an `adStarted` after the 10 s limit) are ignored and cannot leave the sound off or the page locked. The SDK
+file itself is loaded by the adapter with the same 8 s limit as `init()`, so a stuck download cannot hang the page.
+Polder's own `PF.ad` goes through this adapter in the packages; its midgame is asked only on "Next region / Try
+again", not on the "All regions" button, and the board stays locked while its rewarded ad runs.
+
 Game code changes made for this (all also live on the site, no behaviour change there):
 Polder's `PF.init` uses the adapter when present; Kantar and Polder share links use the site address;
-Borderlines can fall back to the dailies inside the package and leaves the link out of the result text when it
-has no site to link to.
+Borderlines can fall back to the dailies inside the package (the live copy gets 4 s) and leaves the link out of
+the result text when it has no site to link to; Polder exposes two test hooks in `__polder.dbg` (`crack`, `end`).
 
 | | itch.io | CrazyGames |
 |---|---|---|

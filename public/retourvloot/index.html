@@ -28,7 +28,7 @@
     } catch (e) {}
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     // Every page is tagged with its game and version (filled in by the builders from games.json).
-    var GAME = "retourvloot", VERSION = "2026.10";
+    var GAME = "retourvloot", VERSION = "2026.10.16";
     // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
     // the matching standard event is sent once next to it, with legacy_event naming the original.
     var STD = {
@@ -46,6 +46,9 @@
         var props = { legacy_event: ev.event }, src = ev.properties || {};
         for (var k in src) if (k.charAt(0) !== "$" && k !== "token" && k !== "distinct_id") props[k] = src[k];
         if (/resume/.test(ev.event)) props.resume = true;
+        // what a "completed" covers, so whole games are not compared with single scenes or regions:
+        // game (a Borderlines daily or practice set, a Retourvloot company, a Kantar match, Tea scene 3), scene (Tea 1-2), level (a Polder region)
+        if (name === "game_completed") props.completion_scope = GAME === "polder" ? "level" : GAME === "cupoftea" ? (Number(src.scene) === 3 ? "game" : "scene") : "game";
         setTimeout(function () { posthog.capture(name, props); }, 0);
       } catch (e) {}
       return ev;

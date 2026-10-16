@@ -57,3 +57,15 @@ test('the same legacy name maps per game (game_start on Borderlines vs Retourvlo
     assert.deepEqual(r.calls.map(c => c[0]), [std], path);
   }
 });
+
+test('game_completed says what it covers (completion_scope): a whole game, a Tea scene or a Polder region', () => {
+  const cases = [['/borderlines/', 'game_complete', {}, 'game'], ['/retourvloot/', 'game_end', {}, 'game'], ['/kantar/', 'kantar_game_end', {}, 'game'],
+    ['/cupoftea/', 'tea_scene_done', { scene: 1 }, 'scene'], ['/cupoftea/3/', 'tea_scene_done', { scene: 3 }, 'game'], ['/polder/', 'polder_level_end', { level: 'zeeland' }, 'level']];
+  for (const [path, legacy, props, scope] of cases) {
+    const r = run(path); r.calls.length = 0;
+    r.send(legacy, props);
+    assert.equal(r.calls[0][1].completion_scope, scope, path + ' ' + legacy);
+  }
+  const r = run('/polder/'); r.calls.length = 0; r.send('polder_level_start', {});
+  assert.equal(r.calls[0][1].completion_scope, undefined, 'only on game_completed');
+});

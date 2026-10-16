@@ -13,7 +13,7 @@ Nothing in the game code is copied or forked: each package is the site page plus
 - src/platform/platform.js (the adapter: storage, SDK, sound, gameplay events, ads, links; see its header),
 - a small per-game config below (what "playing" means, where midgame ads may go, what to hide),
 - root-relative paths rewritten to paths inside the package.
-CrazyGames packages: CrazyGames SDK v3, no PostHog, no feedback/next-game/share/portal links.
+CrazyGames packages: CrazyGames SDK v3 (loaded by the adapter, with a time limit), no PostHog, no feedback/next-game/share/portal links.
 itch.io packages: PostHog kept (tagged source=itch), no feedback button (its Turnstile check only works on our
 own domain), links to the site open in a new tab, the "next game" card links to the site.
 """
@@ -120,6 +120,7 @@ def defer_scripts(html):
 def js_config(game, platform, cfg):
     hide = cfg["hide"].get(platform, [])
     parts = [f"id: {json.dumps(platform)}", f"game: {json.dumps(game)}", f"site: {json.dumps(SITE)}",
+             f"sdk: {json.dumps(SDK_URL if platform == 'crazygames' else '')}",
              f"adBefore: {json.dumps(cfg['adBefore'] if platform == 'crazygames' else [])}",
              f"hide: {json.dumps(hide)}", f"keys: {json.dumps(cfg['keys'])}"]
     if cfg.get("playing"):
@@ -168,8 +169,6 @@ def page_for(game, platform, cfg, rel_out, src_rel):
         assert "/cupoftea/" not in re.sub(r"https?://\S+", "", html), "root path left in A Cup of Tea"
     # adapter first, before any game script
     head = js_config(game, platform, cfg)
-    if platform == "crazygames":
-        head = f'<script src="{SDK_URL}"></script>\n' + head
     head += f'<script src="{up}platform.js"></script>\n'
     anchor = '<meta name="viewport" content="width=device-width, initial-scale=1">'
     if anchor not in html:
