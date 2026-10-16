@@ -1,14 +1,18 @@
-"""Build Polder into ../../public/polder/ (run from this folder: python3 build_polder.py).
+"""Build Polder (run from this folder: python3 build_polder.py).
 
-polder.html is the whole game in one self-contained page; this script only adds the shared head
-(meta tags, icon, analytics, feedback button) and copies the share image and the portal plate.
+polder.html is the whole game in one self-contained page (font embedded). This script writes two builds:
+  1. the Homo Ludens site: ../../public/polder/  (+ shared head: meta tags, icon, analytics, feedback button)
+  2. CrazyGames:           ../../dist/crazygames/polder/index.html and polder-crazygames.zip
+     (CrazyGames SDK v3, window.POLDER_CG = true: saves go through the SDK Data module, no site links,
+      gameplayStart/Stop, happytime, a midgame ad between regions and an optional rewarded ad.)
 """
-import os, shutil
+import os, shutil, zipfile
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 OUT = os.path.join(ROOT, "public", "polder")
+CG_OUT = os.path.join(ROOT, "dist", "crazygames", "polder")
 import sys
-sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")))
+sys.path.insert(0, os.path.normpath(os.path.join(H, "..")))
 from site_config import SITE, canonical, analytics_head  # noqa: E402
 ph = analytics_head("polder")
 title = "Polder"
@@ -18,6 +22,11 @@ icon = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w
         "%3Crect x='3' y='15' width='26' height='14' rx='3' fill='%23b4de85'/%3E"
         "%3Crect x='3' y='13' width='26' height='4' rx='2' fill='%2393c46b'/%3E"
         "%3Cpath d='M16 6v9M11.5 8.5l9 4M11.5 12.5l9-4' stroke='%234a3a2e' stroke-width='1.6'/%3E%3C/svg%3E\">")
+src = open(os.path.join(H, "polder.html"), encoding="utf-8").read()
+anchor = '<meta name="viewport" content="width=device-width, initial-scale=1">'
+assert anchor in src
+
+# 1. site build
 head = f'''<meta name="description" content="{desc}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="{title}">
@@ -32,12 +41,18 @@ head = f'''<meta name="description" content="{desc}">
 {icon}
 {ph}
 <script src="/feedback.js" defer data-game="polder"></script>'''
-src = open(os.path.join(H, "polder.html"), encoding="utf-8").read()
-anchor = '<meta name="viewport" content="width=device-width, initial-scale=1">'
-assert anchor in src
-html = src.replace(anchor, anchor + "\n" + head, 1)
 os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
-open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(html)
+open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(src.replace(anchor, anchor + "\n" + head, 1))
 shutil.copy(os.path.join(H, "portal-plate.jpg"), os.path.join(OUT, "img", "portal-plate.jpg"))
 shutil.copy(os.path.join(H, "og-polder.png"), os.path.join(ROOT, "public", "og-polder.png"))
-print("built", OUT)
+
+# 2. CrazyGames build (single file, relative paths only)
+cg_head = f'''{icon}
+<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
+<script>window.POLDER_CG = true;</script>'''
+os.makedirs(CG_OUT, exist_ok=True)
+cg_html = src.replace(anchor, anchor + "\n" + cg_head, 1)
+open(os.path.join(CG_OUT, "index.html"), "w", encoding="utf-8").write(cg_html)
+with zipfile.ZipFile(os.path.join(ROOT, "dist", "crazygames", "polder-crazygames.zip"), "w", zipfile.ZIP_DEFLATED) as z:
+    z.write(os.path.join(CG_OUT, "index.html"), "index.html")
+print("built", OUT, "and", CG_OUT)
