@@ -2,15 +2,15 @@
 const T7 = (() => {
 const VARIETIES = [
   {n:0, id:'t00', name:'Semper Augustus', hex:'#C8102E', ink:'#fff', note:"Dr Adriaen Pauw would not sell his, whatever he was offered. Listed at 6,290 guilders on 5 February 1637. Worth nothing tonight, but there is only one, so it can never be a duplicate."},
-  {n:1, id:'t01', name:'Admirael van Enchuysen', hex:'#4B2A8C', ink:'#fff', note:"A Violetten, a purple tulip. 4,900 guilders on 5 February 1637 (Garber's price list)."},
+  {n:1, id:'t01', name:'Admirael van Enchuysen', hex:'#B03A78', ink:'#fff', note:"4,900 guilders on 5 February 1637 (Garber's price list)."},
   {n:2, id:'t02', name:'Viceroy', hex:'#7B3FB0', ink:'#fff', note:"4,203 guilders at the Alkmaar auction for one bulb of 658 aas, about 33 grams."},
   {n:3, id:'t03', name:'Admirael Liefkens', hex:'#A3162B', ink:'#fff', note:"2,968 guilders on 5 February 1637."},
   {n:4, id:'t04', name:'Admirael van der Eijck', hex:'#F26A4F', ink:'#fff', note:"1,620 guilders at the Alkmaar auction, 5 February 1637."},
   {n:5, id:'t05', name:'Bruyne Purper', hex:'#6B2D5C', ink:'#fff', note:"'Brown purple'. 2,025 guilders at the Alkmaar auction."},
-  {n:6, id:'t06', name:'Parragon Schilder', hex:'#8A5418', ink:'#fff', note:"1,615 guilders at the Alkmaar auction."},
-  {n:7, id:'t07', name:'Gouda', hex:'#F3A0BE', ink:'#2a2018', note:"1,500 guilders at the Alkmaar auction."},
+  {n:6, id:'t06', name:'Parragon Schilder', hex:'#B5177A', ink:'#fff', note:"1,615 guilders at the Alkmaar auction."},
+  {n:7, id:'t07', name:'Gouda', hex:'#E8578C', ink:'#fff', note:"1,500 guilders at the Alkmaar auction."},
   {n:8, id:'t08', name:'Gheele ende Roote van Leyden', hex:'#EE7417', ink:'#fff', note:"From 17.5 to 136.5 guilders in the five weeks before the crash."},
-  {n:9, id:'t09', name:'Admirael de Man', hex:'#E0457B', ink:'#fff', note:"From 18 to 209 guilders in the five weeks before the crash."},
+  {n:9, id:'t09', name:'Admirael de Man', hex:'#D92B23', ink:'#fff', note:"From 18 to 209 guilders in the five weeks before the crash."},
   {n:10, id:'t10', name:'Witte Croonen', hex:'#EDE6D3', ink:'#2a2018', note:"A cheap white tulip sold by the pound. From 2.2 to 57 in five weeks; by 1642 almost worthless again."},
   {n:11, id:'t11', name:'Switsers', hex:'#F2B705', ink:'#2a2018', note:"Red and yellow like a Swiss guard's uniform. A pound fetched 1,100 guilders in Amsterdam on 6 February 1637: about three years of a master carpenter's pay."},
   {n:12, id:'t12', name:'Gheele Croonen', hex:'#F7CE3E', ink:'#2a2018', note:"The commonest yellow tulip, sold by the pound. From 0.41 to 20.5 between 2 January and 5 February 1637: fifty times in five weeks."}
@@ -112,14 +112,17 @@ class Game {
         this.evening = e;
         this.save();
         await this.emit('evening', {e});
+        await this.playRound();
+        // the evening's winnings are paper; now each trader decides to cash it all in or hold into the next evening
+        await this.emit('cashout', {e});
         for (const p of P){
           if (p.units > 0 && await p.agent.sell(this, p)){
             const v = p.units * IDX[e], fee = Math.round(v * FEE);
             p.purse += Math.round(v) - fee; p.sold += Math.round(v) - fee; p.units = 0;
             await this.emit('sold', {p, v:Math.round(v), fee});
-          }
+          } else if (p.units > 0) await this.emit('held', {p});
         }
-        await this.playRound();
+        await this.emit('cashoutDone', {e});
       }
       if (!this.crashed){
         for (const p of P){ p.atCrash = Math.round(p.units * IDX[this.evening]); p.settled = Math.round(p.atCrash * SETTLE); }
@@ -150,7 +153,6 @@ class Game {
         const d = await p.agent.hitOrStay(this, p);
         if (d === 'stay'){
           p.status = 'stayed';
-          if (this.mode === 'winter' && !this.alkmaar) p.dest = await p.agent.dest(this, p);
           await this.emit('stay', {p});
         } else await this.deal(p, false);
       }
@@ -160,7 +162,9 @@ class Game {
   }
 
   async deal(p, inF3){
+    const odds = this.bustOdds(p) * (p.second ? 0 : 1);
     const c = this.drawCard();
+    await this.emit('draw', {p, odds, c});
     if (c.k === 'num'){
       if (p.nums.includes(c.v)){
         if (p.second){ const s = p.second; p.second = null; this.discard.push(c, s); await this.emit('saved', {p, c}); }
@@ -192,7 +196,7 @@ class Game {
     const q = cands.length === 1 ? cands[0] : await p.agent.target(this, p, c, cands);
     this.discard.push(c);
     if (c.k === 'freeze'){
-      q.status = 'stayed'; q.frozen = true; if (this.mode === 'winter' && !this.alkmaar) q.dest = 'paper';
+      q.status = 'stayed'; q.frozen = true;
       await this.emit('freeze', {p, q});
     } else {
       await this.emit('flip3', {p, q});
@@ -212,9 +216,7 @@ class Game {
       if (this.mode === 'classic'){ p.total += s; continue; }
       const g = s * GPP;
       if (this.alkmaar){ p.purse += 2 * g; p.lastG = 2 * g; p.lastDest = 'purse'; continue; }
-      if (!p.dest) p.dest = await p.agent.dest(this, p);
-      if (p.dest === 'purse') p.purse += g; else p.units += g / this.idx;
-      p.lastG = g; p.lastDest = p.dest;
+      p.units += g / this.idx; p.lastG = g; p.lastDest = 'paper';
     }
     this.history.push(this.players.map(p => ({s:p.last, st:p.status, d:p.lastDest})));
     await this.emit('roundEnd', {});

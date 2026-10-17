@@ -223,3 +223,31 @@ Masanın üstünde akşamları gösteren bir şerit durur. Her akşamın tarihi,
 - Botlar riski farklı okuyor (`fear`: temkinli 1,3, dengeli 1,0, açgözlü 0,5; her oyunda ±%20 sapma). Açgözlü artık kâğıdını VII'ye taşıyabiliyor ve geç çöküşe yakalanabiliyor. 3.000 oyunda kazanma: temkinli %32,5, iki dengeli toplam %42,5, açgözlü %25.
 - **Kaydet/devam:** Her akşamın başında (çöküş zarından sonra), Alkmaar'dan önce ve her klasik turdan önce `localStorage` (`tulip7.save.v1`). Açılışta "Continue your winter". Akşamın ortasında çıkılırsa o akşam baştan oynanır. 299 oyunluk testte devam ettirilen oyun kesintisiz oyunla aynı sonuca çıkıyor.
 - **Mobil:** 700 px altında rakipler yan yana üç kompakt sütun (kısa ad, toplam, mini kartlar).
+
+## 11. v0.3: oynanış (2026-10-17)
+
+Görsel değişikliği iptal edildi (lale görselleri eski hâlinde; rozet renkleri de eski görsellere göre geri alındı). Sorun: oyun anlaşılmadan akıyordu, fiziksel kart oyununun "bir tane daha mı?" heyecanı yoktu. Yapılanlar:
+
+**Risk ve gerilim**
+- **Tehlike çipleri:** Sıra sendeyken elindeki her lalenin destede kaç kopyası kaldığı ("12 · 9 left") ve toplamda kaç kartın seni batıracağı ("17 of 82 papers would blow you away: 21%").
+- **Masadaki para:** "On the table f370", büyük. Rakiplerde de "On the table".
+- **Kapalı çekiş:** Kart önce kapalı gelir; bekleme süresi riskle uzar (%0'da ~0,25 sn, %30'da ~0,6 sn). Risk ≥%25 ise kart titrer ve kalp atışı sesi çalar. Risk ≥%30'ken kurtulunca "Phew!".
+- **Lale kitabı:** Her oyuncunun altında 7 sayfalık şerit; topladığı farklı laleler renkli dolar. Rakiplerde küçük noktalar.
+
+**Kış katmanı sadeleşti**
+- Akşamda kazanılan her şey otomatik **kâğıda** yazılır (o akşamın endeksinden). Durunca kese/kâğıt seçimi yok.
+- Tek kış kararı **akşam sonunda**: kâğıdı tut ya da hepsini bozdur (%2,5 şarap parası). Ekranda bir sonraki akşamın endeks artışı ve çöküş riski yazar. Akşamın içindeki "çek ya da dur"un kış ölçeğindeki aynısı.
+- Wijnkoop artık yalnızca durdurur (kâğıda zorlama kalktı, çünkü her şey zaten kâğıda gidiyor).
+- Denge değişmedi (3.000 bot oyunu: temkinli %32,6, dengeli toplam %42,4, açgözlü %25,1).
+
+**Akış**
+- Akşam başı penceresi kalktı: tarih kısa bir bildirimle gelir, haber tahtanın altındaki şeritte durur.
+- Tur sonu penceresi kalktı: sonuçlar koltuklarda "+f370" çipi ve uçan rakam olarak görünür; kış modunda bozdurma kararı kontrol panelinde.
+- Pencere olarak kalanlar: çöküş, Alkmaar, oyun sonu, kurallar.
+- Butonlar her yeniden çizimde değişmesin diye kontrol paneli yalnızca içeriği değişince yenilenir (tıklama kaçmasın).
+
+**Yaşayan rakipler ve rehber**
+- Botlar kararlarını konuşma balonuyla söyler ("Another!", riskliyken "Fortune favours the bold!", "That'll do.", batınca "Ach!", bozdururken "Cashing in."). Riskli anda daha uzun düşünürler.
+- **İlk oyun ipuçları** (elin üstünde sarı kutu, "Got it" ile kapanır, bir kez gösterilir, `tulip7.tips`): ilk sıra, ilk tehlike (≥%20), 5 lale, ilk aksiyon kartı, ilk "gone with the wind", ilk bozdurma kararı. Üst çubuktaki **Help** düğmesi ipuçlarını ve tehlike göstergesini birlikte açıp kapatır.
+
+**Test:** Kış, klasik ve 390 px kış oyunları otomatik olarak sonuna kadar oynandı; hata yok, 94 kart tam; kaydet/devam 299 oyunda tutarlı.

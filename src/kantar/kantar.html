@@ -535,6 +535,11 @@ button.seal.on{background:linear-gradient(#f1d99a,#d2a650);color:#2b1e14;border-
 </style>
 <meta name="description" content="Kantar: Kapalıçarşı düellosu. Dört renkli mal, tek terazi.">
 
+<style>
+/* ChatGPT art (src/kantar/art, see the art brief). build_kantar.py fills in the image variables below; without them these rules stay off. */
+.rivface{display:none;width:40px;height:40px;border-radius:50%;margin:-6px 10px -10px 0;vertical-align:middle;background:center/cover no-repeat;box-shadow:0 0 0 2px rgba(205,166,102,.55),0 3px 8px rgba(0,0,0,.45)}
+/*KANTAR_ART*/
+</style>
 </head>
 <body>
 <div class="frieze" aria-hidden="true"></div>
@@ -1616,7 +1621,7 @@ function stall(w,r,title){
   const cols=SU.map(c=>{
     const a=G.tab[w][c],b=G.tab[o][c],cls=a>b?'win':a<b?'lose':'',txt=a>b?t('ahead'):a<b?t('behind'):(a===0?'—':t('tied'));
     return `<div class="col"><div class="ct">${sym(c)}<span class="ct-name">${gname(c)}</span> <b>${a}</b><span class="st ${cls}">${txt}</span></div></div>`}).join('');
-  return `<div class="hd"><h2>${title}</h2><span class="meta">${role}${role?' · ':''}${t('load',r.tot[w])}</span><span class="sp"></span><div class="seals">${seal('uc',t('threePans'),S.uc,ucBtn,ui.uc,t('threePansTip'))}${seal('kes',t('cut'),S.kes,kesBtn,ui.cut,t('cutTip'))}</div></div><div class="cols">${cols}</div>`;
+  return `<div class="hd"><h2>${w===1?`<i class="rivface ${set.diff==='usta'?'usta':'cirak'}" aria-hidden="true"></i>`:''}${title}</h2><span class="meta">${role}${role?' · ':''}${t('load',r.tot[w])}</span><span class="sp"></span><div class="seals">${seal('uc',t('threePans'),S.uc,ucBtn,ui.uc,t('threePansTip'))}${seal('kes',t('cut'),S.kes,kesBtn,ui.cut,t('cutTip'))}</div></div><div class="cols">${cols}</div>`;
 }
 function toggleSeal(k){
   if(k==='uc'){ui.uc=!ui.uc;

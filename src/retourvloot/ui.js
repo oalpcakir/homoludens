@@ -16,7 +16,7 @@ function buildStatic() {
   const wh = $('wh'); wh.innerHTML = '';
   for (const g of GOOD_KEYS) {
     const tr = document.createElement('tr'); tr.id = 'row-' + g;
-    tr.innerHTML = `<td>${GOODS[g].name}<span class="sub">${GOODS[g].sub}</span></td><td class="r num" id="st-${g}"></td>
+    tr.innerHTML = `<td class="good"><img class="gico" src="${'img/rv_good_' + g + '.webp'}" alt="" onerror="this.remove()">${GOODS[g].name}<span class="sub">${GOODS[g].sub}</span></td><td class="r num" id="st-${g}"></td>
       <td><div class="rel"><input type="range" min="0" max="100" step="5" id="rel-${g}" aria-label="Share of ${GOODS[g].name} to sell"><output id="relo-${g}"></output></div></td>
       <td class="r num" id="pr-${g}"></td>`;
     wh.appendChild(tr);
@@ -162,7 +162,7 @@ function renderFleet() {
   rows.sort((a, b) => order[a.v.kind] - order[b.v.kind] || a.sh.id - b.sh.id);
   const atSea = rows.filter(r => r.v.kind !== 'harbour' && r.v.kind !== 'done' && r.v.kind !== 'lost').length;
   $('fleet-count').textContent = rows.length ? `${atSea} away from home` : '';
-  $('fleet').innerHTML = rows.length ? rows.map(({ sh, v }) => `<tr><td>${esc(sh.name)}</td><td><span class="pill ${v.cls}">${v.text}</span></td><td class="r num">${money(sh.silver)}</td></tr>`).join('')
+  $('fleet').innerHTML = rows.length ? rows.map(({ sh, v }) => `<tr><td><img class="sico" src="${v.kind === 'lost' ? 'img/rv_wreck.webp' : 'img/rv_ship.webp'}" alt="" onerror="this.remove()">${esc(sh.name)}</td><td><span class="pill ${v.cls}">${v.text}</span></td><td class="r num">${money(sh.silver)}</td></tr>`).join('')
     : `<tr><td colspan="3" class="empty">No ships yet. Equip one and it will sail with the next fleet.</td></tr>`;
 }
 let lastLogKey = '';
@@ -402,6 +402,10 @@ function routePoint(p) {
   const u = (d - r.len[i - 1]) / ((r.len[i] - r.len[i - 1]) || 1);
   return [r.pts[i - 1][0] + (r.pts[i][0] - r.pts[i - 1][0]) * u, r.pts[i - 1][1] + (r.pts[i][1] - r.pts[i - 1][1]) * u];
 }
+// ship sprites for the route map (img/rv_ship.webp, rv_wreck.webp); triangles are drawn until they load
+const SPR = { ship: new Image(), wreck: new Image() };
+SPR.ship.src = 'img/rv_ship.webp'; SPR.wreck.src = 'img/rv_wreck.webp';
+SPR.ship.onload = SPR.wreck.onload = () => { try { drawMap(); } catch (e) {} };
 function drawMap() {
   const c = $('map'); if (!c || !S) return;
   const x = c.getContext('2d'), W = c.width, H = c.height, dpr = window.devicePixelRatio || 1;
@@ -465,8 +469,17 @@ function drawMap() {
     const [a, b] = P(pos);
     let ang = v.kind === 'asia' || v.kind === 'harbour' ? (v.kind === 'asia' ? Math.PI : 0) : 0;
     if (v.kind === 'out' || v.kind === 'home') { const [a2, b2] = P(routePoint(clamp(v.p + 0.01 * dir, 0, 1))); ang = Math.atan2(b2 - b, a2 - a); }
+    const spr = v.kind === 'lost' ? SPR.wreck : SPR.ship;
+    if (spr.complete && spr.naturalWidth) {
+      // ship picture (flipped to face its heading), with a small coloured dot keeping the outbound/homebound legend
+      const sz = 20 * dpr; x.save(); x.translate(a, b);
+      x.fillStyle = col; x.strokeStyle = cssVar('--chart'); x.lineWidth = 1 * dpr; x.beginPath(); x.arc(0, sz * 0.38, 3 * dpr, 0, Math.PI * 2); x.fill(); x.stroke();
+      if (Math.cos(ang) < 0) x.scale(-1, 1);
+      x.drawImage(spr, -sz / 2, -sz * 0.62, sz, sz); x.restore();
+    } else {
     x.save(); x.translate(a, b); x.rotate(ang); x.fillStyle = col; x.strokeStyle = cssVar('--chart'); x.lineWidth = 1 * dpr;
     x.beginPath(); x.moveTo(6.5 * dpr, 0); x.lineTo(-4.5 * dpr, -4 * dpr); x.lineTo(-4.5 * dpr, 4 * dpr); x.closePath(); x.fill(); x.stroke(); x.restore();
+    }
   }
 }
 
@@ -519,7 +532,7 @@ function showEnd() {
   if (!S.endTracked) { S.endTracked = true; track('game_end', { reason: S.endReason || 'charter', debt: Math.round(S.debt), cash: Math.round(S.cash), dividends: Math.round(S.stats.divPaid), monopolies: AIMS.filter(a => S.mono[a.id] > 0).length, voyages: S.stats.voyages }); }
   const yrs = Math.max(1, S.stats.divYears);
   const bankrupt = S.endReason === 'bankrupt';
-  showSheet(`<div class="when">${fmtDate(S.t)}</div><h3 id="m-title">${bankrupt ? 'The States take over' : 'The charter expires'}</h3>
+  showSheet(`<div class="when">${fmtDate(S.t)}</div><div class="cart"><img src="img/rv_cartouche.webp" alt="" onerror="this.parentNode.classList.add('noimg')"><h3 id="m-title">${bankrupt ? 'The States take over' : 'The charter expires'}</h3></div>
     <div class="body"><p>${bankrupt ? 'Your debts have passed ƒ120 million. No lender will touch Company paper, and the States General take control of its affairs.' : 'On 31 December 1799 the charter lapses. The Batavian state takes over the Company\'s possessions in Asia, and its debts.'}</p>
     <div class="endgrid">
       <span>Voyages sent</span><b class="num">${num(S.stats.voyages)} (${num(S.stats.lost)} lost)</b>

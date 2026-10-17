@@ -191,6 +191,35 @@ button{font:inherit;cursor:pointer}
 .foot a{color:#ffe08a}
 
 .who .sn{display:none}
+.strip{padding:7px 14px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;font-family:"EB Garamond",serif;font-size:17px;line-height:1.3}
+.strip[hidden]{display:none}
+.strip b{font:700 12.5px "Source Sans 3",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--delft);white-space:nowrap}
+.stake{display:flex;align-items:baseline;gap:8px;color:var(--muted);font-size:14px}
+.stake b{font:700 30px/1 "EB Garamond",serif;color:var(--ink)}
+.danger{display:flex;flex-wrap:wrap;gap:4px}
+.dchip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 8px 1px 2px;font-size:12.5px;background:#fbe4df;color:var(--bad);font-weight:700}
+.dchip i{width:21px;height:21px;border-radius:50%;background:var(--c);color:var(--ci);font:700 13px/21px "EB Garamond",serif;text-align:center;font-style:normal}
+.dchip.safe{background:#e6f2e8;color:var(--good)}
+.odds b.hot{color:var(--bad)}
+.book{display:flex;gap:3px;margin-top:8px;align-items:center}
+.book span{width:22px;height:22px;border-radius:5px;border:1.5px dashed #cdb894;font:700 12px/19px "EB Garamond",serif;text-align:center;background:rgba(255,255,255,.4)}
+.book span.f{border:1.5px solid #fff;background:var(--c);color:var(--ci);box-shadow:0 0 0 1px var(--line)}
+.book small{margin-left:6px;color:var(--muted);font-size:12.5px}
+.book.sm{gap:2px;margin-top:5px}.book.sm span{width:11px;height:11px;border-radius:3px;border-width:1px}
+.card.facedown{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.95) 0 17%,transparent 18%),repeating-linear-gradient(45deg,var(--delft) 0 6px,#2d61b8 6px 12px);border-color:#fff;justify-content:center;box-shadow:0 0 0 1px var(--line),0 4px 10px rgba(0,0,0,.3)}
+.card.facedown svg{width:46%;margin:auto}
+.card.facedown.shake{animation:deal .3s,shake .22s .3s infinite}
+@keyframes shake{25%{transform:rotate(-3deg) translateX(-2px)}75%{transform:rotate(3deg) translateX(2px)}}
+.bubble{position:absolute;top:-14px;left:64px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:3px 11px;font:600 16px "EB Garamond",serif;box-shadow:0 3px 10px rgba(0,0,0,.22);z-index:6;animation:pop .18s ease-out;white-space:nowrap}
+.bubble::after{content:"";position:absolute;left:16px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+@keyframes pop{from{transform:scale(.5);opacity:0}}
+.float{position:fixed;z-index:44;font:700 28px "EB Garamond",serif;color:var(--good);text-shadow:0 1px 0 #fff,0 0 12px rgba(255,255,255,.9);animation:rise 1.3s ease-out forwards;pointer-events:none;white-space:nowrap}
+@keyframes rise{to{transform:translateY(-56px);opacity:0}}
+.tip{margin-bottom:8px;background:#fff4cf;border:1px solid #e9c96a;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.35;display:flex;gap:8px;align-items:flex-start}
+.tip button{flex:none;border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 9px;font-size:13px;font-weight:700}
+.cash{display:flex;flex-direction:column;gap:8px}
+.cash .t{font:600 20px "EB Garamond",serif}
+.cash .odds b.hot{color:var(--bad)}
 @media (max-width:900px){
   .board{grid-template-columns:repeat(5,1fr)}
   .rivals{grid-template-columns:1fr}
@@ -214,6 +243,9 @@ button{font:inherit;cursor:pointer}
   .rivals .who .sp{display:none}.rivals .chip{font-size:10.5px;padding:1px 6px;white-space:normal}
   .rivals .money{font-size:12.5px;margin:4px 0 2px}.rivals .money span:not(.tot){display:none}.rivals .money .tot{margin-left:0}
   .rivals .tally{display:none}
+  .bubble{left:8px;top:-16px;font-size:14px}
+  .stake b{font-size:24px}
+  .strip{font-size:15px;padding:6px 10px}
   .rivals{--mw:30px}
   .rivals .mini .card .bd{min-width:19px;height:19px;font-size:12.5px;line-height:15px;top:-6px;left:-6px;padding:0 2px}
   .rivals .hand{gap:3px;min-height:46px}
@@ -244,6 +276,7 @@ button{font:inherit;cursor:pointer}
     <button class="tbtn" id="bNew">New game</button>
   </header>
   <div class="panel board" id="board"></div>
+  <div class="panel strip" id="strip" aria-live="polite"></div>
   <section class="rivals" id="rivals"></section>
   <section class="mid">
     <div class="panel deck"><div class="back" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 36V20" stroke="#3f8a4a" stroke-width="2.5"/><path d="M20 26c-6-1-9-5-10-9 5 0 9 3 10 9zM20 26c6-1 9-5 10-9-5 0-9 3-10 9z" fill="#3f8a4a"/><path d="M12 8c2 6 4 10 8 12 4-2 6-6 8-12-3 2-5 3-6 5-1-3-1-5-2-7-1 2-1 4-2 7-1-2-3-3-6-5z" fill="#d7261e"/></svg></div>
@@ -269,14 +302,15 @@ document.body.style.setProperty('--bg', `url(${ART.bg_tavern})`);
 $('#sayImg').src = ART.c_theunisz;
 
 /* ---------- settings ---------- */
-const SET = Object.assign({odds:true, fast:false, sound:true, mode:'winter'}, (() => { try { return JSON.parse(localStorage.getItem('tulip7.set')) || {}; } catch(e){ return {}; } })());
+const SET = Object.assign({help:true, fast:false, sound:true, mode:'winter'}, (() => { try { return JSON.parse(localStorage.getItem('tulip7.set')) || {}; } catch(e){ return {}; } })());
+if (SET.odds === false && SET.help === undefined) SET.help = false;
 const saveSet = () => { try { localStorage.setItem('tulip7.set', JSON.stringify(SET)); } catch(e){} };
 function syncBtns(){
-  $('#bOdds').classList.toggle('on', SET.odds); $('#bOdds').textContent = 'Odds: ' + (SET.odds ? 'on' : 'off');
+  $('#bOdds').classList.toggle('on', SET.help); $('#bOdds').textContent = 'Help: ' + (SET.help ? 'on' : 'off');
   $('#bSpeed').textContent = 'Speed: ' + (SET.fast ? 'fast' : 'normal');
   $('#bSound').classList.toggle('on', SET.sound); $('#bSound').textContent = 'Sound: ' + (SET.sound ? 'on' : 'off');
 }
-$('#bOdds').onclick = () => { SET.odds = !SET.odds; saveSet(); syncBtns(); render(); };
+$('#bOdds').onclick = () => { SET.help = !SET.help; if (!SET.help && ui.tip) ui.tip = null; saveSet(); syncBtns(); render(); };
 $('#bSpeed').onclick = () => { SET.fast = !SET.fast; saveSet(); syncBtns(); };
 $('#bSound').onclick = () => { SET.sound = !SET.sound; saveSet(); syncBtns(); };
 $('#bRules').onclick = () => showRules();
@@ -308,11 +342,14 @@ const SND = {
   thud(){ const a = ac(); if (a){ tone(a, 110, .25, .25, 'sine'); noise(a, .12, 400, 120, .7, .2); } },
   coin(){ const a = ac(); if (!a) return; tone(a, 1800, .25, .06, 'square'); tone(a, 2400, .3, .05, 'sine', .05); },
   chalk(){ const a = ac(); if (!a) return; for (let i = 0; i < 3; i++) setTimeout(() => noise(a, .12, 5000, 3000, 2, .12), i * 140); },
+  heart(){ const a = ac(); if (!a) return; tone(a, 62, .16, .4, 'sine'); tone(a, 56, .2, .3, 'sine', .2); },
+  phew(){ const a = ac(); if (!a) return; tone(a, 660, .25, .05, 'triangle'); tone(a, 880, .35, .05, 'triangle', .1); },
   crash(){ const a = ac(); if (!a) return; tone(a, 196, 1.6, .16, 'triangle'); tone(a, 185, 1.6, .12, 'triangle', .05); noise(a, 1.6, 600, 150, .5, .2); }
 };
 
 /* ---------- state ---------- */
-let G = null, ui = {pick:null, turn:null, seen:new Set(), log:[], blown:new Set()};
+let G = null, ui = freshUI();
+function freshUI(){ return {pick:null, turn:null, cash:null, seen:new Set(), log:[], blown:new Set(), pending:null, bubbles:{}, tip:null, after:false, lastOdds:0}; }
 const RIVALS = [
   {name:'Joost van Cuyck', short:'Van Cuyck', style:'cautious', img:'c_cuyck', bio:'29, Amsterdam. On 7 February 1637 he walked away from a deal: "not satisfied with the guarantor".'},
   {name:'Andries de Busscher', short:'De Busscher', style:'balanced', img:'c_busscher', bio:'31, a cooper from Haarlem, from a family of art collectors.'},
@@ -325,71 +362,124 @@ const LINES = {
   freezeSelf:["{p} pays the wine money and stands up.","{p} seals the evening with a glass."],
   flip3:["The seghsman chalks three more for {q}.","{p} calls the broker: three papers for {q}!","Three strokes on the slate for {q}."],
   saved:["{p} pays rouwkoop and walks away from the second {v}.","Regret money! {p} escapes the duplicate.","{p} buys their way out. Honour saved."],
-  stayPurse:["{p} pockets the money.","{p} takes cash. Sensible.","{p} stands up, purse in hand."],
-  stayPaper:["{p} writes it on paper.","{p} signs another promise.","Paper, says {p}. The bulbs are in the ground anyway."],
+  stay:["{p} stands up.","{p} has had enough for tonight.","{p} calls for wine and stands up."],
   turnYou:["Your turn. Another paper?","Well? The seghsman is waiting.","Another, or a glass of wine?"],
   give:["{p} hands a spare rouwkoop to {q}."]
 };
-const pickLine = (k, d) => { const a = LINES[k]; return a[Math.floor(Math.random() * a.length)].replace(/\{(\w)\}/g, (_, x) => x === 'p' ? d.p : x === 'q' ? d.q : d.v); };
+const BUB = {
+  hit:["Another!","Keep them coming.","One more paper.","Easy money."],
+  hitRisky:["Fortune favours the bold!","Just one more…","I can feel it.","Don't look at me like that."],
+  stay:["That'll do.","Wine, please.","Enough for tonight.","I'll stand."],
+  bust:["Ach!","No, no, no!","The wind!","Not again…"],
+  phew:["Phew!","Ha! Lucky.","Close one!"],
+  book:["A full book!","Seven!"],
+  sold:["Cashing in.","Coins, please.","I'll take the money."],
+  held:["I'll hold.","It can only go up.","Paper suits me."]
+};
+const pickA = a => a[Math.floor(Math.random() * a.length)];
+const pickLine = (k, d) => pickA(LINES[k]).replace(/\{(\w)\}/g, (_, x) => x === 'p' ? d.p : x === 'q' ? d.q : d.v);
 function say(t){ $('#say').textContent = t; }
 function log(h){ ui.log.unshift(h); ui.log = ui.log.slice(0, 40); $('#log').innerHTML = ui.log.map(x => `<p>${x}</p>`).join(''); }
 function toast(html, img, ms = 1100){ const t = $('#toast'); t.innerHTML = (img ? `<img src="${ART[img]}" alt="">` : '') + html; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), SET.fast ? ms * .6 : ms); }
 const nm = p => p.human ? 'You' : p.short;
 const nmIn = p => p.human ? 'you' : p.short;
+const bubT = {};
+function bubble(p, text, ms = 1500){
+  if (p.human) return;
+  ui.bubbles[p.i] = text; render();
+  clearTimeout(bubT[p.i]); bubT[p.i] = setTimeout(() => { delete ui.bubbles[p.i]; if (G) render(); }, SET.fast ? ms * .6 : ms);
+}
+function floatAt(p, text, color){
+  const el = document.querySelector(`.seat[data-i="${p.i}"] .hand`); if (!el) return;
+  const r = el.getBoundingClientRect(), f = document.createElement('div');
+  f.className = 'float'; f.textContent = text; if (color) f.style.color = color;
+  f.style.left = (r.left + Math.min(r.width, 240) / 2 - 30) + 'px'; f.style.top = (r.top + 6) + 'px';
+  document.body.appendChild(f); setTimeout(() => f.remove(), 1400);
+}
+
+/* ---------- first-game tips ---------- */
+const TIPS = {
+  first:"Each paper is a tulip. Keep collecting different ones, or stand up to bank what is on the table. If a tulip you already hold comes a second time, the whole evening blows away.",
+  danger:"The red chips count the copies of your tulips still in the pile: the papers that would blow you away. The more tulips you hold, the riskier the next paper.",
+  book:"Two more different tulips and your tulip book is full: +15, and the evening ends for everyone.",
+  bust:"Gone with the wind: a duplicate tulip wipes out that player's whole evening.",
+  action:"Special papers have no number. Wijnkoop stops a player, Seghsman makes a player take three, Rouwkoop saves you from one duplicate.",
+  cash:"Everything you win in the winter is paper. It grows with the index each evening, but if the crash comes first it is worth only 3½%. Cash in when the risk looks too high."
+};
+let TIPSEEN = (() => { try { return JSON.parse(localStorage.getItem('tulip7.tips')) || {}; } catch(e){ return {}; } })();
+function tip(k){ if (!SET.help || TIPSEEN[k] || ui.tip) return; ui.tip = {k, t:TIPS[k]}; render(); }
+function dismissTip(){ if (!ui.tip) return; TIPSEEN[ui.tip.k] = 1; try { localStorage.setItem('tulip7.tips', JSON.stringify(TIPSEEN)); } catch(e){} ui.tip = null; render(); }
 
 /* ---------- cards ---------- */
 function cardHTML(c, extra = ''){
   const isNew = !ui.seen.has(c.uid); ui.seen.add(c.uid);
   const cls = 'card ' + (isNew ? 'new ' : '') + extra;
-  if (c.k === 'num'){ const v = V[c.v], cd = v.ink === '#fff' ? v.hex : '#7a5a12';
-    return `<div class="${cls} num" style="--c:${v.hex};--ci:${v.ink};--cd:${cd}" title="${esc(v.name + ' (' + v.n + '): ' + v.note)}" aria-label="${esc(v.name)}, ${v.n}"><b class="bd">${v.n}</b><img src="${ART[v.id]}" alt=""><span class="nm ${v.name.length > 16 ? 'long' : ''}">${esc(v.name)}</span><span class="cp">${v.n ? v.n + ' in deck' : 'only one'}</span><b class="bd b2" aria-hidden="true">${v.n}</b></div>`; }
+  if (c.k === 'num'){ const v = V[c.v];
+    return `<div class="${cls} num" style="--c:${v.hex};--ci:${v.ink}" title="${esc(v.name + ' (' + v.n + '): ' + v.note)}" aria-label="${esc(v.name)}, ${v.n}"><b class="bd">${v.n}</b><img src="${ART[v.id]}" alt=""><span class="nm ${v.name.length > 16 ? 'long' : ''}">${esc(v.name)}</span><span class="cp">${v.n ? v.n + ' in deck' : 'only one'}</span><b class="bd b2" aria-hidden="true">${v.n}</b></div>`; }
   if (c.k === 'mod') return `<div class="${cls} mod" title="${esc(SP.mod.note)}"><b class="bd">+${c.v}</b><img src="${ART.m_offset}" alt=""><span class="nm">Offsets</span><b class="bd b2" aria-hidden="true">+${c.v}</b></div>`;
   if (c.k === 'x2') return `<div class="${cls} x2" title="${esc(SP.x2.note)}"><b class="bd">×2</b><img src="${ART.m_broken}" alt=""><span class="nm">Broken tulip</span><b class="bd b2" aria-hidden="true">×2</b></div>`;
   const s = SP[c.k]; return `<div class="${cls} act ${c.k === 'second' ? 'held' : ''}" title="${esc(s.name + ': ' + s.note)}"><img src="${ART[s.art]}" alt=""><span class="nm">${s.name}</span></div>`;
 }
+const BACK_SVG = `<svg viewBox="0 0 40 40"><path d="M20 36V20" stroke="#3f8a4a" stroke-width="2.5"/><path d="M20 26c-6-1-9-5-10-9 5 0 9 3 10 9zM20 26c6-1 9-5 10-9-5 0-9 3-10 9z" fill="#3f8a4a"/><path d="M12 8c2 6 4 10 8 12 4-2 6-6 8-12-3 2-5 3-6 5-1-3-1-5-2-7-1 2-1 4-2 7-1-2-3-3-6-5z" fill="#d7261e"/></svg>`;
 function handHTML(p){
   if (ui.blown.has(p.i)) return '';
   let h = p.cards.map(c => cardHTML(c)).join('');
   if (p.second) h += cardHTML(p.second);
   if (p.bustCard) h += cardHTML({...p.bustCard}, 'dupe');
+  if (ui.pending && ui.pending.p === p) h += `<div class="card facedown new ${ui.pending.odds >= .25 ? 'shake' : ''}">${BACK_SVG}</div>`;
   return h;
+}
+function bookHTML(p, big){
+  if (!p.nums.length && p.status !== 'active') return '';
+  let h = '';
+  for (let k = 0; k < 7; k++){ const n = p.nums[k]; if (n === undefined) h += '<span></span>'; else { const v = V[n]; h += `<span class="f" style="--c:${v.hex};--ci:${v.ink}">${big ? n : ''}</span>`; } }
+  return `<div class="book ${big ? '' : 'sm'}" title="Tulip book: ${p.nums.length} of 7 different tulips">${h}${big ? `<small>tulip book ${p.nums.length}/7${p.nums.length >= 5 ? ' · +15 at seven' : ''}</small>` : ''}</div>`;
 }
 function statusChip(p){
   if (G && G.turn === p && p.status === 'active') return `<span class="chip turn">${p.human ? 'Your turn' : 'Thinking…'}</span>`;
+  if (ui.after && p.status !== 'idle'){
+    if (p.status === 'bust') return `<span class="chip bust">Gone with the wind</span>`;
+    const g = G.mode === 'classic' ? '+' + p.last : '+' + fmt(p.lastG);
+    return `<span class="chip ${p.status === 'book' ? 'book' : 'stayed'}">${g}${p.status === 'book' ? ' · tulip book' : ''}</span>`;
+  }
   const m = {active:['', 'At the table'], stayed:['stayed', p.frozen ? 'Sealed (wijnkoop)' : 'Stood up'], bust:['bust', 'Gone with the wind'], book:['book', 'Tulip book!'], idle:['', '']};
-  const [c, t] = m[p.status] || ['', '']; return t ? `<span class="chip ${c}">${t}${p.status === 'stayed' && p.dest ? ' · ' + (p.dest === 'paper' ? 'paper' : 'purse') : ''}</span>` : '';
+  const [c, t] = m[p.status] || ['', '']; return t ? `<span class="chip ${c}">${t}</span>` : '';
 }
 function moneyHTML(p){
   if (G.mode === 'classic') return `<div class="money"><span>Total <b>${p.total}</b> / ${TARGET}</span></div>`;
-  const paper = G.crashed ? `<span title="Settled at 3½ per cent"><img src="${ART.i_paper}" alt="">Settled <b>${fmt(p.settled)}</b></span>` : `<span title="Paper is worth its guilders times the current index"><img src="${ART.i_paper}" alt="">Paper <b>${fmt(G.paperValue(p))}</b></span>`;
+  const paper = G.crashed ? `<span title="Settled at 3½ per cent"><img src="${ART.i_paper}" alt="">Settled <b>${fmt(p.settled)}</b></span>` : `<span title="Paper: worth its guilders times the index, until the crash"><img src="${ART.i_paper}" alt="">Paper <b>${fmt(G.paperValue(p))}</b></span>`;
   return `<div class="money"><span title="Cash, safe"><img src="${ART.i_purse}" alt="">Purse <b>${fmt(p.purse)}</b></span>${paper}<span class="tot">${fmt(G.standing(p))}</span></div>`;
 }
 function tallyHTML(p){
   if (!p.cards.length && !p.bustCard) return '';
   if (p.status === 'bust') return 'Nothing this evening.';
-  const s = G.roundScore(p), u = p.nums.length;
-  return `This evening <b>${s}</b>${G.mode === 'winter' ? ' = <b>' + fmt(s * GPP * (G.alkmaar ? 2 : 1)) + '</b>' : ''} · ${u} of 7 tulips${p.x2 ? ' · broken ×2' : ''}`;
+  const s = G.roundScore(p);
+  return `On the table <b>${G.mode === 'winter' ? fmt(s * GPP * (G.alkmaar ? 2 : 1)) : s}</b>${p.x2 ? ' · broken ×2' : ''}`;
 }
+const tableValue = p => { const s = G.roundScore(p); return G.mode === 'classic' ? s + ' pts' : fmt(s * GPP * (G.alkmaar ? 2 : 1)); };
 
 /* ---------- render ---------- */
 function renderBoard(){
-  const b = $('#board');
-  if (!G || G.mode === 'classic'){ b.hidden = true; return; }
-  b.hidden = false;
+  const b = $('#board'), st = $('#strip');
+  if (!G || G.mode === 'classic'){ b.hidden = true; st.hidden = true; return; }
+  b.hidden = false; st.hidden = false;
   let h = '';
   for (let e = 0; e < IDX.length; e++){
     const dead = G.crashed && e > G.crashAfter, now = !G.crashed && e === G.evening && !G.alkmaar, past = e < G.evening || (G.crashed && e <= G.crashAfter);
     const rk = RISK[e] ? `crash ${pct(RISK[e])}` : 'no risk';
-    h += `<div class="cell ${now ? 'now' : ''} ${past && !now ? 'past' : ''} ${dead ? 'dead' : ''}" title="Paper written this evening is bought at index ×${IDX[e]}. Chance the crash comes before this evening: ${pct(RISK[e])}"><b>${ROMAN[e]}</b>${EV[e].short}<div class="ix">×${IDX[e]}</div><div class="rk ${RISK[e] >= .2 ? 'hot' : ''}">${rk}</div></div>`;
+    h += `<div class="cell ${now ? 'now' : ''} ${past && !now ? 'past' : ''} ${dead ? 'dead' : ''}" title="Index ×${IDX[e]} on this evening. Chance the crash comes before this evening: ${pct(RISK[e])}"><b>${ROMAN[e]}</b>${EV[e].short}<div class="ix">×${IDX[e]}</div><div class="rk ${RISK[e] >= .2 ? 'hot' : ''}">${rk}</div></div>`;
   }
   h += `<div class="cell crash ${G.crashed ? 'hit' : ''}" title="After evening VIII the crash is certain"><b>3 Feb</b>Haarlem<div class="ix" style="color:inherit">crash</div><div class="rk" style="color:inherit">paper → 3½%</div></div>`;
   h += `<div class="cell alk ${G.alkmaar && !G.over ? 'now' : ''}" title="A cash auction: winnings go to the purse, doubled"><b>5 Feb</b>Alkmaar<div class="ix" style="color:inherit">cash ×2</div><div class="rk" style="color:inherit">final</div></div>`;
   b.innerHTML = h;
+  st.innerHTML = G.alkmaar ? `<b>Alkmaar · 5 February 1637</b><span>Cash auction for Wouter Winckel's orphans. What you win tonight goes into your purse, twice over.</span>`
+    : G.crashed ? `<b>3 February 1637</b><span>The crash. All paper has settled at 3½ per cent.</span>`
+    : `<b>Evening ${ROMAN[G.evening]} · ${EV[G.evening].date}</b><span>${EV[G.evening].news}</span>`;
 }
 function seatHTML(p, r){
   const big = p.human;
-  return `${big ? '' : `<div class="who"><img src="${ART[r.img]}" alt=""><div><div class="nm"><span class="fn">${esc(p.name)}</span><span class="sn">${esc(p.short)}</span></div><small>${STYLES[p.style].label}</small></div><span class="sp"></span>${statusChip(p)}</div>`}
-    ${moneyHTML(p)}<div class="hand ${big ? '' : 'mini'}">${handHTML(p)}</div><div class="tally">${tallyHTML(p)}</div>`;
+  return `${ui.bubbles[p.i] ? `<div class="bubble">${esc(ui.bubbles[p.i])}</div>` : ''}${big ? '' : `<div class="who"><img src="${ART[r.img]}" alt=""><div><div class="nm"><span class="fn">${esc(p.name)}</span><span class="sn">${esc(p.short)}</span></div><small>${STYLES[p.style].label}</small></div><span class="sp"></span>${statusChip(p)}</div>`}
+    ${moneyHTML(p)}<div class="hand ${big ? '' : 'mini'}">${handHTML(p)}</div>${bookHTML(p, big)}${big ? '' : `<div class="tally">${tallyHTML(p)}</div>`}`;
 }
 function render(){
   if (!G) return;
@@ -398,35 +488,57 @@ function render(){
   R.innerHTML = G.players.slice(1).map((p, k) => `<div class="panel seat ${G.turn === p ? 'turn' : ''} ${ui.pick && ui.pick.cands.includes(p) ? 'pick' : ''}" data-i="${p.i}" title="${esc(RIVALS[k].bio)}">${seatHTML(p, RIVALS[k])}</div>`).join('');
   const me = G.players[0], you = $('#you');
   you.classList.toggle('turn', G.turn === me); you.classList.toggle('pick', !!(ui.pick && ui.pick.cands.includes(me)));
-  you.innerHTML = `<div><div class="who" style="margin-bottom:2px"><div class="nm">You</div><span class="sp"></span>${statusChip(me)}</div>${seatHTML(me)}</div><div class="ctrl" id="ctrl">${ctrlHTML()}</div>`;
+  if (!$('#youSeat')){ you.innerHTML = `<div><div id="tipBox"></div><div id="youSeat"></div></div><div class="ctrl" id="ctrl"></div>`; ui.ctrlH = null; ui.tipH = null; }
+  const th = ui.tip ? `<div class="tip"><span>${esc(ui.tip.t)}</span><button data-tip="1">Got it</button></div>` : '';
+  if (th !== ui.tipH){ $('#tipBox').innerHTML = th; ui.tipH = th; const tb = $('#tipBox [data-tip]'); if (tb) tb.onclick = dismissTip; }
+  $('#youSeat').innerHTML = `<div class="who" style="margin-bottom:2px"><div class="nm">You</div><span class="sp"></span>${statusChip(me)}</div>${seatHTML(me)}`;
+  const ch = ctrlHTML(); if (ch !== ui.ctrlH){ $('#ctrl').innerHTML = ch; ui.ctrlH = ch; }  // keep buttons stable under the pointer
   $('#deckN').textContent = G.draw.length; $('#discN').textContent = G.discard.length + ' on the floor';
   const ev = G.alkmaar ? 'Alkmaar, 5 February 1637' : G.mode === 'winter' ? `Evening ${ROMAN[G.evening]} · ${EV[G.evening].date}` : `Round ${G.round} · first to ${TARGET}`;
   $('#where').textContent = ev + (G.alkmaar ? '' : ' · Menniste Bruyloft, Amsterdam');
   document.querySelectorAll('.seat.pick').forEach(el => el.onclick = () => ui.pick && ui.pick.done(G.players[+el.dataset.i]));
   wireCtrl();
 }
+function dangerHTML(me){
+  if (!me.nums.length || me.status !== 'active') return '';
+  const pl = G.pile(), cnt = {}; for (const c of pl) if (c.k === 'num') cnt[c.v] = (cnt[c.v] || 0) + 1;
+  const chips = [...me.nums].sort((a, b) => b - a).map(n => { const k = cnt[n] || 0, v = V[n]; return `<span class="dchip ${k ? '' : 'safe'}" title="${k} more ${esc(v.name)} in the pile"><i style="--c:${v.hex};--ci:${v.ink}">${n}</i>${k} left</span>`; }).join('');
+  const dup = me.nums.reduce((s, n) => s + (cnt[n] || 0), 0), od = pl.length ? dup / pl.length : 0;
+  return `<div class="danger">${chips}</div><div class="odds"><b>${dup}</b> of ${pl.length} papers would blow you away: <b class="${od >= .25 ? 'hot' : ''}">${pct(od)}</b>${me.second ? '<br>Your Rouwkoop saves you from one.' : ''}</div><div class="meter"><i style="width:${Math.min(100, od * 100)}%;background-position:${-od * 300}px 0"></i></div>`;
+}
+function stakeHTML(me){
+  if (me.status !== 'active' || !me.cards.length) return '';
+  return `<div class="stake"><span>On the table</span><b>${tableValue(me)}</b></div>`;
+}
+function cashHTML(){
+  const me = G.players[0], e = G.evening, v = me.units * IDX[e], fee = Math.round(v * FEE), rn = G.riskNext(), last = e + 1 >= IDX.length;
+  const next = last ? `After this evening <b class="hot">the crash is certain</b>.`
+    : `Evening ${ROMAN[e + 1]}: index ×${IDX[e]} → ×${IDX[e + 1]} (+${Math.round((IDX[e + 1] / IDX[e] - 1) * 100)}%), but <b class="${rn >= .2 ? 'hot' : ''}">${pct(rn)}</b> chance the crash comes first.`;
+  return `<div class="cash"><div class="t">End of evening ${ROMAN[e]}. Your paper: ${fmt(v)}</div><div class="odds">${next}</div>
+    <button class="btn paper" data-cash="hold"><img src="${ART.i_paper}" alt="">Hold it<small>${last ? 'it will settle at 3½%' : 'worth ' + fmt(me.units * IDX[e + 1]) + ' next evening, if no crash'}</small></button>
+    <button class="btn purse" data-cash="sell"><img src="${ART.i_purse}" alt="">Cash it all in: ${fmt(v - fee)}<small>safe in your purse · wine money ${fmt(fee)}</small></button></div>`;
+}
 function ctrlHTML(){
   const me = G.players[0];
+  const tipH = '';
   if (ui.pick){
     const lbl = ui.pick.kind === 'give' ? 'Give your spare Rouwkoop to:' : `Who gets ${SP[ui.pick.card.k].name}?`;
-    return `<div class="picker"><div class="t">${lbl}</div><small class="wait" style="text-align:left">${esc(SP[ui.pick.kind === 'give' ? 'second' : ui.pick.card.k].note)}</small>${ui.pick.cands.map(q => `<button class="btn" data-pick="${q.i}">${q.human ? 'Yourself' : esc(q.name)}${q.status === 'active' ? `<small>this evening ${G.roundScore(q)} · ${q.nums.length} tulips</small>` : ''}</button>`).join('')}</div>`;
+    return tipH + `<div class="picker"><div class="t">${lbl}</div><small class="wait" style="text-align:left">${esc(SP[ui.pick.kind === 'give' ? 'second' : ui.pick.card.k].note)}</small>${ui.pick.cands.map(q => `<button class="btn" data-pick="${q.i}">${q.human ? 'Yourself' : esc(q.name)}${q.status === 'active' ? `<small>on the table ${tableValue(q)} · ${q.nums.length} tulips</small>` : ''}</button>`).join('')}</div>`;
   }
-  if (!ui.turn) return `<div class="wait">${me.status === 'active' ? 'Wait for your turn…' : G.over ? '' : 'Watching the others…'}</div>`;
-  const s = G.roundScore(me), od = G.bustOdds(me), pl = G.pile(), dup = Math.round(od * pl.length);
-  const odds = SET.odds ? `<div class="odds">Next paper is a duplicate: <b>${pct(od)}</b> (${dup} of ${pl.length})${me.second ? ' · your Rouwkoop covers one' : ''}</div><div class="meter"><i style="width:${Math.min(100, od * 100)}%;background-position:${-od * 300}px 0"></i></div>` : '';
+  if (ui.cash) return tipH + cashHTML();
+  if (!ui.turn) return tipH + stakeHTML(me) + (SET.help ? dangerHTML(me) : '') + `<div class="wait">${me.status === 'active' ? 'Wait for your turn…' : G.over ? '' : 'Watching the others…'}</div>`;
+  const s = G.roundScore(me);
   let stay;
   if (G.mode === 'classic') stay = `<button class="btn purse" data-act="stay"><img src="${ART.i_purse}" alt="">Stand up · bank ${s}<small>total would be ${me.total + s}</small></button>`;
-  else if (G.alkmaar) stay = `<button class="btn alk" data-act="purse"><img src="${ART.i_purse}" alt="">Stand up · cash ${fmt(s * GPP * 2)}<small>Alkmaar pays double, in cash</small></button>`;
-  else {
-    const rn = G.riskNext(), g = s * GPP;
-    stay = `<button class="btn purse" data-act="purse"><img src="${ART.i_purse}" alt="">Stand up · to purse ${fmt(g)}<small>cash, safe from the crash</small></button>
-            <button class="btn paper" data-act="paper"><img src="${ART.i_paper}" alt="">Stand up · on paper ${fmt(g)}<small>bought at ×${IDX[G.evening]} · crash risk before next evening ${pct(rn)}</small></button>`;
-  }
-  return `${odds}<button class="btn hit" data-act="hit">Take another paper<small>one more promise from the pile</small></button>${stay}`;
+  else if (G.alkmaar) stay = `<button class="btn alk" data-act="stay"><img src="${ART.i_purse}" alt="">Stand up · cash ${fmt(s * GPP * 2)}<small>Alkmaar pays double, in cash</small></button>`;
+  else stay = `<button class="btn paper" data-act="stay"><img src="${ART.i_paper}" alt="">Stand up · ${fmt(s * GPP)} on paper<small>you can cash it in at the end of the evening</small></button>`;
+  return tipH + stakeHTML(me) + (SET.help ? dangerHTML(me) : '') + `<button class="btn hit" data-act="hit">Take another paper<small>one more tulip from the pile</small></button>${stay}`;
 }
 function wireCtrl(){
   document.querySelectorAll('#ctrl [data-act]').forEach(b => b.onclick = () => { const f = ui.turn; ui.turn = null; f && f(b.dataset.act); });
   document.querySelectorAll('#ctrl [data-pick]').forEach(b => b.onclick = () => ui.pick && ui.pick.done(G.players[+b.dataset.pick]));
+  document.querySelectorAll('#ctrl [data-cash]').forEach(b => b.onclick = () => ui.cash && ui.cash.done(b.dataset.cash));
+  document.querySelectorAll('#ctrl [data-tip]').forEach(b => b.onclick = dismissTip);
 }
 
 /* ---------- modal helpers ---------- */
@@ -439,17 +551,12 @@ const Human = {
   hitOrStay(g, p){
     return new Promise(res => {
       say(pickLine('turnYou', {}));
-      ui.turn = a => { if (a === 'hit') res('hit'); else { p._dest = a === 'stay' ? null : a; res('stay'); } render(); };
+      ui.turn = a => { res(a === 'hit' ? 'hit' : 'stay'); render(); };
+      tip('first'); if (g.bustOdds(p) >= .2) tip('danger'); if (p.nums.length >= 5) tip('book');
       render();
     });
   },
-  async dest(g, p){
-    if (p._dest){ const d = p._dest; p._dest = null; return d; }
-    const s = G.roundScore(p) * GPP;
-    return ask(`<div class="kick">Evening ${ROMAN[G.evening]}</div><h2>Where does your ${fmt(s)} go?</h2><p>The evening is over and you kept your papers. Bank them in your purse, or keep them on paper at index ×${IDX[G.evening]}.</p>
-      <div class="row"><button class="btn purse" data-v="purse"><img src="${ART.i_purse}" alt="">To purse<small>cash, safe</small></button><button class="btn paper" data-v="paper"><img src="${ART.i_paper}" alt="">On paper<small>crash risk before next evening ${pct(G.riskNext())}</small></button></div>`);
-  },
-  sell(g, p){ return Promise.resolve(p._sell === true); },
+  sell(g, p){ return new Promise(res => { say('The evening is over. Hold your paper, or cash it in?'); ui.cash = {done(v){ ui.cash = null; res(v === 'sell'); render(); }}; tip('cash'); render(); }); },
   target(g, p, c, cands){ return pickFrom('target', c, cands); },
   giveSecond(g, p, cands){ return pickFrom('give', null, cands); }
 };
@@ -457,8 +564,14 @@ function pickFrom(kind, card, cands){
   return new Promise(res => { ui.pick = {kind, card, cands, done(q){ ui.pick = null; res(q); render(); }}; say(kind === 'give' ? 'You already have a Rouwkoop. Who gets the spare?' : `${SP[card.k].name}! Choose a player.`); render(); });
 }
 const Bot = {
-  async hitOrStay(g, p){ await pace(.9); return T7.AI.hitOrStay(g, p); },
-  dest: (g, p) => T7.AI.dest(g, p), sell: (g, p) => T7.AI.sell(g, p),
+  async hitOrStay(g, p){
+    const od = g.bustOdds(p) * (p.second ? 0 : 1);
+    await pace(.4 + od * 1.8);                 // they think longer when it is dangerous
+    const d = T7.AI.hitOrStay(g, p);
+    bubble(p, pickA(d === 'hit' ? (od >= .25 ? BUB.hitRisky : BUB.hit) : BUB.stay));
+    await pace(.45); return d;
+  },
+  sell: (g, p) => T7.AI.sell(g, p),
   async target(g, p, c, cands){ await pace(.5); return T7.AI.target(g, p, c, cands); },
   giveSecond: (g, p, c) => T7.AI.giveSecond(g, p, c)
 };
@@ -467,34 +580,56 @@ const Bot = {
 async function onEvent(t, d){
   const p = d.p, q = d.q;
   switch (t){
-    case 'roundStart': ui.seen = new Set(); ui.blown = new Set(); render(); await pace(.5); break;
-    case 'turn': render(); if (!p.human) await pace(.2); break;
-    case 'card': SND.flip(); render(); await pace(); break;
+    case 'evening': {
+      ui.after = false; G.players.forEach(x => { x.status = 'idle'; }); render();
+      toast(`Evening ${ROMAN[d.e]} · ${EV[d.e].date}`, null, 1600); say(EV[d.e].news); log(`<b>Evening ${ROMAN[d.e]}</b>: index ×${IDX[d.e]}.`);
+      await pace(1.6); break; }
+    case 'roundStart': ui.seen = new Set(); ui.blown = new Set(); ui.after = false; render(); await pace(.4); break;
+    case 'turn': render(); if (!p.human) await pace(.15); break;
+    case 'draw': {
+      ui.pending = {p, odds:d.odds}; ui.lastOdds = d.odds; render();
+      if (d.odds >= .25) SND.heart();
+      await sleep((SET.fast ? 110 : 240) + d.odds * (SET.fast ? 450 : 1100));
+      ui.pending = null; break; }
+    case 'card':
+      SND.flip(); render();
+      if (ui.lastOdds >= .3 && d.c.k === 'num'){ floatAt(p, p.human ? 'Phew!' : pickA(BUB.phew)); SND.phew(); if (!p.human) bubble(p, pickA(BUB.phew)); }
+      if (p.human && p.nums.length >= 5) tip('book');
+      await pace(.65); break;
     case 'action': {
       SND.flip(); const s = SP[d.c.k];
-      toast(`${nm(p)}: ${s.name}`, s.art); log(`<b>${nm(p)}</b> drew <b>${s.name}</b>.`);
-      if (d.c.k === 'flip3') SND.chalk(); render(); await pace(1.1); break; }
+      toast(`${nm(p)}: ${s.name}`, s.art, 900); log(`<b>${nm(p)}</b> drew <b>${s.name}</b>.`);
+      if (p.human) tip('action');
+      if (d.c.k === 'flip3') SND.chalk(); render(); await pace(.9); break; }
     case 'keep': render(); break;
-    case 'give': log(`${nm(p)} gave a spare Rouwkoop to ${nmIn(q)}.`); say(pickLine('give', {p:nm(p), q:nmIn(q)})); render(); await pace(); break;
+    case 'give': log(`${nm(p)} gave a spare Rouwkoop to ${nmIn(q)}.`); say(pickLine('give', {p:nm(p), q:nmIn(q)})); render(); await pace(.8); break;
     case 'waste': log(`${nm(p)}'s spare Rouwkoop is discarded.`); render(); break;
-    case 'saved': SND.coin(); say(pickLine('saved', {p:nm(p), v:V[d.c.v].name})); log(`<b>${nm(p)}</b> paid rouwkoop: the second ${V[d.c.v].name} is gone.`); toast(`Rouwkoop! ${nm(p)} escapes`, 'a_rouwkoop'); render(); await pace(1.2); break;
-    case 'bust': await blow(p); say(pickLine('bust', {p:nm(p), v:V[d.c.v].name})); log(`<b>${nm(p)}</b> drew a second ${V[d.c.v].name}. Gone with the wind.`); break;
-    case 'book': SND.book(); toast(`${nm(p)}: tulip book complete! +15`, 'i_book', 1600); say(pickLine('book', {p:nm(p)})); log(`<b>${nm(p)}</b> completed a tulip book (+15). The evening ends.`); render(); await pace(1.8); break;
-    case 'freeze': SND.clink(); say(p === q ? pickLine('freezeSelf', {p:nm(p)}) : pickLine('freeze', {p:nm(p), q:nmIn(q)})); log(`<b>${nm(p)}</b> sealed ${p === q ? 'their own' : nmIn(q) + "'s"} evening with Wijnkoop${G.mode === 'winter' && !G.alkmaar ? ' (on paper)' : ''}.`); render(); await pace(1.3); break;
-    case 'flip3': say(pickLine('flip3', {p:nm(p), q:nmIn(q)})); log(p === q ? `<b>${nm(p)}</b> called the seghsman on ${p.human ? 'yourself' : 'themselves'}: three more papers.` : `<b>${nm(p)}</b> sent the seghsman to ${nmIn(q)}: three more papers.`); render(); await pace(1); break;
-    case 'stay': SND.thud(); say(pickLine(p.dest === 'paper' ? 'stayPaper' : 'stayPurse', {p:nm(p)})); log(`<b>${nm(p)}</b> stood up with ${G.roundScore(p)}${p.dest ? ' → ' + p.dest : ''}.`); render(); await pace(.8); break;
+    case 'saved': SND.coin(); say(pickLine('saved', {p:nm(p), v:V[d.c.v].name})); log(`<b>${nm(p)}</b> paid rouwkoop: the second ${V[d.c.v].name} is gone.`); floatAt(p, 'Rouwkoop!', 'var(--leaf)'); render(); await pace(1.1); break;
+    case 'bust':
+      await blow(p); bubble(p, pickA(BUB.bust), 1800); floatAt(p, p.human ? 'Gone with the wind' : 'Wind!', 'var(--bad)');
+      say(pickLine('bust', {p:nm(p), v:V[d.c.v].name})); log(`<b>${nm(p)}</b> drew a second ${V[d.c.v].name}. Gone with the wind.`);
+      tip('bust'); break;
+    case 'book': SND.book(); toast(`${nm(p)}: tulip book complete! +15`, 'i_book', 1600); bubble(p, pickA(BUB.book)); say(pickLine('book', {p:nm(p)})); log(`<b>${nm(p)}</b> completed a tulip book (+15). The evening ends.`); render(); await pace(1.6); break;
+    case 'freeze': SND.clink(); say(p === q ? pickLine('freezeSelf', {p:nm(p)}) : pickLine('freeze', {p:nm(p), q:nmIn(q)})); log(`<b>${nm(p)}</b> sealed ${p === q ? 'their own' : nmIn(q) + "'s"} evening with Wijnkoop.`); render(); await pace(1.1); break;
+    case 'flip3': say(pickLine('flip3', {p:nm(p), q:nmIn(q)})); log(p === q ? `<b>${nm(p)}</b> called the seghsman on ${p.human ? 'yourself' : 'themselves'}: three more papers.` : `<b>${nm(p)}</b> sent the seghsman to ${nmIn(q)}: three more papers.`); render(); await pace(.9); break;
+    case 'stay': SND.thud(); say(pickLine('stay', {p:nm(p)})); log(`<b>${nm(p)}</b> stood up with ${tableValue(p)}.`); render(); await pace(.5); break;
     case 'reshuffle': log('The floor is swept: the discards are shuffled into a new pile.'); break;
-    case 'roundEnd': render(); await pace(.6); await roundSummary(); break;
-    case 'evening': await eveningIntro(d.e); break;
-    case 'sold': if (!p.human) log(`<b>${nm(p)}</b> sold their paper for ${fmt(d.v - d.fee)}.`); else log(`You sold your paper for ${fmt(d.v - d.fee)} (wine money ${fmt(d.fee)}).`); SND.coin(); render(); break;
+    case 'roundEnd': {
+      ui.after = true; render();
+      for (const x of G.players){ if (x.status === 'bust') continue; floatAt(x, G.mode === 'classic' ? '+' + x.last : '+' + fmt(x.lastG)); }
+      SND.coin(); await pace(G.mode === 'classic' ? 2.2 : 1.4); break; }
+    case 'cashout': render(); break;
+    case 'sold': if (!p.human){ bubble(p, pickA(BUB.sold), 1800); log(`<b>${nm(p)}</b> cashed in ${fmt(d.v - d.fee)}.`); } else log(`You cashed in ${fmt(d.v - d.fee)} (wine money ${fmt(d.fee)}).`); SND.coin(); render(); await pace(.5); break;
+    case 'held': if (!p.human){ bubble(p, pickA(BUB.held), 1800); log(`<b>${nm(p)}</b> holds ${fmt(G.paperValue(p))} of paper.`); } render(); await pace(.4); break;
+    case 'cashoutDone': await pace(1.1); break;
     case 'crash': await crashScene(); break;
     case 'alkmaar': await alkmaarScene(); break;
-    case 'gameOver': try { localStorage.removeItem(SAVE_KEY); } catch(e){} render(); await endScene(); break;
+    case 'gameOver': try { localStorage.removeItem(SAVE_KEY); } catch(e){} render(); await pace(1); await endScene(); break;
     case 'resume': render(); await pace(.5); break;
   }
 }
 async function blow(p){
-  render(); await pace(.7);
+  render(); await pace(.6);
   const seat = document.querySelector(`.seat[data-i="${p.i}"]`), hand = seat && seat.querySelector('.hand');
   SND.wind();
   if (hand){
@@ -513,34 +648,6 @@ async function blow(p){
 }
 
 /* ---------- scenes ---------- */
-async function eveningIntro(e){
-  ui.seen = new Set(); G.players.forEach(p => { p.status = 'idle'; }); render();
-  const me = G.players[0], val = me.units * IDX[e], fee = Math.round(val * FEE);
-  const rn = RISK[e + 1] ?? 1, gain = e > 0 ? IDX[e] / IDX[e - 1] : 1;
-  let rows = G.players.map(p => `<tr><td>${p.human ? '<b>You</b>' : esc(p.name)}</td><td class="n">${fmt(p.purse)}</td><td class="n">${fmt(p.units * IDX[e])}</td></tr>`).join('');
-  const sellRow = me.units > 0
-    ? `<div class="row"><button class="btn paper" data-v="hold"><img src="${ART.i_paper}" alt="">Hold my paper<small>worth ${fmt(val)} tonight</small></button><button class="btn purse" data-v="sell"><img src="${ART.i_purse}" alt="">Sell it all: ${fmt(val - fee)}<small>wine money ${fmt(fee)} (2½%)</small></button></div>`
-    : `<div class="row"><button class="btn primary" data-v="hold">Sit down</button></div>`;
-  const v = await ask(`<div class="kick">Evening ${ROMAN[e]} of the winter</div><h2>${EV[e].date}</h2><p class="news">${EV[e].news}</p>
-    <div class="stats"><div class="stat"><b>×${IDX[e]}</b>paper index${e > 0 ? ` (×${gain.toFixed(2).replace(/\.?0+$/, '')} since last time)` : ''}</div><div class="stat ${rn >= .2 ? 'hot' : ''}"><b>${pct(rn)}</b>chance the crash comes before the next evening</div></div>
-    <table><tr><th></th><th class="n">Purse</th><th class="n">Paper tonight</th></tr>${rows}</table>${sellRow}`);
-  me._sell = v === 'sell';
-  say(e === 0 ? 'Sit down. The wine is poured, and nobody here has seen a single bulb.' : EV[e].news);
-  render();
-}
-async function roundSummary(){
-  const rows = G.players.map(p => {
-    let r;
-    if (p.status === 'bust') r = '<span style="color:var(--bad)">Gone with the wind</span>';
-    else if (G.mode === 'classic') r = `+${p.last}${p.status === 'book' ? ' (tulip book +15)' : ''}`;
-    else r = `+${fmt(p.lastG)} → ${p.lastDest === 'paper' ? 'paper' : 'purse'}${p.status === 'book' ? ' · tulip book' : ''}${p.frozen ? ' · sealed' : ''}`;
-    return `<tr><td>${p.human ? '<b>You</b>' : esc(p.name)}</td><td>${r}</td><td class="n">${G.mode === 'classic' ? p.total : fmt(G.standing(p))}</td></tr>`;
-  }).join('');
-  const last = G.mode === 'classic' && G.players.some(p => p.total >= TARGET);
-  const title = G.alkmaar ? 'Alkmaar is over' : G.mode === 'classic' ? `Round ${G.round}` : `End of evening ${ROMAN[G.evening]}`;
-  await ask(`<div class="kick">${G.mode === 'classic' ? 'The tavern game' : 'The bill'}</div><h2>${title}</h2><table><tr><th></th><th>This evening</th><th class="n">${G.mode === 'classic' ? 'Total' : 'Worth'}</th></tr>${rows}</table>
-    <div class="row"><button class="btn primary" data-v="ok">${last || G.alkmaar ? 'See the result' : 'Next evening'}</button></div>`);
-}
 async function crashScene(){
   SND.crash();
   const early = G.crashAfter < IDX.length - 1;
@@ -590,10 +697,9 @@ function showRules(){
   <li><b>Seghsman</b> (the broker): choose a player; they must take three more papers.</li>
   <li><b>Rouwkoop</b> (regret money): keep it; it cancels your next duplicate.</li></ul>
   <h3>The winter</h3><ul>
-  <li>When you stand up, put your evening (×${GPP} guilders a point) in your <b>purse</b> (safe) or <b>on paper</b>. Paper is bought at tonight's index and grows as the index rises.</li>
-  <li>At the start of each evening you can sell all your paper at the new index (2½% wine money).</li>
+  <li>What you win in an evening (${GPP} guilders a point) is written <b>on paper</b>. Paper grows with the index: ×1 in November, ×7 in February.</li>
+  <li>At the end of each evening you choose: <b>hold</b> your paper into the next evening, or <b>cash it all in</b> to your purse (2½% wine money). Money in the purse is safe.</li>
   <li>The board shows the chance that the crash comes before each evening. After evening VIII it is certain. When it comes, all paper settles at <b>3½ per cent</b>.</li>
-  <li>Wijnkoop puts the sealed player's evening on paper, like it or not.</li>
   <li>The last evening is the Alkmaar auction: cash only, doubled. Richest at the end wins.</li></ul>
   <h3>Why are the common tulips worth most?</h3><p>The number on a card is how much that variety swelled on paper that winter, and how many of its papers are in the pile. Cheap bulbs sold by the pound swelled fifty times; the famous rarities hardly moved. Semper Augustus is 0: its owner would not sell.</p><p>Each card shows its number in two corners, and the small line under the name tells you how many of that tulip are in the deck: a 12 has twelve copies, so it is the likeliest to come twice.</p>
   ${legendHTML()}
@@ -605,7 +711,7 @@ function showStart(){
   let mode = SET.mode; const sv = loadSave();
   const b = modal(`<div class="art" style="--cover:url(${ART.bg_cover})"><h1><small>Homo Ludens</small>Tulip 7</h1></div><div class="in">
     <p style="font-family:'EB Garamond',serif;font-size:20px;margin-top:0">Amsterdam, winter 1636. Seven tulips, one tavern, and a market made of paper.</p>
-    <div class="modes"><div class="mode" data-m="winter" tabindex="0"><b>The winter of 1636</b><small>Eight evenings, a rising price index and a crash you can see coming. Purse or paper?</small></div>
+    <div class="modes"><div class="mode" data-m="winter" tabindex="0"><b>The winter of 1636</b><small>Eight evenings, a rising price index and a crash you can see coming. Cash in, or hold?</small></div>
     <div class="mode" data-m="classic" tabindex="0"><b>The tavern game</b><small>Just the evenings, no winter and no crash: first to ${TARGET} points wins.</small></div></div>
     <p style="font-size:14px;color:var(--muted)">You play against three traders from the archives: Joost van Cuyck (cautious), Andries de Busscher (steady) and Abraham van Meeckeren (greedy).</p>
     <div class="row">${sv ? `<button class="btn primary" id="cont">Continue your ${sv.mode === 'winter' ? 'winter' : 'tavern game'}<small>${sv.mode === 'winter' ? (sv.alkmaar ? 'Alkmaar, the last evening' : 'Evening ' + ROMAN[sv.evening] + ', ' + EV[sv.evening].date) : 'Round ' + (sv.round + 1)}</small></button>` : ''}<button class="btn ${sv ? '' : 'primary'}" id="go">${sv ? 'New game' : 'Sit down at the table'}</button><button class="btn" id="rl">How to play</button></div></div>`, 'cover');
@@ -618,7 +724,7 @@ let runId = 0;
 const SAVE_KEY = 'tulip7.save.v1';
 async function start(mode, snap){
   const my = ++runId;
-  ui = {pick:null, turn:null, seen:new Set(), log:[], blown:new Set()}; $('#log').innerHTML = '';
+  ui = freshUI(); $('#log').innerHTML = '';
   const players = [{name:'You', short:'You', human:true, style:'balanced', agent:Human}, ...RIVALS.map(r => ({...r, agent:Bot}))];
   G = new T7.Game({mode, players, snap, emit: async (t, d) => { if (my !== runId) throw 'stale'; await onEvent(t, d); if (my !== runId) throw 'stale'; },
     onSave: s => { if (my === runId) try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch(e){} }});

@@ -91,6 +91,18 @@ td .sub{display:block;font-size:11.5px;color:var(--ink-3)}
 canvas.spark{width:100%;height:44px;display:block}
 
 .mapwrap{position:relative;background:var(--chart);border:1px solid var(--rule);aspect-ratio:16/10;max-width:100%}
+/* ChatGPT art (img/rv_*.webp): chart paper under the light map, compass rose, goods and ship icons, end-of-charter cartouche */
+.mapwrap{background:var(--chart) url(img/rv_paper.webp) 0 0/320px;background-blend-mode:multiply}
+.mapwrap::after{content:"";position:absolute;left:59%;bottom:2%;width:10%;aspect-ratio:1;background:url(img/rv_compass.webp) center/contain no-repeat;opacity:.85;pointer-events:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .mapwrap{background-image:none}:root:not([data-theme="light"]) .mapwrap::after{opacity:.55}}
+:root[data-theme="dark"] .mapwrap{background-image:none} :root[data-theme="dark"] .mapwrap::after{opacity:.55}
+td.good{position:relative;padding-left:40px} .gico{position:absolute;left:2px;top:50%;transform:translateY(-50%);width:28px;height:28px}
+.sico{width:22px;height:22px;vertical-align:-6px;margin-right:6px}
+#equip::before{content:"";display:inline-block;width:24px;height:24px;margin:-4px 8px -6px 0;background:url(img/rv_silver.webp) center/contain no-repeat}
+.cart{position:relative;max-width:440px;margin:4px auto 10px}
+.cart img{display:block;width:100%}
+.cart h3{position:absolute;left:27%;right:27%;top:50%;transform:translateY(-50%);margin:0;text-align:center;color:#1c2230;line-height:1.1}
+.cart.noimg img{display:none}.cart.noimg h3{position:static;transform:none;color:inherit;text-align:left}
 #map{position:absolute;inset:0;width:100%;height:100%}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--ink-2);margin-top:8px}
 .legend span::before{content:"";display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:-1px;border-radius:50%}

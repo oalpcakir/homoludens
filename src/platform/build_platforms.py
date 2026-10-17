@@ -163,6 +163,7 @@ def page_for(game, platform, cfg, rel_out, src_rel):
   if (t && D && t.start === D.dailyStart && Array.isArray(t.days) && t.days.length >= D.days.length) D.days = t.days; })();</script>""" + html[j + 9:]
     if game == "cupoftea":
         html = html.replace('"/cupoftea/img/', f'"{up}img/')
+        html = html.replace('url(/cupoftea/img/', f'url({up}img/')  # backgrounds in the scenes' CSS
         html = html.replace('href="/cupoftea/${k>1?k+"/":""}"', f'href="{up}' + '${k>1?k+"/":""}index.html"')
         html = html.replace('href="/cupoftea/2/"', f'href="{up}2/index.html"').replace('href="/cupoftea/3/"', f'href="{up}3/index.html"')
         html = html.replace('href="/cupoftea/"', f'href="{up}index.html"')

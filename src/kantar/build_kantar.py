@@ -40,6 +40,19 @@ head = f'''<meta name="description" content="{desc}">
 <script src="/feedback.js" defer data-game="kantar"></script>
 <script src="/next.js" defer data-game="kantar"></script>'''
 src = open(os.path.join(H, "kantar.html"), encoding="utf-8").read()
+# ChatGPT art (art/*.webp, game size; full size in art/master/): rival portraits, the two seals, the caravan camel.
+# Inlined as CSS variables so the page stays one file for the itch.io and CrazyGames packages.
+import base64
+def _uri(name):
+    return "url(data:image/webp;base64," + base64.b64encode(open(os.path.join(H, "art", name + ".webp"), "rb").read()).decode() + ")"
+_art = (":root{--ka-cirak:%s;--ka-usta:%s;--ka-seal-uc:%s;--ka-seal-kes:%s;--ka-caravan:%s}\n"
+        ".rivface{display:inline-block}.rivface.cirak{background-image:var(--ka-cirak)}.rivface.usta{background-image:var(--ka-usta)}\n"
+        ".seal-uc i{background-image:var(--ka-seal-uc);background-size:118%%}.seal-kes i{background-image:var(--ka-seal-kes);background-size:118%%}\n"
+        "h3[data-i18n=\"caravan\"]::before{content:\"\";display:inline-block;width:34px;height:34px;margin:-8px 8px -8px 0;vertical-align:middle;"
+        "background:var(--ka-caravan) center/contain no-repeat}"
+        % tuple(_uri(n) for n in ("ka_rival_cirak", "ka_rival_usta", "ka_seal_threepans", "ka_seal_cut", "ka_caravan")))
+assert src.count("/*KANTAR_ART*/") == 1
+src = src.replace("/*KANTAR_ART*/", _art, 1)
 anchor = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
 assert anchor in src
 os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
