@@ -64,3 +64,5 @@ Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` o
 - `worker.js` handles `/api/feedback` (Turnstile, rate limit, Discord), `/api/newsletter/*` (double opt-in list in KV), `/api/admin/*` (stats, announcement email) and `/borderlines/s/<score>` share pages. Announcement sends are locked, marked before sending, and carry a Resend idempotency key, so a double click or a retry never emails anyone twice. Tests: `tests/worker.test.mjs`.
 - Worker secrets: `DISCORD_WEBHOOK_URL`, `TURNSTILE_SECRET` (set with `wrangler secret put`). The public Turnstile site key is in `public/feedback.js`.
 - The feedback form doesn't work on a plain local server; everything else is static.
+
+Aybükeyi seviyorum
