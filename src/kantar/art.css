@@ -1,0 +1,70 @@
+/* Kantar painted art (src/kantar/art/*.webp, made in ChatGPT from art-studio.html prompts).
+   build_kantar.py puts the :root image variables in front of this file and inlines both in place of
+   KANTAR_ART in kantar.html. Without the build (the bare source page) none of this loads and the game
+   keeps its drawn CSS look. */
+
+/* ---- rivals and seals ---- */
+.rivface{display:inline-block}
+.rivface.cirak,.rp-face.cirak{background-image:var(--ka-cirak)}
+.rivface.usta,.rp-face.usta{background-image:var(--ka-usta)}
+.rivface{background-size:cover;background-position:50% 18%}
+.rp-face{background-size:cover!important;background-position:50% 18%!important}
+.seal-uc i{background-image:var(--ka-seal-uc);background-size:contain;background-color:transparent;box-shadow:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+.seal-kes i{background-image:var(--ka-seal-kes);background-size:contain;background-color:transparent;box-shadow:none;filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+
+/* ---- small icons: goods (sym()), caravan, burned, ledger rows, Narh ---- */
+.ic{display:inline-block;vertical-align:middle;width:20px;height:20px}
+.commodity-mini.ic{background-position:center;background-size:contain;background-repeat:no-repeat}
+.commodity-mini.ic.icS{background-image:var(--ka-ic-S)}.commodity-mini.ic.icI{background-image:var(--ka-ic-I)}.commodity-mini.ic.icK{background-image:var(--ka-ic-K)}.commodity-mini.ic.icB{background-image:var(--ka-ic-B)}
+.ki{display:inline-block;width:22px;height:22px;margin:-4px 6px -5px 0;vertical-align:middle;background:center/contain no-repeat;flex:none}
+.ki.coin{background-image:var(--ka-coin)}.ki.light{background-image:var(--ka-light)}.ki.narh{background-image:var(--ka-narh)}.ki.burn{background-image:var(--ka-burn)}.ki.emblem{background-image:var(--ka-emblem)}
+h3[data-i18n="caravan"]::before,h3[data-i18n="burned"]::before{content:"";display:inline-block;width:30px;height:30px;margin:-8px 8px -8px 0;vertical-align:middle;background:center/contain no-repeat}
+h3[data-i18n="caravan"]::before{background-image:var(--ka-ic-caravan)}
+h3[data-i18n="burned"]::before{background-image:var(--ka-burn)}
+.modeTag.narh::before{content:"";display:inline-block;width:16px;height:16px;margin:-3px 5px -3px -3px;vertical-align:middle;background:var(--ka-narh) center/contain no-repeat}
+.rp-ic{display:block;flex:none;width:44px;height:44px;background:center/contain no-repeat}
+.rp-ic.emblem{background-image:var(--ka-emblem)}.rp-ic.narh{background-image:var(--ka-narh)}
+
+/* ---- header emblem ---- */
+.kemblem{display:inline-block;width:46px;height:46px;margin:0 -2px 0 -4px;background:var(--ka-emblem) center/contain no-repeat;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45));flex:none}
+@media(max-width:700px){.kemblem{width:36px;height:36px}}
+
+/* ---- card back: painted İznik tile inside the cream frame ---- */
+.card.tile.back{background:var(--ka-cardback) center/cover no-repeat;box-shadow:inset 0 0 0 calc(var(--ts,56px)*.05) #ead6a8,inset 0 0 0 calc(var(--ts,56px)*.065) #9c622c,0 2px 6px rgba(0,0,0,.35)}
+
+/* ---- phones: the tall bazaar picture ---- */
+@media (max-width:700px),(max-aspect-ratio:4/5){
+  body::before{background:radial-gradient(ellipse 90% 60% at 50% 40%,rgba(14,9,7,.82),rgba(14,9,7,.62)),var(--ka-bg-tall) center top/cover fixed no-repeat}
+}
+
+/* ---- end-of-game illustration ---- */
+.endart{display:block;margin:-6px -6px 14px;aspect-ratio:16/7;border-radius:10px;background:var(--ka-end) center 40%/cover no-repeat;box-shadow:inset 0 0 0 1px rgba(120,86,38,.35),0 6px 16px rgba(60,35,15,.25);position:relative}
+.endart figcaption{position:absolute;right:8px;bottom:6px;font-size:11px;color:#f3e6cc;text-shadow:0 1px 3px #000;opacity:.8}
+
+/* ---- the painted balance: beam, two pans, stand (geometry in the 680-wide scale box) ----
+   beam 1000x206 art: pivot at (50%,71.4%), rings hang at x 3.5% / 96.5%, y 99.5%.
+   Shown 495 px wide so the rings sit 460 px apart (the pans' centres at x 110 / 570), pivot at y 60. */
+.scale{height:calc(410px*var(--f,1))}
+.scaleIn{height:410px}
+.post,.base,.beam::before,.beam::after,.pan .strings{display:none!important}
+.scaleIn::after{content:"";position:absolute;left:50%;top:68px;width:164px;height:338px;margin-left:-82px;background:var(--ka-stand) center top/contain no-repeat;filter:drop-shadow(0 10px 12px rgba(0,0,0,.45));z-index:0}
+.beam{top:-13px;left:50%;width:495px;height:102px;margin-left:-247.5px;background:var(--ka-beam) center/100% 100% no-repeat!important;border:0!important;border-radius:0;box-shadow:none!important;transform-origin:50% 71.4%;filter:drop-shadow(0 5px 6px rgba(0,0,0,.45));z-index:2}
+.pan{width:180px;height:229px;top:88px;background:var(--ka-pan) center top/100% auto no-repeat;filter:drop-shadow(0 10px 10px rgba(0,0,0,.4));z-index:1}
+.pan.L{left:calc(50% - 320px)}
+.pan.R{left:calc(50% + 140px)}
+.dish{position:absolute!important;left:6%;right:6%;bottom:16%;min-height:0!important;height:96px;padding:0 0 6px!important;background:none!important;border:0!important;border-radius:0 0 90px 90px/0 0 30px 30px!important;box-shadow:none!important;align-items:flex-end!important}
+.dish::after{display:none!important}
+.dish .card.tile+.card.tile{margin-left:-18px}
+body.narrow .dish .card.tile+.card.tile{margin-left:calc(-18px - (var(--cz,1) - 1)*50px)}
+.dish .empty{margin:0 0 18px;color:#3b230e;opacity:.7;text-shadow:0 1px 0 rgba(255,236,190,.5)}
+.pan.droppable .dish{outline:1.5px dashed rgba(70,40,12,.45)!important;outline-offset:-4px!important}
+.pan.pick,.pan.dropOver{filter:drop-shadow(0 0 7px rgba(246,223,162,.95)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
+.pan.pick .dish,.pan.dropOver .dish{outline:0!important}
+.pan.pick:hover{filter:drop-shadow(0 0 10px rgba(255,236,180,1)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
+.pan.suggest{filter:drop-shadow(0 0 8px rgba(255,226,140,.95)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
+.pan.suggest .dish{box-shadow:none!important}
+.pan .tag{bottom:-44px!important}
+body.narrow .pan .tag{bottom:-52px!important}
+/* the third pan (Three Pans seal) stands on the counter in front of the post: bowl only */
+.pan.M{left:calc(50% - 90px);top:226px;height:92px;background-position:center bottom;background-size:180px auto;z-index:3}
+@media(prefers-reduced-motion:reduce){.beam,.pan{transition:none}}

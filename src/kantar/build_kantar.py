@@ -5,7 +5,7 @@ synthesised). It is the site copy of the standalone build in the Claude project 
 history notes and resume analytics). This script adds the shared head (meta, canonical, icon, analytics,
 feedback button) and copies the share image and the portal plate.
 """
-import os, shutil, sys
+import os, re, shutil, sys
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 sys.path.insert(0, os.path.normpath(os.path.join(H, "..")))
@@ -40,19 +40,26 @@ head = f'''<meta name="description" content="{desc}">
 <script src="/feedback.js" defer data-game="kantar"></script>
 <script src="/next.js" defer data-game="kantar"></script>'''
 src = open(os.path.join(H, "kantar.html"), encoding="utf-8").read()
-# ChatGPT art (art/*.webp, game size; full size in art/master/): rival portraits, the two seals, the caravan camel.
-# Inlined as CSS variables so the page stays one file for the itch.io and CrazyGames packages.
+# Painted art (art/*.webp at game size; full size in art/master/; prompts and review in art-studio.html).
+# Inlined as CSS variables + art.css so the page stays one file for the itch.io and CrazyGames packages.
+# The four goods' card art lives in kantar.html itself (FULL_ART), so the bare source still plays.
 import base64
-def _uri(name):
-    return "url(data:image/webp;base64," + base64.b64encode(open(os.path.join(H, "art", name + ".webp"), "rb").read()).decode() + ")"
-_art = (":root{--ka-cirak:%s;--ka-usta:%s;--ka-seal-uc:%s;--ka-seal-kes:%s;--ka-caravan:%s}\n"
-        ".rivface{display:inline-block}.rivface.cirak{background-image:var(--ka-cirak)}.rivface.usta{background-image:var(--ka-usta)}\n"
-        ".seal-uc i{background-image:var(--ka-seal-uc);background-size:118%%}.seal-kes i{background-image:var(--ka-seal-kes);background-size:118%%}\n"
-        "h3[data-i18n=\"caravan\"]::before{content:\"\";display:inline-block;width:34px;height:34px;margin:-8px 8px -8px 0;vertical-align:middle;"
-        "background:var(--ka-caravan) center/contain no-repeat}"
-        % tuple(_uri(n) for n in ("ka_rival_cirak", "ka_rival_usta", "ka_seal_threepans", "ka_seal_cut", "ka_caravan")))
+def _b64(name):
+    return base64.b64encode(open(os.path.join(H, "art", name), "rb").read()).decode()
+ART_VARS = {  # css variable -> art file
+    "cirak": "ka_rival_cirak", "usta": "ka_rival_usta", "seal-uc": "ka_seal_threepans", "seal-kes": "ka_seal_cut",
+    "ic-S": "ka_icon_S", "ic-I": "ka_icon_I", "ic-K": "ka_icon_K", "ic-B": "ka_icon_B", "ic-caravan": "ka_icon_caravan",
+    "coin": "ka_coin", "light": "ka_lightload", "burn": "ka_burn", "narh": "ka_narh", "emblem": "ka_emblem",
+    "beam": "ka_scale_beam", "pan": "ka_scale_pan", "stand": "ka_scale_stand",
+    "cardback": "ka_cardback", "end": "ka_end", "bg-tall": "ka_bg_tall",
+}
+_art = (":root{" + ";".join(f"--ka-{v}:url(data:image/webp;base64,{_b64(f + '.webp')})" for v, f in ART_VARS.items()) + "}\n"
+        + open(os.path.join(H, "art.css"), encoding="utf-8").read())
 assert src.count("/*KANTAR_ART*/") == 1
 src = src.replace("/*KANTAR_ART*/", _art, 1)
+# favicon: the brass steelyard emblem
+icon = f'<link rel="icon" type="image/png" href="data:image/png;base64,{_b64("favicon-64.png")}">'
+head = re.sub(r'<link rel="icon"[^>]*>', lambda m: icon, head, count=1)
 anchor = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
 assert anchor in src
 os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
