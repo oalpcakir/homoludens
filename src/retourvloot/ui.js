@@ -419,7 +419,7 @@ function drawMap() {
   // equator
   x.setLineDash([2 * dpr, 4 * dpr]); x.strokeStyle = rule; const [, eq] = G([0, 0]); x.beginPath(); x.moveTo(0, eq); x.lineTo(W, eq); x.stroke(); x.setLineDash([]);
   x.fillStyle = ink3; x.font = `italic ${Math.round(12.5 * dpr)}px "IM Fell DW Pica", Georgia, serif`; x.textAlign = 'center';
-  let [a0, b0] = G([-24, 28]); x.fillText('Oceanus', a0, b0); x.fillText('Atlanticus', a0, b0 + 14 * dpr);
+  let [a0, b0] = G([-11, -9]); x.fillText('Oceanus', a0, b0); x.fillText('Atlanticus', a0, b0 + 14 * dpr);
   [a0, b0] = G([75, -22]); x.fillText('Mare Indicum', a0, b0);
   [a0, b0] = G([20, 8]); x.fillText('Africa', a0, b0);
   [a0, b0] = G([40, 55]); x.fillText('Europa', a0, b0);

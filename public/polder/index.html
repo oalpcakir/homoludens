@@ -624,9 +624,28 @@ function person(x,y,s,shirt,hat){ ctx.fillStyle=shirt; rr(x-s*.25,y-s*.6,s*.5,s*
 function spray(x,y,t,n,col){ ctx.fillStyle=col||'rgba(235,248,255,.9)'; for(let k=0;k<n;k++){ const ph=(t*1.3+k/n)%1, a=-Math.PI*(.2+.6*(k%5)/5); circle(x+Math.cos(a)*ph*60-ph*10, y+Math.sin(a)*ph*55+ph*ph*60, 3*(1-ph)+1); } }
 function tower(x,y,s){ ctx.fillStyle='#e9dcc6'; ctx.fillRect(x-s*.12,y-s*.7,s*.24,s*.7); ctx.fillStyle='#7d5f88'; ctx.beginPath(); ctx.moveTo(x-s*.16,y-s*.68); ctx.lineTo(x,y-s*1.05); ctx.lineTo(x+s*.16,y-s*.68); ctx.fill(); ctx.fillStyle='#6d8fa8'; rr(x-s*.05,y-s*.55,s*.1,s*.14,s*.05); ctx.fill(); }
 const ART={
- intro(w,h,t){ sky(w,h,'#bfe6f2','#e8f6f8'); sunAt(w*.82,34,16); cloudAt(w*.25,34,22,'rgba(255,255,255,.9)'); gulls(w,t);
+ intro(w,h,t,v){ if(REGIMG[v]&&REGIMG[v].complete&&REGIMG[v].naturalWidth){ coverImg(REGIMG[v],w,h); gulls(w,t); return; }
+   if(v&&v!=='friesland'&&ART['r_'+v]) return ART['r_'+v](w,h,t);
+   sky(w,h,'#bfe6f2','#e8f6f8'); sunAt(w*.82,34,16); cloudAt(w*.25,34,22,'rgba(255,255,255,.9)'); gulls(w,t);
    seaBand(w,h,h*.58,C.sea,t,4); ctx.fillStyle='#a9c784'; ctx.beginPath(); ctx.ellipse(w*.5,h*.86,95,48,0,Math.PI,0); ctx.fill(); ctx.fillStyle='#c4dc98'; ctx.beginPath(); ctx.ellipse(w*.5,h*.88,82,40,0,Math.PI,0); ctx.fill();
    drawHouse(w*.42,h*.74,42); drawHouse(w*.58,h*.76,36); tower(w*.5,h*.68,46); sheepAt(w*.36,h*.84,6,1); seaBand(w,h,h*.9,'rgba(134,207,228,.9)',t*1.2,3); },
+ r_zeeland(w,h,t){ sky(w,h,'#cfe6ee','#e8f4f4'); cloudAt(w*.2,30,20,'rgba(255,255,255,.9)'); cloudAt(w*.86,30,34,'#7d8ca6'); cloudAt(w*.74,22,26,'#8d9ab0'); gulls(w,t);
+   seaBand(w,h,h*.55,C.deep,t,5,1.8); [[.18,.8,70,22],[.5,.72,110,30],[.84,.82,60,20]].forEach(([fx,fy,rx,ry])=>{ ctx.fillStyle='#a9c784'; ctx.beginPath(); ctx.ellipse(w*fx,h*fy,rx,ry,0,Math.PI,0); ctx.fill(); ctx.fillStyle='#c4dc98'; ctx.beginPath(); ctx.ellipse(w*fx,h*fy+3,rx*.86,ry*.8,0,Math.PI,0); ctx.fill(); });
+   drawHouse(w*.45,h*.66,32); drawHouse(w*.56,h*.67,28); tower(w*.5,h*.62,58); drawTree(w*.2,h*.74,40);
+   ctx.save(); ctx.translate(w*.32,h*.8+Math.sin(t*2)*2); ctx.rotate(Math.sin(t*1.6)*.08); ctx.fillStyle='#7a4e2e'; ctx.beginPath(); ctx.moveTo(-16,0); ctx.lineTo(16,0); ctx.lineTo(11,7); ctx.lineTo(-11,7); ctx.fill(); ctx.fillStyle='#fff6e6'; ctx.beginPath(); ctx.moveTo(0,-2); ctx.lineTo(0,-26); ctx.lineTo(13,-4); ctx.fill(); ctx.restore();
+   seaBand(w,h,h*.88,'rgba(95,176,210,.92)',t*1.3,4,2); },
+ r_holland(w,h,t){ sky(w,h,'#bfe6f2','#eaf7f4'); sunAt(w*.85,30,14); cloudAt(w*.3,32,22,'rgba(255,255,255,.9)'); gulls(w,t);
+   ground(w,h,h*.52,C.land); fieldsRows(w,h,h*.84); ctx.fillStyle=C.lake; ctx.beginPath(); ctx.ellipse(w*.36,h*.7,w*.3,h*.16,0,0,7); ctx.fill();
+   ctx.strokeStyle='rgba(255,255,255,.7)'; ctx.lineWidth=2; for(let k=0;k<4;k++){ const x=w*(.18+k*.1), y=h*.68+(k%2)*8+Math.sin(t*2+k)*2; ctx.beginPath(); ctx.arc(x,y,6,Math.PI*1.1,Math.PI*1.9); ctx.stroke(); }
+   dikeBand(w*.66,w+10,h*.66,14); for(let m=0;m<3;m++) drawMillAt(w*(.72+m*.1),h*.58-(m%2)*4,58,t*1.6+m); drawHouse(w*.92,h*.8,30); },
+ r_zuiderzee(w,h,t){ sky(w,h,'#cfe7f1','#edf7f6'); sunAt(w*.15,28,12); cloudAt(w*.6,28,20,'rgba(255,255,255,.9)'); gulls(w,t);
+   ctx.fillStyle=C.deep; ctx.fillRect(0,h*.42,w,h); seaBand(w,h,h*.46,C.deep,t,5,2); ctx.fillStyle=C.sea; ctx.beginPath(); ctx.moveTo(w*.5,h*.42); ctx.lineTo(w,h*.42); ctx.lineTo(w,h); ctx.lineTo(w*.08,h); ctx.fill();
+   ctx.fillStyle=C.dikeSide; ctx.beginPath(); ctx.moveTo(w*.48,h*.44); ctx.lineTo(w*.53,h*.44); ctx.lineTo(w*.2,h); ctx.lineTo(-w*.02,h); ctx.fill(); ctx.fillStyle=C.dikeTop; ctx.beginPath(); ctx.moveTo(w*.48,h*.43); ctx.lineTo(w*.51,h*.43); ctx.lineTo(w*.12,h); ctx.lineTo(-w*.04,h); ctx.fill();
+   const bx=w*.62+Math.sin(t*.6)*6, by=h*.7; ctx.fillStyle='#7a4e2e'; rr(bx-26,by,52,9,3); ctx.fill(); ctx.fillStyle='#9c7350'; ctx.beginPath(); ctx.ellipse(bx,by,18,8,0,Math.PI,0); ctx.fill();
+   ctx.fillStyle='#2b4c9b'; rr(w*.8-14,h*.58,28,9,3); ctx.fill(); ctx.fillStyle='#6b6b6b'; ctx.fillRect(w*.8-3,h*.5,5,9); for(let k=0;k<4;k++){ const ph=(t*.5+k/4)%1; ctx.fillStyle=`rgba(210,210,215,${.7*(1-ph)})`; circle(w*.8+ph*16,h*.48-ph*22,3+ph*7); }
+   seaBand(w,h,h*.92,'rgba(95,176,210,.9)',t,3,2); },
+ r_free(w,h,t){ sky(w,h,'#bfe6f2','#eaf7f4'); sunAt(w*.82,30,14); cloudAt(w*.25,32,20,'rgba(255,255,255,.9)'); gulls(w,t);
+   seaBand(w,h,h*.5,C.sea,t,4); fieldsRows(w,h,h*.72); dikeBand(-10,w+10,h*.74,18); drawMillAt(w*.68,h*.6,70,t*1.5); drawHouse(w*.4,h*.8,34); drawTree(w*.5,h*.78,50); sheepAt(w*.25,h*.88,6,1); },
  storm(w,h,t,v){ const fin=v==='final'; sky(w,h,'#2f3a57','#5d6d8c'); cloudAt(w*.2,26,30,'#46526e'); cloudAt(w*.6,20,36,'#3e4963'); cloudAt(w*.92,30,26,'#4a5672');
    if((t%2.6)<.12){ ctx.strokeStyle='#ffe58a'; ctx.lineWidth=3; ctx.beginPath(); ctx.moveTo(w*.45,30); ctx.lineTo(w*.41,62); ctx.lineTo(w*.47,62); ctx.lineTo(w*.42,96); ctx.stroke(); ctx.fillStyle='rgba(255,255,255,.15)'; ctx.fillRect(0,0,w,h); }
    if(v==='xmas'){ ctx.fillStyle='rgba(255,255,255,.9)'; for(let k=0;k<40;k++) circle(((k*61+t*20)%w),((k*37+t*35)%h),1.6); }
@@ -668,6 +687,10 @@ const ART={
    drawMillAt(w*.72,h*.42,90,t*1.5); drawHouse(w*.45,h*.66,40); drawTree(w*.52,h*.62,60); sheepAt(w*.3,h*.85,7,1); sheepAt(w*.86,h*.9,7,-1); },
 };
 function rain(w,h,t){ ctx.strokeStyle='rgba(220,230,255,.55)'; ctx.lineWidth=1.2; ctx.beginPath(); for(let i=0;i<60;i++){ const x=((i*53+t*420)%(w+60))-30, y=((i*37+t*700)%(h+40))-20; ctx.moveTo(x,y); ctx.lineTo(x-5,y+12);} ctx.stroke(); }
+// Region pictures (po_reg_<id>) can be dropped into REGSRC as data URIs once the art pack arrives; until then the canvas variants above draw each region.
+const REGSRC={}, REGIMG={};
+for(const k in REGSRC){ const im=new Image(); im.src=REGSRC[k]; REGIMG[k]=im; }
+function coverImg(im,w,h){ const s=Math.max(w/im.naturalWidth,h/im.naturalHeight), iw=im.naturalWidth*s, ih=im.naturalHeight*s; ctx.drawImage(im,(w-iw)/2,(h-ih)/2,iw,ih); }
 let artGen=0;
 function startArt(kind,v){
   const c=document.getElementById('artCv'); if(!c||!ART[kind]) return;
@@ -1124,7 +1147,7 @@ function draw(){
   ctx.save();
   if(shake>0) ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
   ctx.fillStyle=C.sea; ctx.fillRect(-10,-10,W+20,H+20);
-  drawCells(); drawDikes(); drawStructs(); drawAnimals(); drawRuins(); drawCameos(); drawLabels(); drawHint(); drawGhost(); drawParts(); drawClouds(); drawStorm();
+  drawCells(); drawDikes(); drawStructs(); drawAnimals(); drawRuins(); drawCameos(); drawHint(); drawGhost(); drawParts(); drawClouds(); drawLabels(); drawStorm();
   ctx.restore();
 }
 function drawCells(){
@@ -1443,7 +1466,7 @@ function nlMapSVG(pr){
     let shapes;
     if(L.id==='zuiderzee'){ shapes=`<path d="${NLGEO.zzwater}" fill="${lk?'url(#hatch)':'#86cfe4'}" stroke="${lk?'#9fb8b2':'#5fa9c4'}" stroke-width="1.5"/><path d="${NLGEO.zzland}" fill="${lk?'url(#hatch)':done?'url(#fields)':'#86cfe4'}" stroke="${done?'#6fae4f':'#5fa9c4'}" stroke-width="1.2" ${done?'':'stroke-dasharray="3 3"'}/>`; }
     else shapes=`<path d="${NLGEO[L.id]}" fill="${lk?'url(#hatch)':done?'url(#fields)':'#f4f8e8'}" stroke="${done?'#6fae4f':'#9fb8b2'}" stroke-width="1.5" stroke-linejoin="round"/>`;
-    g+=`<g class="rg ${!lk&&!done?'open':''}" data-k="${k}">${shapes}<text x="${lx}" y="${ly}" text-anchor="middle">${lk?'🔒 ':''}${L.name}</text><text class="st" x="${lx}" y="${ly+16}" text-anchor="middle">${'★'.repeat(st)}<tspan fill="#cfd6d2">${'★'.repeat(n-st)}</tspan></text>${pr[L.id]?.hard?`<text class="st" x="${lx}" y="${ly+30}" text-anchor="middle" style="fill:#c0392b;font-size:10.5px">hard ${'★'.repeat(pr[L.id].hard)}</text>`:''}</g>`; });
+    g+=`<g class="rg ${!lk&&!done?'open':''}" data-k="${k}">${shapes}${lk?`<g transform="translate(${lx-6},${ly-27})" class="lock"><rect x="0" y="5" width="12" height="9" rx="2" fill="#7c8c88" stroke="#fff" stroke-width="1.5"/><path d="M3 5.5V4a3 3 0 0 1 6 0v1.5" fill="none" stroke="#7c8c88" stroke-width="2"/></g>`:''}<text x="${lx}" y="${ly}" text-anchor="middle"${lk?' style="fill:#6b7a76"':''}>${L.name}</text>${lk?'':`<text class="st" x="${lx}" y="${ly+16}" text-anchor="middle">${'★'.repeat(st)}<tspan fill="#a9b5b1">${'★'.repeat(n-st)}</tspan></text>`}${pr[L.id]?.hard?`<text class="st" x="${lx}" y="${ly+30}" text-anchor="middle" style="fill:#c0392b;font-size:10.5px">hard ${'★'.repeat(pr[L.id].hard)}</text>`:''}</g>`; });
   return `<svg class="nlmap" viewBox="0 0 ${NLGEO.vb[0]} ${NLGEO.vb[1]}"><defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#dcdcd4"/><line x1="0" y1="0" x2="0" y2="8" stroke="#cbcbc2" stroke-width="3"/></pattern>
   <pattern id="fields" width="10" height="10" patternUnits="userSpaceOnUse"><rect width="10" height="5" fill="#b4de85"/><rect y="5" width="10" height="5" fill="#c9e59a"/><rect y="4.2" width="10" height="1.2" fill="#86cde0"/></pattern></defs>
   <path d="${NLGEO.rest}" fill="#e3e9d3" stroke="#c9d3c0" stroke-width="1"/>${g}
@@ -1505,7 +1528,7 @@ function openBook(tab){
 }
 function startLevel(id){
   inLevel=true; clearRun(); newGame(id); S.busy=true; $('diffLbl').textContent=S.hard?'Hard':''; track('polder_level_start',{level:id,diff:SET.diff});
-  card({yr:`${LV.start}–${LV.final?LV.final.year:LV.end}`,art:'intro',title:`${LV.name} · ${LV.sub}`,text:LV.intro,
+  card({yr:`${LV.start}–${LV.final?LV.final.year:LV.end}`,art:'intro',v:LV.id,title:`${LV.name} · ${LV.sub}`,text:LV.intro,
     list:`<ul>${LV.rules.map(r=>`<li>${r}</li>`).join('')}${S.hard?`<li><b>Hard:</b> ${HARDNOTE[LV.id]||'storms hit harder.'}</li>`:''}<li><b>Goals:</b> ${QUESTS.map(q=>q.text.toLowerCase()).join('; ')}.</li></ul>`+(LV.id==='friesland'?`<ul><li><b>Place dikes</b> next to land. Rotate with right-click, R or scroll.</li><li><b>Close a ring</b> around water and it drains into fields.</li><li><b>Storms</b> crack sea-facing dikes. Click a crack to plug it.</li><li><b>Drain fields</b> to earn upgrades.</li></ul>`:''),
     btn:'Begin'}).then(()=>{ audioInit(); musicStart(); S.busy=false; });
 }

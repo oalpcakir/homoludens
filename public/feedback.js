@@ -13,6 +13,12 @@
 .hlfb-btn:hover{filter:brightness(1.15)}\
 .hlfb-dc{position:fixed;right:118px;bottom:18px;z-index:9000;display:flex;align-items:center;gap:6px;font:500 13px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.02em;padding:9px 13px;border-radius:20px;background:#5865f2;color:#fff;text-decoration:none;box-shadow:0 4px 14px rgba(0,0,0,.18)}\
 .hlfb-dc:hover{filter:brightness(1.1)}\
+.hlfb-game.hlfb-btn,.hlfb-game.hlfb-dc{left:14px;right:auto;bottom:14px;width:36px;height:36px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0;gap:0;opacity:.62;background:rgba(31,43,74,.86);color:#f7f6f2;border:1px solid rgba(255,255,255,.22);box-shadow:0 2px 8px rgba(0,0,0,.22);transition:opacity .2s,transform .25s}\
+.hlfb-game.hlfb-dc{left:56px}\
+.hlfb-game:hover,.hlfb-game:focus-visible{opacity:1}\
+.hlfb-game svg{width:17px;height:17px;fill:currentColor}\
+.hlfb-game.hlfb-away{transform:translateY(70px);opacity:0;pointer-events:none}\
+@media (max-width:699px){.hlfb-game.hlfb-dc{display:none!important}.hlfb-game.hlfb-btn{left:0;bottom:auto;top:58%;width:26px;height:44px;border-radius:0 10px 10px 0;border-left:0;opacity:.5}.hlfb-game.hlfb-btn svg{width:14px;height:14px}.hlfb-game.hlfb-away{transform:translateX(-30px)}}\
 .hlfb-dc svg{width:16px;height:16px;fill:currentColor}\
 .hlfb-btn:focus-visible,.hlfb-box :focus-visible{outline:2px solid #b07a1e;outline-offset:2px}\
 .hlfb-ov{position:fixed;inset:0;z-index:9001;background:rgba(10,14,22,.5);display:flex;align-items:center;justify-content:center;padding:16px}\
@@ -62,6 +68,21 @@
     var dc = el('<a class="hlfb-dc" href="https://discord.gg/7PcDfAMdr5" target="_blank" rel="noopener" aria-label="Join the Homo Ludens Discord"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18.3 18.3 0 0 0-5.6 0L8.6 3a19.5 19.5 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1A19.7 19.7 0 0 0 6.1 21l1.3-2a12.8 12.8 0 0 1-2-1l.5-.4a14 14 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2a19.6 19.6 0 0 0 6-3c.5-5.2-.9-9.7-3.6-13.6zM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>');
     dc.addEventListener('click', function () { try { if (window.posthog && window.posthog.capture) window.posthog.capture('discord_click', { game: GAME, page: location.pathname }); } catch (e) {} });
     document.body.appendChild(dc); document.body.appendChild(btn); document.body.appendChild(ov);
+    // In a game, the two pills shrink to small round icons in the bottom-left corner, so they never cover the game's own controls
+    // (Borderlines' zoom buttons, Kantar's market, the tea receipt). On a phone they slide away while scrolling down.
+    if (GAME !== 'portal') {
+      btn.classList.add('hlfb-game'); dc.classList.add('hlfb-game');
+      btn.setAttribute('aria-label', 'Send feedback'); btn.title = 'Send feedback'; dc.title = 'Homo Ludens Discord';
+      btn.innerHTML = '<span style="font-size:0">Feedback</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 6v2h10V9H7zm0 4v1.8h7V13H7z"/></svg>';
+      var lastY = window.scrollY;
+      window.addEventListener('scroll', function () {
+        if (window.innerWidth >= 700) return;
+        var y = window.scrollY, atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 40;
+        var away = y > lastY + 4 && y > 80 && !atEnd;
+        if (y < lastY - 4 || atEnd || y < 80) away = false;
+        if (Math.abs(y - lastY) > 4) { btn.classList.toggle('hlfb-away', away); dc.classList.toggle('hlfb-away', away); lastY = y; }
+      }, { passive: true });
+    }
     // on a phone, step aside while one of the game's own dialogs (aria-modal) is open, so they never cover its buttons
     setInterval(function () {
       var small = window.innerWidth < 700, open = false;
