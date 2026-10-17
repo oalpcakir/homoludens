@@ -206,3 +206,20 @@ Masanın üstünde akşamları gösteren bir şerit durur. Her akşamın tarihi,
 - **Bilinen sade yanlar:** Yapay zekâ kâğıdı beklenen değerle yönetiyor, bu yüzden hepsi VII civarı satıyor; geç çöküş botları nadiren vuruyor. Erken çöküş asıl gerilimi yaratıyor. Mobilde rakipler alt alta diziliyor, dokunma testi yapılmadı. Kayıt/devam, analitik, site entegrasyonu yok.
 - **Görsel:** Admirael van Enchuysen (1) pembe-macenta geldi, Parragon Schilder'e (6) yakın; kartın rozet rengi leylağa çekildi. Yeniden üretilirse `art.js` güncellenir.
 - **Test:** Otomatik tarayıcıda (Chromium) iki kış, bir klasik ve bir mobil (390 px) oyun rastgele tıklamalarla sonuna kadar oynandı; konsol hatası yok, 94 kart her oyun sonunda eksiksiz.
+
+## 10. v0.2 (2026-10-17)
+
+**Lale renkleri (v2b, son hâli):** İlke: birbirine çok yakın renkli olanlardan zayıf görüneni, destede eksik kalan bir renkle değiştir; güzel olanlara dokunma. Dönemin üç sınıfı: *Rozen* (beyaz zemin, kırmızı-pembe), *Violetten* (beyaz zemin, mor), *Bizarden* (sarı zemin, kırmızı-kahve). Bol laleler sade, nadirler alevli. Değişen üç lale (istemler `NEW-TULIPS.html` ve ART-BRIEF v2'de):
+- **t01 Admirael van Enchuysen → koyu menekşe, geniş beyaz kenarlar** (Violetten). Eskisi pembe-macentaya kaymıştı. Encyclopaedia Romana bu çeşidi Violetten sayıyor.
+- **t06 Parragon Schilder → sarı zemin üstüne bronz-kahverengi alevler** (Bizarden). Eskisi krem üstüne macentaydı, Gouda ve Semper Augustus'la karışıyordu. Rengi kaynakta yok, stilize.
+- **t09 Admirael de Man → düz koyu gül pembesi.** Destede beş kırmızı vardı, düz pembe yoktu; bol bir kart olduğu için sade. Stilize (kaynakta "Admirael"ler kırmızı çizgili sayılıyor).
+- Bruyne Purper (düz mürdüm) aynen kalıyor: destedeki tek koyu lale. Gouda'nın rozeti açık pembeye çekildi (#F3A0BE), yeni pembe 9'dan ayrılsın diye.
+
+**Kartlar:** Numara sol üstte büyük rozet, aynı rozet sağ altta da var; adın altında "12 in deck" satırı (numara = puan = destedeki kopya sayısı). Kurallarda açıklaması var.
+
+**Uyarlama:** Oyunun içinden Flip 7 adı ve atfı kaldırıldı. Klasik mod "The tavern game" oldu.
+
+**Kış modu:**
+- Botlar riski farklı okuyor (`fear`: temkinli 1,3, dengeli 1,0, açgözlü 0,5; her oyunda ±%20 sapma). Açgözlü artık kâğıdını VII'ye taşıyabiliyor ve geç çöküşe yakalanabiliyor. 3.000 oyunda kazanma: temkinli %32,5, iki dengeli toplam %42,5, açgözlü %25.
+- **Kaydet/devam:** Her akşamın başında (çöküş zarından sonra), Alkmaar'dan önce ve her klasik turdan önce `localStorage` (`tulip7.save.v1`). Açılışta "Continue your winter". Akşamın ortasında çıkılırsa o akşam baştan oynanır. 299 oyunluk testte devam ettirilen oyun kesintisiz oyunla aynı sonuca çıkıyor.
+- **Mobil:** 700 px altında rakipler yan yana üç kompakt sütun (kısa ad, toplam, mini kartlar).

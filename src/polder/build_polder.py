@@ -22,6 +22,13 @@ icon = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w
         "%3Crect x='3' y='13' width='26' height='4' rx='2' fill='%2393c46b'/%3E"
         "%3Cpath d='M16 6v9M11.5 8.5l9 4M11.5 12.5l9-4' stroke='%234a3a2e' stroke-width='1.6'/%3E%3C/svg%3E\">")
 src = open(os.path.join(H, "polder.html"), encoding="utf-8").read()
+# Art (src/polder/art/*.webp, game-sized; full-size masters in art/master/) goes inline, so the page stays one file
+# for the itch.io and CrazyGames packages.
+import base64, glob, json
+art = {os.path.basename(f)[:-5]: "data:image/webp;base64," + base64.b64encode(open(f, "rb").read()).decode()
+       for f in sorted(glob.glob(os.path.join(H, "art", "*.webp")))}
+assert src.count("const PART={}/*POLDER_ART*/") == 1
+src = src.replace("const PART={}/*POLDER_ART*/", "const PART=" + json.dumps(art), 1)
 anchor = '<meta name="viewport" content="width=device-width, initial-scale=1">'
 assert anchor in src
 

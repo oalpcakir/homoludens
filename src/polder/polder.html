@@ -557,7 +557,7 @@ function person(x,y,s,shirt,hat){ ctx.fillStyle=shirt; rr(x-s*.25,y-s*.6,s*.5,s*
 function spray(x,y,t,n,col){ ctx.fillStyle=col||'rgba(235,248,255,.9)'; for(let k=0;k<n;k++){ const ph=(t*1.3+k/n)%1, a=-Math.PI*(.2+.6*(k%5)/5); circle(x+Math.cos(a)*ph*60-ph*10, y+Math.sin(a)*ph*55+ph*ph*60, 3*(1-ph)+1); } }
 function tower(x,y,s){ ctx.fillStyle='#e9dcc6'; ctx.fillRect(x-s*.12,y-s*.7,s*.24,s*.7); ctx.fillStyle='#7d5f88'; ctx.beginPath(); ctx.moveTo(x-s*.16,y-s*.68); ctx.lineTo(x,y-s*1.05); ctx.lineTo(x+s*.16,y-s*.68); ctx.fill(); ctx.fillStyle='#6d8fa8'; rr(x-s*.05,y-s*.55,s*.1,s*.14,s*.05); ctx.fill(); }
 const ART={
- intro(w,h,t,v){ if(REGIMG[v]&&REGIMG[v].complete&&REGIMG[v].naturalWidth){ coverImg(REGIMG[v],w,h); gulls(w,t); return; }
+ intro(w,h,t,v){ if(imgOk(REGIMG[v])){ coverImg(REGIMG[v],w,h); return; }
    if(v&&v!=='friesland'&&ART['r_'+v]) return ART['r_'+v](w,h,t);
    sky(w,h,'#bfe6f2','#e8f6f8'); sunAt(w*.82,34,16); cloudAt(w*.25,34,22,'rgba(255,255,255,.9)'); gulls(w,t);
    seaBand(w,h,h*.58,C.sea,t,4); ctx.fillStyle='#a9c784'; ctx.beginPath(); ctx.ellipse(w*.5,h*.86,95,48,0,Math.PI,0); ctx.fill(); ctx.fillStyle='#c4dc98'; ctx.beginPath(); ctx.ellipse(w*.5,h*.88,82,40,0,Math.PI,0); ctx.fill();
@@ -620,9 +620,11 @@ const ART={
    drawMillAt(w*.72,h*.42,90,t*1.5); drawHouse(w*.45,h*.66,40); drawTree(w*.52,h*.62,60); sheepAt(w*.3,h*.85,7,1); sheepAt(w*.86,h*.9,7,-1); },
 };
 function rain(w,h,t){ ctx.strokeStyle='rgba(220,230,255,.55)'; ctx.lineWidth=1.2; ctx.beginPath(); for(let i=0;i<60;i++){ const x=((i*53+t*420)%(w+60))-30, y=((i*37+t*700)%(h+40))-20; ctx.moveTo(x,y); ctx.lineTo(x-5,y+12);} ctx.stroke(); }
-// Region pictures (po_reg_<id>) can be dropped into REGSRC as data URIs once the art pack arrives; until then the canvas variants above draw each region.
-const REGSRC={}, REGIMG={};
-for(const k in REGSRC){ const im=new Image(); im.src=REGSRC[k]; REGIMG[k]=im; }
+// Art from src/polder/art/ (ChatGPT, see the art brief): build_polder.py fills PART with data URIs (po_reg_* region banners, po_up_* upgrade icons, po_book).
+// The source page has none, so the canvas drawings above stay as the fallback.
+const PART={}/*POLDER_ART*/, PIMG={}, REGIMG={};
+for(const k in PART){ const im=new Image(); im.src=PART[k]; PIMG[k]=im; if(k.startsWith('po_reg_')) REGIMG[k.slice(7)]=im; }
+const imgOk=im=>im&&im.complete&&im.naturalWidth>0;
 function coverImg(im,w,h){ const s=Math.max(w/im.naturalWidth,h/im.naturalHeight), iw=im.naturalWidth*s, ih=im.naturalHeight*s; ctx.drawImage(im,(w-iw)/2,(h-ih)/2,iw,ih); }
 let artGen=0;
 function startArt(kind,v){
@@ -662,7 +664,7 @@ const UPICON={
  barges(w){ ctx.fillStyle=C.sea; ctx.fillRect(0,w*.55,w,w*.45); ctx.fillStyle='#7a4e2e'; ctx.beginPath(); ctx.moveTo(w*.12,w*.55); ctx.lineTo(w*.88,w*.55); ctx.lineTo(w*.78,w*.72); ctx.lineTo(w*.22,w*.72); ctx.fill(); ctx.fillStyle='#8a6a48'; ctx.beginPath(); ctx.ellipse(w*.5,w*.55,w*.25,w*.12,0,Math.PI,0); ctx.fill(); },
 };
 function dikeIcon(w,col,y){ y=y||.55; ctx.fillStyle=C.dikeSide; rr(w*.1,w*(y-.1)+4,w*.8,w*.2,6); ctx.fill(); ctx.fillStyle=col; rr(w*.1,w*(y-.1),w*.8,w*.2,6); ctx.fill(); }
-function drawIcon(c,key){ const d=window.devicePixelRatio||1, w=72; c.width=w*d; c.height=w*d; const g=c.getContext('2d'), save=ctx; ctx=g; try{ ctx.setTransform(d,0,0,d,0,0); UPICON[key](w); }catch(e){ console.error(e); } ctx=save; }
+function drawIcon(c,key){ const d=window.devicePixelRatio||1, w=72; c.width=w*d; c.height=w*d; const g=c.getContext('2d'), save=ctx; ctx=g; try{ ctx.setTransform(d,0,0,d,0,0); const im=PIMG['po_up_'+key]; if(imgOk(im)) ctx.drawImage(im,4,4,w-8,w-8); else { UPICON[key](w); if(im&&!im.complete) im.addEventListener('load',()=>drawIcon(c,key),{once:true}); } }catch(e){ console.error(e); } ctx=save; }
 function upLv(k){ return S.up[k]||0; }
 function chooseUpgrade(){
   return new Promise(res=>{
@@ -1412,7 +1414,7 @@ function levelSelect(){
   b.innerHTML=`<div class="yr">Holland, against the sea</div><h2>Polder</h2><p style="margin-bottom:10px">Build dikes, close them into rings, drain the water. Win each region to unlock the next, and to earn a skill you keep for good.</p>
   <div class="nlwrap"><div>${nlMapSVG(pr)}</div><div>
    <div class="perks"><h3 style="margin:0 0 4px;font-size:13px;letter-spacing:1px;color:var(--muted);text-transform:uppercase">Your legacy</h3>${LEVELS.filter(L=>!L.free).map(L=>`<div class="${perkOn(L.id)?'on':''}">${perkOn(L.id)?'✓':'○'} <b>${PERKS[L.id].name}</b> · ${PERKS[L.id].desc}${perkOn(L.id)?'':` <i>(win ${L.name})</i>`}</div>`).join('')}</div>
-   <div class="card" style="margin-top:12px;cursor:pointer" id="bookBtn"><h3>The Chronicle</h3><div class="bar2"><div style="width:${seen/total*100}%"></div></div><div style="font-size:13px;color:var(--muted)">${seen} of ${total} pages found. Storms, inventions and moments you met on the way.</div></div>
+   <div class="card" style="margin-top:12px;cursor:pointer" id="bookBtn">${PART.po_book?`<img src="${PART.po_book}" alt="" style="float:right;width:56px;height:56px;margin:-4px 0 0 8px">`:''}<h3>The Chronicle</h3><div class="bar2"><div style="width:${seen/total*100}%"></div></div><div style="font-size:13px;color:var(--muted)">${seen} of ${total} pages found. Storms, inventions and moments you met on the way.</div></div>
    <div class="diffrow"><span>Difficulty</span><button data-d="normal" class="${SET.diff!=='hard'?'on':''}">Normal</button><button data-d="hard" class="${SET.diff==='hard'?'on':''}">Hard</button></div>
    <p style="font-size:12.5px;color:var(--muted);margin:4px 0 0">${SET.diff==='hard'?'Harder storms in every region, growing region by region, plus tighter limits later on.':'The relaxed way to build the Netherlands.'}</p>
    <div class="menurow">${run?`<button class="primary" id="contBtn">Continue · ${LEVELS.find(l=>l.id===run.lv).name}, ${run.S.year}</button>`:''}<button class="${run?'':'primary'}" id="freeBtn">Free play</button></div>
@@ -1449,7 +1451,7 @@ function openBook(tab){
   const pr=loadProg(), seen=pr._seen||{}, m=$('modal'), b=$('mbox'); b.className='mbox book';
   const E=bookEntries(), list=E.filter(e=>tab==='all'||e.cat===tab), n=E.filter(e=>seen[e.k]).length;
   const tabs=[['all','Everything'],['storm','Storms'],['inv','Inventions'],['chron','Chronicle']]; track('polder_book',{tab}); achCheck();
-  b.innerHTML=`<div class="yr">${n} of ${E.length} pages found</div><h2>The Chronicle</h2><div class="bar2"><div style="width:${n/E.length*100}%"></div></div>
+  b.innerHTML=`${PART.po_book?`<img src="${PART.po_book}" alt="" style="float:right;width:64px;height:64px;margin:-6px 0 0 10px">`:''}<div class="yr">${n} of ${E.length} pages found</div><h2>The Chronicle</h2><div class="bar2"><div style="width:${n/E.length*100}%"></div></div>
   <div class="tabs">${tabs.map(([k,l])=>`<button data-t="${k}" class="${tab===k?'on':''}">${l} (${E.filter(e=>(k==='all'||e.cat===k)&&seen[e.k]).length}/${E.filter(e=>k==='all'||e.cat===k).length})</button>`).join('')}<button data-t="ach" class="${tab==='ach'?'on':''}">Achievements (${Object.keys(pr._ach||{}).length}/${ACH.length})</button><button data-t="src" class="${tab==='src'?'on':''}">Sources</button><button id="bookBack" style="margin-left:auto">← Map</button></div>
   ${tab==='ach'?ACH.map(a=>{ const got=(pr._ach||{})[a.id]; return `<div class="ach ${got?'':'lock'}"><span class="md">${got?'★':'?'}</span><div><b>${a.name}</b>${a.desc}</div></div>`; }).join(''):tab==='src'?SOURCES:''}
   ${tab==='ach'||tab==='src'?'':list.map(e=>seen[e.k]?`<div class="ent"><span class="yb">${e.year}</span><div>${e.title?`<b>${e.title}</b>`:''}${e.text}${e.art?` <span class="more" data-k="${e.k}">see the picture</span>`:''}</div></div>`

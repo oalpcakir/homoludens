@@ -1,16 +1,16 @@
-/* Tulip 7 engine: Flip 7 rules + the winter of 1636-37. No DOM here (the bot simulator loads this file too). */
+/* Tulip 7 engine: the tavern rules + the winter of 1636-37. No DOM here (the bot simulator loads this file too). */
 const T7 = (() => {
 const VARIETIES = [
   {n:0, id:'t00', name:'Semper Augustus', hex:'#C8102E', ink:'#fff', note:"Dr Adriaen Pauw would not sell his, whatever he was offered. Listed at 6,290 guilders on 5 February 1637. Worth nothing tonight, but there is only one, so it can never be a duplicate."},
-  {n:1, id:'t01', name:'Admirael van Enchuysen', hex:'#B987D9', ink:'#fff', note:"4,900 guilders on 5 February 1637 (Garber's price list)."},
+  {n:1, id:'t01', name:'Admirael van Enchuysen', hex:'#4B2A8C', ink:'#fff', note:"A Violetten, a purple tulip. 4,900 guilders on 5 February 1637 (Garber's price list)."},
   {n:2, id:'t02', name:'Viceroy', hex:'#7B3FB0', ink:'#fff', note:"4,203 guilders at the Alkmaar auction for one bulb of 658 aas, about 33 grams."},
   {n:3, id:'t03', name:'Admirael Liefkens', hex:'#A3162B', ink:'#fff', note:"2,968 guilders on 5 February 1637."},
   {n:4, id:'t04', name:'Admirael van der Eijck', hex:'#F26A4F', ink:'#fff', note:"1,620 guilders at the Alkmaar auction, 5 February 1637."},
-  {n:5, id:'t05', name:'Bruyne Purper', hex:'#6B2D5C', ink:'#fff', note:"2,025 guilders at the Alkmaar auction."},
-  {n:6, id:'t06', name:'Parragon Schilder', hex:'#B5177A', ink:'#fff', note:"1,615 guilders at the Alkmaar auction."},
-  {n:7, id:'t07', name:'Gouda', hex:'#E8578C', ink:'#fff', note:"1,500 guilders at the Alkmaar auction."},
+  {n:5, id:'t05', name:'Bruyne Purper', hex:'#6B2D5C', ink:'#fff', note:"'Brown purple'. 2,025 guilders at the Alkmaar auction."},
+  {n:6, id:'t06', name:'Parragon Schilder', hex:'#8A5418', ink:'#fff', note:"1,615 guilders at the Alkmaar auction."},
+  {n:7, id:'t07', name:'Gouda', hex:'#F3A0BE', ink:'#2a2018', note:"1,500 guilders at the Alkmaar auction."},
   {n:8, id:'t08', name:'Gheele ende Roote van Leyden', hex:'#EE7417', ink:'#fff', note:"From 17.5 to 136.5 guilders in the five weeks before the crash."},
-  {n:9, id:'t09', name:'Admirael de Man', hex:'#D92B23', ink:'#fff', note:"From 18 to 209 guilders in the five weeks before the crash."},
+  {n:9, id:'t09', name:'Admirael de Man', hex:'#E0457B', ink:'#fff', note:"From 18 to 209 guilders in the five weeks before the crash."},
   {n:10, id:'t10', name:'Witte Croonen', hex:'#EDE6D3', ink:'#2a2018', note:"A cheap white tulip sold by the pound. From 2.2 to 57 in five weeks; by 1642 almost worthless again."},
   {n:11, id:'t11', name:'Switsers', hex:'#F2B705', ink:'#2a2018', note:"Red and yellow like a Swiss guard's uniform. A pound fetched 1,100 guilders in Amsterdam on 6 February 1637: about three years of a master carpenter's pay."},
   {n:12, id:'t12', name:'Gheele Croonen', hex:'#F7CE3E', ink:'#2a2018', note:"The commonest yellow tulip, sold by the pound. From 0.41 to 20.5 between 2 January and 5 February 1637: fifty times in five weeks."}
@@ -38,7 +38,7 @@ const EVENINGS = [
 const SETTLE = 0.035, FEE = 0.025, BONUS = 15, GPP = 10, TARGET = 200;
 const ROMAN = ['I','II','III','IV','V','VI','VII','VIII'];
 
-function rng(seed){ let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function rng(seed){ const f = () => { f.s = (f.s + 0x6D2B79F5) >>> 0; let t = f.s; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; f.s = seed >>> 0; return f; }
 function shuffle(a, r){ for (let i = a.length - 1; i > 0; i--){ const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function makeDeck(){
   const d = []; let u = 0;
@@ -61,8 +61,28 @@ class Game {
     this.draw = shuffle(makeDeck(), this.r); this.discard = [];
     this.dealer = Math.floor(this.r() * this.players.length);
     this.evening = 0; this.crashed = false; this.alkmaar = false; this.round = 0; this.over = false; this.roundOver = false;
-    this.history = [];
+    this.history = []; this.onSave = o.onSave || null; this.resumed = false;
+    // each rival reads the crash risk a little differently this game (greedy traders under-read it)
+    for (const p of this.players) p.fear = p.style ? STYLES[p.style].fear * (0.8 + 0.4 * this.r()) : 1;
+    if (o.snap) this.restore(o.snap);
   }
+  /* Saves happen at the start of an evening (after the crash roll) and before Alkmaar / each classic round. */
+  snapshot(){
+    const K = ['total','purse','units','settled','atCrash','busts','books','sold','fear'];
+    return {v:1, mode:this.mode, seed:this.seed, rs:this.r.s, dealer:this.dealer, evening:this.evening, crashed:this.crashed,
+      crashAfter:this.crashAfter ?? null, alkmaar:this.alkmaar, round:this.round, history:this.history,
+      draw:this.draw.map(c => c.uid), discard:this.discard.map(c => c.uid),
+      players:this.players.map(p => Object.fromEntries(K.map(k => [k, p[k]]))), when:Date.now()};
+  }
+  restore(s){
+    const deck = makeDeck(), byUid = Object.fromEntries(deck.map(c => [c.uid, c]));
+    this.r.s = s.rs; this.dealer = s.dealer; this.evening = s.evening; this.crashed = s.crashed; this.crashAfter = s.crashAfter ?? undefined;
+    this.alkmaar = s.alkmaar; this.round = s.round; this.history = s.history || [];
+    this.draw = s.draw.map(u => byUid[u]); this.discard = s.discard.map(u => byUid[u]);
+    s.players.forEach((q, i) => Object.assign(this.players[i], q));
+    this.resumed = true;
+  }
+  save(){ if (this.onSave) this.onSave(this.snapshot()); }
   get idx(){ return this.mode === 'winter' && !this.crashed ? IDX[this.evening] : 1; }
   riskNext(){ return this.evening + 1 < IDX.length ? RISK[this.evening + 1] : 1; }
   paperValue(p){ return this.crashed ? 0 : p.units * this.idx; }
@@ -82,11 +102,15 @@ class Game {
   async run(){
     const P = this.players;
     if (this.mode === 'classic'){
-      while (!P.some(p => p.total >= TARGET)) await this.playRound();
+      if (this.resumed) await this.emit('resume', {});
+      while (!P.some(p => p.total >= TARGET)){ this.save(); await this.playRound(); }
     } else {
-      for (let e = 0; e < IDX.length; e++){
-        if (e > 0 && this.r() < RISK[e]) break;
+      let skip = this.resumed;
+      if (!this.crashed) for (let e = this.evening; e < IDX.length; e++){
+        if (!skip && e > 0 && this.r() < RISK[e]) break;
+        skip = false;
         this.evening = e;
+        this.save();
         await this.emit('evening', {e});
         for (const p of P){
           if (p.units > 0 && await p.agent.sell(this, p)){
@@ -97,11 +121,14 @@ class Game {
         }
         await this.playRound();
       }
-      for (const p of P){ p.atCrash = Math.round(p.units * IDX[this.evening]); p.settled = Math.round(p.atCrash * SETTLE); }
-      this.crashed = true; this.crashAfter = this.evening;
-      await this.emit('crash', {});
-      for (const p of P) p.units = 0;
+      if (!this.crashed){
+        for (const p of P){ p.atCrash = Math.round(p.units * IDX[this.evening]); p.settled = Math.round(p.atCrash * SETTLE); }
+        this.crashed = true; this.crashAfter = this.evening;
+        await this.emit('crash', {});
+        for (const p of P) p.units = 0;
+      }
       this.alkmaar = true;
+      this.save();
       await this.emit('alkmaar', {});
       await this.playRound();
     }
@@ -198,13 +225,13 @@ class Game {
 
 /* ---------- AI ---------- */
 const STYLES = {
-  cautious:{riskW:1.45, margin:.14, label:'Cautious'},
-  balanced:{riskW:1.0,  margin:.05, label:'Steady'},
-  greedy:  {riskW:.68,  margin:-.03, label:'Greedy'}
+  cautious:{riskW:1.45, margin:.14, fear:1.3, label:'Cautious'},
+  balanced:{riskW:1.0,  margin:.05, fear:1.0, label:'Steady'},
+  greedy:  {riskW:.68,  margin:-.03, fear:.5, label:'Greedy'}
 };
-function holdEV(g){ // what one guilder of paper is expected to be worth at the next evening
+function holdEV(g, fear = 1){ // what one guilder of paper is expected to be worth at the next evening, as this trader reads the risk
   const e = g.evening; if (e + 1 >= IDX.length) return SETTLE;
-  const r = RISK[e + 1]; return (1 - r) * IDX[e + 1] / IDX[e] + r * SETTLE;
+  const r = Math.min(1, RISK[e + 1] * fear); return (1 - r) * IDX[e + 1] / IDX[e] + r * SETTLE;
 }
 function lead(g, p){ return Math.max(...g.players.filter(q => q !== p).map(q => g.standing(q))); }
 const AI = {
@@ -225,8 +252,8 @@ const AI = {
     else { const gap = lead(g, p) - g.standing(p); if (gap > 1500) w *= .8; }
     return up > pb * down * w ? 'hit' : 'stay';
   },
-  dest(g, p){ return holdEV(g) > 1 + STYLES[p.style].margin ? 'paper' : 'purse'; },
-  sell(g, p){ return holdEV(g) < 1 + STYLES[p.style].margin + FEE; },
+  dest(g, p){ return holdEV(g, p.fear) > 1 + STYLES[p.style].margin ? 'paper' : 'purse'; },
+  sell(g, p){ return holdEV(g, p.fear) < 1 + STYLES[p.style].margin + FEE; },
   target(g, p, c, cands){
     const opp = cands.filter(q => q !== p), norm = g.mode === 'classic' ? 10 : 150;
     if (c.k === 'freeze'){
