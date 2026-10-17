@@ -609,6 +609,66 @@ button.seal.on{background:linear-gradient(#f1d99a,#d2a650);color:#2b1e14;border-
 .rivface{display:inline-block}.rivface.cirak{background-image:var(--ka-cirak)}.rivface.usta{background-image:var(--ka-usta)}
 .seal-uc i{background-image:var(--ka-seal-uc);background-size:118%}.seal-kes i{background-image:var(--ka-seal-kes);background-size:118%}
 h3[data-i18n="caravan"]::before{content:"";display:inline-block;width:34px;height:34px;margin:-8px 8px -8px 0;vertical-align:middle;background:var(--ka-caravan) center/contain no-repeat}
+
+/* ---- Header toolbar (2026-10-17): teacher/preview/sound as one icon group, then Stats, Rules, New game ---- */
+header.top .modeTag{align-self:center;margin-left:-2px}
+header.top .tgroup{display:inline-flex;gap:2px;padding:3px;border:1px solid rgba(205,166,102,.30);border-radius:12px;background:rgba(30,20,15,.55)}
+header.top .btn.tog{display:inline-flex;align-items:center;gap:6px;height:30px;min-width:34px;padding:0 9px;border:0;border-radius:9px;background:transparent;box-shadow:none;color:#f1d99a;position:relative}
+header.top .btn.tog svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+header.top .btn.tog .tl{font-size:13px}
+header.top .btn.tog .dot{width:6px;height:6px;border-radius:50%;background:#6fd0a0;box-shadow:0 0 6px #6fd0a0aa;flex:none}
+header.top .btn.tog:hover{background:rgba(211,172,109,.14)}
+header.top .btn.tog.off{opacity:1;color:#9c8a72}
+header.top .btn.tog.off .dot{background:transparent;box-shadow:inset 0 0 0 1.5px #7d6b56}
+header.top .btn.tog.off svg .w{display:none}
+header.top .btn.tog.off::after{content:"";position:absolute;left:9px;top:50%;width:19px;height:1.8px;background:currentColor;transform:rotate(-40deg);border-radius:2px;pointer-events:none}
+header.top .btn.tog#teachBtn.off::after{display:none}
+header.top .btn.tog#teachBtn.off svg{opacity:.75}
+header.top .hsep{width:1px;height:24px;background:rgba(205,166,102,.28);margin:0 2px}
+header.top .btn.tb{background:transparent;border-color:transparent;box-shadow:none}
+header.top .btn.tb:hover{border-color:rgba(205,166,102,.45)}
+header.top .btn.primary{color:#21150e}
+.language-switch #langLabel{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.language-switch{gap:4px;padding:3px 6px 3px 8px;height:36px;border-radius:10px}
+.language-switch::before{content:"";width:16px;height:16px;flex:none;opacity:.85;background:no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f1d99a' stroke-width='1.8'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3Z'/%3E%3C/svg%3E")}
+@media(max-width:700px){
+  header.top .tgroup{order:3}
+  header.top .language-switch{order:3}
+  header.top .hsep{display:block;order:4;flex-basis:100%;width:auto;height:0;margin:0;background:none}
+  header.top .btn.tb,header.top .btn.primary{order:5;flex:1 1 0;justify-content:center}
+  header.top .tgroup{flex:none}
+  header.top .language-switch{margin-left:auto}
+  header.top .btn.tog{height:30px;padding:0 7px}
+  .language-switch{height:32px}
+}
+@media(max-width:420px){header.top .btn.tog .tl{display:none}}
+
+/* ---- Settings in the start sheet: rival portraits, rule cards, switches ---- */
+#setupDetails .optgrid{grid-template-columns:96px 1fr;gap:16px 16px;align-items:start}
+#setupDetails .optgrid>.ol{padding-top:12px;font-weight:700;color:#6b3412}
+.seg.pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;border:0;border-radius:0;overflow:visible;width:100%}
+.seg.pick button{display:flex;align-items:center;gap:12px;text-align:left;padding:10px 12px;border:1.5px solid rgba(168,132,62,.45);border-radius:12px;background:rgba(255,250,238,.55);color:#4a2a12;transition:border-color .15s,background .15s,box-shadow .15s}
+.seg.pick button+button{border-left:1.5px solid rgba(168,132,62,.45)}
+.seg.pick button:hover{border-color:#a8843e;background:rgba(255,250,238,.9)}
+.seg.pick button.on{background:linear-gradient(#fff6e0,#f3e1b8);border-color:#b8862f;box-shadow:0 0 0 2px rgba(210,166,80,.35),0 3px 10px rgba(80,50,20,.12);font-weight:inherit}
+.rp-t{display:flex;flex-direction:column;gap:1px;min-width:0}
+.rp-t b{font:600 16px/1.2 "EB Garamond",Georgia,serif;color:#3a210f}
+.rp-t small{font-size:12.5px;line-height:1.35;color:#7a6248}
+.rp-t small:empty{display:none}
+.rp-face{flex:none;width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font:600 22px Georgia,serif;font-style:normal;color:#f1d99a;background:#5a3a24 center/cover no-repeat;box-shadow:0 0 0 2px #cda666,0 2px 6px rgba(0,0,0,.25);overflow:hidden}
+.rp-face.cirak{background-image:var(--ka-cirak,none);background-color:#3d4a6a}
+.rp-face.usta{background-image:var(--ka-usta,none);background-color:#3f5a3c}
+.seg.pick button.on .rp-face{box-shadow:0 0 0 3px #b8862f,0 2px 8px rgba(0,0,0,.3)}
+.seg.pick button:not(.on) .rp-face{filter:saturate(.75)}
+.checks.sw{gap:2px}
+.checks.sw label{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid rgba(120,86,38,.15)}
+.checks.sw label:last-child{border-bottom:0}
+.checks.sw input{appearance:none;-webkit-appearance:none;flex:none;width:38px;height:22px;border-radius:999px;background:#d8c7a6;position:relative;cursor:pointer;transition:background .15s;margin:0}
+.checks.sw input::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3);transition:transform .15s}
+.checks.sw input:checked{background:#8e6a2a}
+.checks.sw input:checked::after{transform:translateX(16px)}
+.checks.sw .rp-t b{font:600 14.5px/1.3 "Source Sans 3",system-ui,sans-serif;color:#3a210f}
+@media(max-width:560px){#setupDetails .optgrid{grid-template-columns:1fr;gap:6px}#setupDetails .optgrid>.ol{padding-top:8px}.seg.pick{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -616,16 +676,19 @@ h3[data-i18n="caravan"]::before{content:"";display:inline-block;width:34px;heigh
 <div class="wrap">
   <header class="top">
     <a class="hl-back" href="/">Homo Ludens</a>
-    <h1>Kantar</h1>
+    <h1>Kantar</h1><span class="modeTag" id="modeTag"></span>
     <p data-i18n="tagline"></p>
     <span class="sp"></span>
-    <span class="modeTag" id="modeTag"></span><label class="language-switch" for="languageSelect"><span id="langLabel" data-i18n="language"></span><select id="languageSelect" data-i18n-aria="langAria"><option value="en">EN</option><option value="tr">TR</option></select></label>
-    <button class="btn icon" id="sndBtn" data-i18n-title="soundTitle"></button>
-    <button class="btn icon" id="pvBtn" data-i18n-title="previewTitle"></button>
-    <button class="btn icon" id="teachBtn" data-i18n-title="teachTitle"></button>
-    <button class="btn" id="statsBtn" data-i18n="stats"></button>
-    <button class="btn" id="rulesBtn" data-i18n="rules"></button>
-    <button class="btn" id="newBtn" data-i18n="newGame"></button>
+    <div class="tgroup" role="group" data-i18n-aria="tgroupAria">
+    <button class="btn icon tog" id="teachBtn"></button>
+    <button class="btn icon tog" id="pvBtn"></button>
+    <button class="btn icon tog" id="sndBtn"></button>
+    </div>
+    <label class="language-switch" for="languageSelect"><span id="langLabel" data-i18n="language"></span><select id="languageSelect" data-i18n-aria="langAria"><option value="en">EN</option><option value="tr">TR</option></select></label>
+    <span class="hsep" aria-hidden="true"></span>
+    <button class="btn tb" id="statsBtn" data-i18n="stats"></button>
+    <button class="btn tb" id="rulesBtn" data-i18n="rules"></button>
+    <button class="btn primary" id="newBtn" data-i18n="newGame"></button>
   </header>
 
   <aside class="side panel">
@@ -700,13 +763,19 @@ h3[data-i18n="caravan"]::before{content:"";display:inline-block;width:34px;heigh
     </section>
     <details id="setupDetails"><summary data-i18n="moreOptions"></summary>
     <div class="optgrid">
-      <span data-i18n="optRival"></span><div class="seg" data-set="diff"><button data-v="cirak" data-i18n="apprentice"></button><button data-v="usta" data-i18n="master"></button></div>
-      <span data-i18n="optRules"></span><div class="seg" data-set="mode"><button data-v="classic" data-i18n="classicLong"></button><button data-v="narh" data-i18n="narhLong"></button></div>
-      <span data-i18n="optSettings"></span><div class="checks">
-        <label><input type="checkbox" id="optTeach"> <span data-i18n="optTeach"></span></label>
-        <label><input type="checkbox" id="optTut"> <span data-i18n="optTut"></span></label>
-        <label><input type="checkbox" id="optPv"> <span data-i18n="optPv"></span></label>
-        <label><input type="checkbox" id="optSnd"> <span data-i18n="optSnd"></span></label>
+      <span class="ol" data-i18n="optRival"></span><div class="seg pick" data-set="diff">
+        <button data-v="cirak"><i class="rp-face cirak" aria-hidden="true"></i><span class="rp-t"><b data-i18n="apprentice"></b><small data-i18n="cirakSub"></small></span></button>
+        <button data-v="usta"><i class="rp-face usta" aria-hidden="true"></i><span class="rp-t"><b data-i18n="master"></b><small data-i18n="ustaSub"></small></span></button>
+      </div>
+      <span class="ol" data-i18n="optRules"></span><div class="seg pick" data-set="mode">
+        <button data-v="classic"><span class="rp-t"><b data-i18n="modeClassic"></b><small data-i18n="classicSub"></small></span></button>
+        <button data-v="narh"><span class="rp-t"><b data-i18n="modeNarh"></b><small data-i18n="narhSub"></small></span></button>
+      </div>
+      <span class="ol" data-i18n="optSettings"></span><div class="checks sw">
+        <label><input type="checkbox" role="switch" id="optTeach"><span class="rp-t"><b data-i18n="optTeach"></b><small data-i18n="optTeachH"></small></span></label>
+        <label><input type="checkbox" role="switch" id="optTut"><span class="rp-t"><b data-i18n="optTut"></b><small data-i18n="optTutH"></small></span></label>
+        <label><input type="checkbox" role="switch" id="optPv"><span class="rp-t"><b data-i18n="optPv"></b><small data-i18n="optPvH"></small></span></label>
+        <label><input type="checkbox" role="switch" id="optSnd"><span class="rp-t"><b data-i18n="optSnd"></b><small data-i18n="optSndH"></small></span></label>
       </div>
     </div>
     <div class="opts"><button class="btn" id="resumeSaved" style="display:none" data-i18n="resumeSaved"></button><span style="flex:1"></span><button class="btn" id="resumeBtn" style="display:none" data-i18n="resume"></button><button class="btn primary" id="playBtn"></button></div>
@@ -1068,9 +1137,9 @@ const STR={
   rCut:'<b>Cut seal</b> (when choosing, once per game): burn one good from any pan before you choose.',
   rScore:'<b>Scoring:</b> whoever holds more of a good earns its value; on a tie nobody does. Whoever holds fewer goods in total earns +3 for a <b>Light Load</b>.',
   rComp:'<b>Compensation Coin:</b> choosing the last pan is an advantage, so the player who chooses first (and divides last) gets +1 in Classic and +2 in Narh. On a tied score, Classic goes to that player and Narh goes to whoever leads in Saffron.',
-  optRival:'Rival',optRules:'Rules',optSettings:'Settings',apprentice:'Apprentice',master:'Master',
+  optRival:'Rival',optRules:'Rules',optSettings:'Settings',apprentice:'Apprentice Yusuf',master:'Master Mehmed',cirakSub:'Looks one round ahead. A good first rival.',ustaSub:'Looks two rounds ahead. Hard to beat.',classicSub:'Prices stay fixed. The second divider gets a +1 coin.',narhSub:'Prices move: they fall on the scale and rise when goods burn.',
   classicLong:'Classic · fixed prices',narhLong:'Narh · moving prices',
-  optTut:'Teaching first round (seals open in round 2)',optPv:'Pan preview',optSnd:'Sound',
+  optTut:'Teaching first round',optTutH:'The seals open from round 2.',optPv:'Pan preview',optPvH:'Shows what each pan would do to the score.',optSnd:'Sound',optSndH:'',
   resumeSaved:'Resume saved game',resume:'Resume',open:'Open the stall',newWith:'New game with these settings',
   frieze:'',
  },
@@ -1146,9 +1215,9 @@ const STR={
   rCut:'<b>Kesinti mührü</b> (seçerken, oyunda bir kez): seçmeden önce herhangi bir kefeden bir malı yak.',
   rScore:'<b>Puan:</b> bir malda daha çok tutan o malın değerini alır; eşitlikte kimse almaz. Toplamda daha az mal tutan +3 <b>hafif yük</b> bonusu alır.',
   rComp:'<b>Kefil akçesi:</b> son kefeyi seçmek avantaj olduğu için ilk turda seçen (son bölen) oyuncu Klasik\'te +1, Narh\'ta +2 alır. Puan eşitliğinde Klasik\'te bu oyuncu, Narh\'ta Safran\'da önde olan kazanır.',
-  optRival:'Rakip',optRules:'Kurallar',optSettings:'Ayarlar',apprentice:'Çırak',master:'Usta',
+  optRival:'Rakip',optRules:'Kurallar',optSettings:'Ayarlar',apprentice:'Çırak Yusuf',master:'Mehmed Usta',cirakSub:'Bir tur ileriyi hesaplar. İlk rakip için iyi.',ustaSub:'İki tur ileriyi hesaplar. Yenmesi zor.',classicSub:'Fiyatlar sabit. İkinci bölen +1 akçe alır.',narhSub:'Fiyatlar oynar: terazide düşer, mal yanınca artar.',
   classicLong:'Klasik · sabit fiyat',narhLong:'Narh · oynak fiyat',
-  optTut:'Öğretici ilk tur (mühürler 2. turda açılır)',optPv:'Kefe önizlemesi',optSnd:'Ses',
+  optTut:'Öğretici ilk tur',optTutH:'Mühürler 2. turda açılır.',optPv:'Kefe önizlemesi',optPvH:'Her kefenin skora etkisini gösterir.',optSnd:'Ses',optSndH:'',
   resumeSaved:'Kayıtlı oyuna devam et',resume:'Devam et',open:'Tezgâhı aç',newWith:'Bu ayarlarla yeni oyun',
   frieze:'',
  }
@@ -1157,7 +1226,7 @@ Object.assign(STR.en,{
  welcomeLead:'A duel of fair shares in the Grand Bazaar: you divide the goods, your rival chooses first.',
  noTeach:'Play without the teacher',playSaved:'Play',resumeMatch:'Continue your match',
  tWhy:n=>n===1?'One more reason':`${n} more reasons`,
- startNoteLearn:'An Apprentice rival and Classic rules. The teacher shows the best move and why, in a line or two; switch it off any time.',
+ startNoteLearn:'Apprentice Yusuf as your rival, Classic rules. The teacher shows the best move and why, in a line or two; switch it off any time.',
  startNoteSaved:(d,m,te)=>`Your settings: ${d} · ${m} · teacher ${te?'on':'off'}.`,
  startNoteResume:r=>`Your match is saved at round ${r} of 6.`,
  welcomePick:'Pick three goods from the stall.',
@@ -1171,7 +1240,7 @@ Object.assign(STR.tr,{
  welcomeLead:'Kapalıçarşı’da bir paylaşma düellosu: malları sen bölersin, önce rakibin seçer.',
  noTeach:'Öğretmensiz oyna',playSaved:'Oyna',resumeMatch:'Maça devam et',
  tWhy:n=>n===1?'Bir neden daha':`${n} neden daha`,
- startNoteLearn:'Çırak rakip ve Klasik kurallar. Öğretmen en iyi hamleyi ve nedenini bir iki satırda gösterir; istediğin an kapatabilirsin.',
+ startNoteLearn:'Rakibin Çırak Yusuf, kurallar Klasik. Öğretmen en iyi hamleyi ve nedenini bir iki satırda gösterir; istediğin an kapatabilirsin.',
  startNoteSaved:(d,m,te)=>`Ayarların: ${d} · ${m} · öğretmen ${te?'açık':'kapalı'}.`,
  startNoteResume:r=>`Maçın ${r}. turda kayıtlı.`,
  welcomePick:'Tezgâhtan üç mal seç.',
@@ -1217,8 +1286,8 @@ function setTeach(on){teachMode=!!on;set.teach=teachMode;saveSet();TCH.key=null;
    lost, the light-load race, narh changes, what is left on the stall, and whether a seal is worth it. */
 Object.assign(STR.en,{
   teachBtnOn:'Teacher on',teachBtnOff:'Teacher off',teachTitle:'Suggest a move at every step and explain why',
-  optTeach:'Teacher mode (a suggestion and the reason at every step)',
-  tHead:'Master\u2019s suggestion',tThinking:'The Master is weighing the options…',tApply:'Play the suggestion',tSkip:'Turn the teacher off',
+  optTeach:'Teacher',optTeachH:'Suggests a move at every step and says why.',teachShort:'Teacher',tgroupAria:'Teacher, preview and sound',
+  tHead:'Teacher\u2019s suggestion',tThinking:'The teacher is weighing the options…',tApply:'Play the suggestion',tSkip:'Turn the teacher off',
   tSplit:(a,b)=>`Divide like this: <b>${a}</b> in one pan, <b>${b}</b> in the other.`,
   tSplit30:a=>`Put <b>${a}</b> in one pan and leave the other empty: a 3–0 offer.`,
   tSplit3:(a,b,c)=>`Press <b>Three Pans</b>: <b>${a}</b> · <b>${b}</b> · <b>${c}</b>.`,
@@ -1240,12 +1309,12 @@ Object.assign(STR.en,{
   fbSame:'Teacher: well played, that was the suggested move (or just as good).',
   fbClose:d=>`Teacher: a reasonable move, about ${d} points below the suggestion.`,
   fbOff:d=>`Teacher: about ${d} points below the suggestion. Look back at the reasons above.`,
-  est:'Estimates come from the Master\u2019s look two rounds ahead, using only what you can see.'
+  est:'Estimates come from the teacher\u2019s look two rounds ahead, using only what you can see.'
 });
 Object.assign(STR.tr,{
   teachBtnOn:'Öğretmen açık',teachBtnOff:'Öğretmen kapalı',teachTitle:'Her adımda bir hamle öner ve nedenini açıkla',
-  optTeach:'Öğretmen modu (her adımda öneri ve nedeni)',
-  tHead:'Usta\u2019nın önerisi',tThinking:'Usta seçenekleri tartıyor…',tApply:'Öneriyi oyna',tSkip:'Öğretmeni kapat',
+  optTeach:'Öğretmen',optTeachH:'Her adımda bir hamle önerir ve nedenini söyler.',teachShort:'Öğretmen',tgroupAria:'Öğretmen, önizleme ve ses',
+  tHead:'Öğretmenin önerisi',tThinking:'Öğretmen seçenekleri tartıyor…',tApply:'Öneriyi oyna',tSkip:'Öğretmeni kapat',
   tSplit:(a,b)=>`Şöyle böl: bir kefeye <b>${a}</b>, öbürüne <b>${b}</b>.`,
   tSplit30:a=>`<b>${a}</b> malını bir kefeye koy, öbür kefeyi boş bırak: 3–0 teklif.`,
   tSplit3:(a,b,c)=>`<b>Üç Kefe</b> mührünü bas: <b>${a}</b> · <b>${b}</b> · <b>${c}</b>.`,
@@ -1267,12 +1336,20 @@ Object.assign(STR.tr,{
   fbSame:'Öğretmen: iyi hamle, önerilenle aynı (ya da onun kadar iyi).',
   fbClose:d=>`Öğretmen: makul bir hamle, öneriden yaklaşık ${d} puan geride.`,
   fbOff:d=>`Öğretmen: öneriden yaklaşık ${d} puan geride. Yukarıdaki nedenlere bir daha bak.`,
-  est:'Tahminler, Usta\u2019nın yalnızca görünen bilgiyle iki tur ileri bakmasından geliyor.'
+  est:'Tahminler, öğretmenin yalnızca görünen bilgiyle iki tur ileri bakmasından geliyor.'
 });
 const TCH={key:null,data:null,pending:false,open:false};
 /* per-game analytics: start time, teacher moves compared / best / total gap, suggestions applied */
 let KS={t0:0,tm:0,tb:0,tg:0,ap:0,left:false};
 const teachOn=()=>teachMode&&!!G&&started;
+/* Header toggles: icon (+ short label for the teacher), state in aria-pressed, full text in the tooltip. */
+const TOG_ICON={
+  teach:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3Z"/></svg>',
+  pv:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  snd:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4Z"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>'};
+function togBtn(id,on,icon,label,state,title){const b=$(id);if(!b)return;
+  b.innerHTML=TOG_ICON[icon]+(label?`<span class="tl">${label}</span>`:'')+'<i class="dot" aria-hidden="true"></i>';
+  b.classList.toggle('off',!on);b.setAttribute('aria-pressed',on?'true':'false');b.setAttribute('aria-label',state);b.title=`${state} · ${title}`}
 function mirrorS(s){const n=cl(s);n.tab=[{...s.tab[1]},{...s.tab[0]}];n.seals=[{...s.seals[1]},{...s.seals[0]}];n.splitter=1-s.splitter;n.first=1-s.first;return n}
 function stateKey(s){return [s.turn,s.phase,s.market.join(''),JSON.stringify(s.piles),JSON.stringify(s.seals),JSON.stringify(s.tab)].join('|')}
 const fmt1=v=>(Math.round(v*10)/10).toFixed(1);
@@ -1659,7 +1736,7 @@ function draw(){
   $('deckInfo').textContent=ID.DID.length>3?t('deckInfo',ID.DID.length-3):'';
 
   const r=score(G);
-  $('oppStall').innerHTML=stall(1,r,t('rivalTitle'));
+  $('oppStall').innerHTML=stall(1,r,set.diff==='usta'?t('master'):t('apprentice'));
   $('youStall').innerHTML=stall(0,r,t('youTitle'));
   document.querySelectorAll('button.seal').forEach(b=>b.onclick=()=>toggleSeal(b.dataset.seal));
   $('oppStall').classList.toggle('active',G.phase!=='end'&&owner===1);$('youStall').classList.toggle('active',G.phase!=='end'&&owner===0);
@@ -1675,9 +1752,9 @@ function draw(){
   bump($('sYou'),r.p[0]);bump($('sOpp'),r.p[1]);
   $('log').innerHTML=logs.map(e=>`<p${e&&e.k==='recap'?' class="turnRecap"':''}>${logText(e)}</p>`).join('');
   $('modeTag').textContent=nar?t('modeNarh'):t('modeClassic');
-  $('sndBtn').textContent=set.snd?t('soundOn'):t('soundOff');$('sndBtn').classList.toggle('off',!set.snd);
-  $('pvBtn').textContent=set.pv?t('previewOn'):t('previewOff');$('pvBtn').classList.toggle('off',!set.pv);
-  $('teachBtn').textContent=teachMode?t('teachBtnOn'):t('teachBtnOff');$('teachBtn').classList.toggle('off',!teachMode);
+  togBtn('sndBtn',set.snd,'snd','',set.snd?t('soundOn'):t('soundOff'),t('soundTitle'));
+  togBtn('pvBtn',set.pv,'pv','',set.pv?t('previewOn'):t('previewOff'),t('previewTitle'));
+  togBtn('teachBtn',teachMode,'teach',t('teachShort'),teachMode?t('teachBtnOn'):t('teachBtnOff'),t('teachTitle'));
   scheduleTeacher();
 }
 function bump(el,v){if(el.textContent!==String(v)){el.textContent=v;el.animate([{transform:'scale(1.35)'},{transform:'scale(1)'}],{duration:400})}}

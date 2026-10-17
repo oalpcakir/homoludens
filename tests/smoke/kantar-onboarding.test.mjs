@@ -55,7 +55,7 @@ test('saved settings: the start sheet offers "Play" with them (and names them); 
   const t = await open({ storage: { 'kantar-set': JSON.stringify({ diff: 'usta', mode: 'narh', teach: false, snd: false, tut: false, pv: false }) } });
   assert.ok(await t.page.isVisible('#quickPlay'), 'no Play button');
   assert.equal(await t.page.isVisible('#welcomeSteps'), false, 'first-visit steps shown again');
-  assert.match(await t.page.innerText('#startNote'), /Master · Narh · teacher off/);
+  assert.match(await t.page.innerText('#startNote'), /Master Mehmed · Narh · teacher off/);
   assert.equal(await t.page.evaluate(() => document.getElementById('setupDetails').open), false);
   await t.page.click('#setupDetails summary');
   assert.ok(await t.page.isVisible('#playBtn'), 'options did not open');
