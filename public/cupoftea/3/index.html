@@ -81,7 +81,8 @@
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{background:var(--desk);color:var(--ink);font-family:"EB Garamond",Georgia,serif;font-size:17px;
-  background-image:radial-gradient(ellipse at 30% 20%,#4a3526 0,#2b1e15 70%)}
+  background-image:linear-gradient(rgba(28,19,12,.38),rgba(28,19,12,.5)),url(/cupoftea/img/tea_desk.webp),radial-gradient(ellipse at 30% 20%,#4a3526 0,#2b1e15 70%);
+  background-size:auto,cover,auto;background-position:center;background-attachment:fixed}
 h1,h2,h3,.fell{font-family:"IM Fell English",Georgia,serif;font-weight:400}
 header{display:flex;align-items:baseline;gap:16px;padding:10px 20px;color:#e9dcc0}
 header h1{margin:0;font-size:28px}
@@ -174,10 +175,10 @@ tr.labour{animation:inkin 1.8s ease-out}
 .pile.counter.open .plab{color:#f2b7a6}
 .pile.counter.havana .stack{outline:1.5px dashed #d07a66;outline-offset:3px;border-radius:14px}
 .coin{width:24px;height:24px;border-radius:50%;margin-left:-9px;flex:0 0 auto;position:relative;
-  background:radial-gradient(circle at 35% 30%,#e0a46c,#a7622f 55%,#6e3b18);
-  box-shadow:inset 0 0 0 2px rgba(70,35,12,.55),inset 0 0 0 4px rgba(240,190,140,.25),0 1px 2px rgba(0,0,0,.55);
+  background:url(/cupoftea/img/tea_coin_farthing.webp) center/100% no-repeat,radial-gradient(circle at 35% 30%,#e0a46c,#a7622f 55%,#6e3b18);
+  box-shadow:0 1px 2px rgba(0,0,0,.55);
   display:flex;align-items:center;justify-content:center;font-family:"IM Fell English",Georgia,serif;font-size:11px;color:#4a230c}
-.coin::after{content:"¼"}
+.coin::after{content:""}
 .pile.counter .coin:nth-child(odd){transform:rotate(-8deg)}
 /* tepkiler: kenar notu */
 #msg .re{display:block;font-family:"IM Fell English",Georgia,serif;font-style:italic;color:var(--red);font-size:17px;transform:rotate(-.7deg);margin-bottom:2px}
@@ -214,8 +215,12 @@ tr.labour{animation:inkin 1.8s ease-out}
 .tbtn:disabled{background:#9b8f7a;border-color:#9b8f7a;cursor:not-allowed}
 /* intro */
 #intro{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px;
-  background:radial-gradient(ellipse at 50% 30%,#4a3526 0,#1c130c 75%)}
+  background:radial-gradient(ellipse at 50% 30%,rgba(74,53,38,.55) 0,rgba(28,19,12,.92) 75%),#1c130c url(/cupoftea/img/tea_desk.webp) center/cover}
 #intro.off{display:none}
+#intro .iplate{margin:-34px -42px 18px;position:relative}
+#intro .iplate img{display:block;width:100%;aspect-ratio:1280/560;object-fit:cover;border-radius:3px 3px 0 0;background:#3b2a1e}
+#intro .iplate figcaption{position:absolute;right:8px;bottom:6px;font-size:11px;font-style:italic;color:#f3ead6;background:rgba(28,19,12,.55);padding:1px 7px;border-radius:2px}
+h2 .penny{width:30px;height:30px;vertical-align:-5px;margin-right:8px}
 #intro .card{background:var(--paper);max-width:640px;width:100%;padding:34px 42px;border-radius:3px;box-shadow:0 24px 70px rgba(0,0,0,.7);
   max-height:92vh;overflow:auto}
 #intro .kicker{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2)}
@@ -326,7 +331,7 @@ canvas.rc{display:block;width:100%;max-width:420px;height:auto;margin:10px auto 
 <script>
 /* ===== INTRO ===== */
 const INTRO = [
- `<div class="kicker">East London · March 1850</div>
+ `<figure class="iplate"><img src="/cupoftea/img/tea_intro_3.webp" alt="A London tea warehouse: a clerk writes in a ledger while a tea taster tests a row of cups among stacked tea chests." onerror="this.parentNode.remove()"><figcaption>Illustration made for this game, not a picture from 1850.</figcaption></figure><div class="kicker">East London · March 1850</div>
   <h2>Two ounces of Congou</h2>
   <p>Saturday again. Rain on the shop window. The woman asks the grocer for two ounces of Congou, the cheapest he keeps, and puts five coppers on the counter.</p>
   <p>You have followed her sugar to Havana. The sugar was the small part of the bill. The tea cost her more than the pound of sugar did, for an eighth of the weight.</p>
@@ -544,7 +549,7 @@ function renderTabs(){
 }
 function renderDoc(){
   const d = DOCS.find(x=>x.id===S.cur);
-  $("#doc").innerHTML = `<div class="dtype">${d.type}</div><h2>${d.title}</h2>${d.img?`<figure class="plate"><img src="${d.img.src}" alt="" loading="lazy" onerror="this.parentNode.remove()"><figcaption>${d.img.cap} Wikimedia Commons, public domain.</figcaption></figure>`:""}${d.html}<div class="src">Source: ${d.src}</div>`;
+  $("#doc").innerHTML = `<div class="dtype">${d.type}</div><h2>${d.id==="table"?'<img class="penny" src="/cupoftea/img/tea_coin_penny.webp" alt="">':""}${d.title}</h2>${d.img?`<figure class="plate"><img src="${d.img.src}" alt="" loading="lazy" onerror="this.parentNode.remove()"><figcaption>${d.img.cap} Wikimedia Commons, public domain.</figcaption></figure>`:""}${d.html}<div class="src">Source: ${d.src}</div>`;
   $("#doc").querySelectorAll(".c").forEach(e=>{ if(S.got.has(e.dataset.c)) e.classList.add("got") });
   $("#doc").scrollTop=0;
   if(d.id==="table"){ fillTools(); calcReck(); }

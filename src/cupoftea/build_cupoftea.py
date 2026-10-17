@@ -54,6 +54,10 @@ os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 for f in ("portal-plate.jpg", "flor-de-cuba.jpg", "flor-de-cuba-boiling-house.jpg", "mayhew.jpg", "russell.jpg"):
     if os.path.exists(os.path.join(H, f)):
         shutil.copy(os.path.join(H, f), os.path.join(OUT, "img", f))
+# ChatGPT illustrations (see the art brief): art/*.webp, full-size masters in art/master/
+import glob
+for f in glob.glob(os.path.join(H, "art", "*.webp")):
+    shutil.copy(f, os.path.join(OUT, "img", os.path.basename(f)))
 if os.path.exists(os.path.join(H, "og-cupoftea.jpg")):
     shutil.copy(os.path.join(H, "og-cupoftea.jpg"), os.path.join(ROOT, "public", "og-cupoftea.jpg"))
 print("built", OUT)
