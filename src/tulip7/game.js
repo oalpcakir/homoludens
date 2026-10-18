@@ -167,7 +167,12 @@ function unlock(id){
   ACHS[id] = new Date().toISOString().slice(0, 10); try { localStorage.setItem('tulip7.ach', JSON.stringify(ACHS)); } catch(e){}
   log(`<b>Achievement:</b> ${esc(a.t)}`); achQueue.push(a); if (achQueue.length === 1) showAchToast();
 }
-const sealHTML = a => `<div class="seal"><img src="${ART[a.art]}" alt=""></div>`;
+/* Achievement art: a painted Dutch tile per achievement once the tile pack is merged (ach_<id>, ach_locked); until then a wax seal. */
+const sealHTML = (a, locked) => {
+  const t = ART['ach_' + a.id];
+  if (t) return `<div class="tileach">${locked ? (ART.ach_locked ? `<img src="${ART.ach_locked}" alt="">` : `<img class="gray" src="${t}" alt="">`) : `<img src="${t}" alt="">`}</div>`;
+  return `<div class="seal"><img src="${ART[a.art]}" alt=""></div>`;
+};
 function showAchToast(){
   const a = achQueue[0]; if (!a) return; const t = $('#achToast');
   t.innerHTML = `${sealHTML(a)}<div><small>Achievement</small><b>${esc(a.t)}</b></div>`; SND.ach();
@@ -176,7 +181,7 @@ function showAchToast(){
 function showAchievements(){
   const n = ACH.filter(a => ACHS[a.id]).length;
   modal(`<div class="kick">The winter of 1636–37</div><h2>Achievements</h2><p style="color:var(--muted);margin:4px 0 0">${n} of ${ACH.length}. Each one is something that really happened.</p>
-    <div class="achs">${ACH.map(a => `<div class="ach ${ACHS[a.id] ? '' : 'locked'}">${sealHTML(a)}<b>${esc(a.t)}</b><small>${esc(a.c)}</small>${ACHS[a.id] ? `<div class="h">${esc(a.h)}</div><div class="d">Unlocked ${ACHS[a.id]}</div>` : ''}</div>`).join('')}</div>
+    <div class="achs">${ACH.map(a => `<div class="ach ${ACHS[a.id] ? '' : 'locked'}">${sealHTML(a, !ACHS[a.id])}<b>${esc(a.t)}</b><small>${esc(a.c)}</small>${ACHS[a.id] ? `<div class="h">${esc(a.h)}</div><div class="d">Unlocked ${ACHS[a.id]}</div>` : ''}</div>`).join('')}</div>
     <div class="row"><button class="btn primary" data-v="x">Close</button></div>`, 'wide');
   $('#mbox [data-v]').onclick = () => { closeModal(); if (!G) showStart(); };
 }
