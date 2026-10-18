@@ -4,3 +4,4 @@ dist/
 node_modules/
 # ChatGPT art packs from the art studios (tens of MB; the game uses src/<game>/art/*.webp)
 src/*/*-art-pack*.html
+src/*/*-endgame-pack*.html

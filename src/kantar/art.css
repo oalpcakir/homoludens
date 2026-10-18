@@ -18,12 +18,12 @@
 .commodity-mini.ic.icS{background-image:var(--ka-ic-S)}.commodity-mini.ic.icI{background-image:var(--ka-ic-I)}.commodity-mini.ic.icK{background-image:var(--ka-ic-K)}.commodity-mini.ic.icB{background-image:var(--ka-ic-B)}
 .ki{display:inline-block;width:22px;height:22px;margin:-4px 6px -5px 0;vertical-align:middle;background:center/contain no-repeat;flex:none}
 .ki.coin{background-image:var(--ka-coin)}.ki.light{background-image:var(--ka-light)}.ki.narh{background-image:var(--ka-narh)}.ki.burn{background-image:var(--ka-burn)}.ki.emblem{background-image:var(--ka-emblem)}
-h3[data-i18n="caravan"]::before,h3[data-i18n="burned"]::before{content:"";display:inline-block;width:30px;height:30px;margin:-8px 8px -8px 0;vertical-align:middle;background:center/contain no-repeat}
-h3[data-i18n="caravan"]::before{background-image:var(--ka-ic-caravan)}
-/* the caravan camel leads the incoming goods (it walks to the left, the goods follow) */
-#caravan{align-items:flex-end}
-#caravan::before{content:"";flex:none;width:66px;height:62px;margin:0 2px -2px -4px;background:var(--ka-caravan) center bottom/contain no-repeat;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
-h3[data-i18n="burned"]::before{background-image:var(--ka-burn)}
+/* each row is led by its object: the camel brings the incoming goods (it walks left, the goods follow),
+   the brazier holds the burned ones */
+#caravan,#burned{align-items:center;min-height:58px}
+#caravan::before,#burned::before{content:"";flex:none;width:60px;height:58px;margin:0 4px 0 -4px;background:center/contain no-repeat;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
+#caravan::before{background-image:var(--ka-caravan)}
+#burned::before{background-image:var(--ka-burn);width:52px}
 .modeTag.narh::before{content:"";display:inline-block;width:16px;height:16px;margin:-3px 5px -3px -3px;vertical-align:middle;background:var(--ka-narh) center/contain no-repeat}
 .rp-ic{display:block;flex:none;width:44px;height:44px;background:center/contain no-repeat}
 .rp-ic.emblem{background-image:var(--ka-emblem)}.rp-ic.narh{background-image:var(--ka-narh)}
@@ -41,8 +41,8 @@ h3[data-i18n="burned"]::before{background-image:var(--ka-burn)}
 }
 
 /* ---- end-of-game illustration ---- */
-.endart{display:block;margin:-6px -6px 14px;aspect-ratio:16/7;border-radius:10px;background:var(--ka-end) center 40%/cover no-repeat;box-shadow:inset 0 0 0 1px rgba(120,86,38,.35),0 6px 16px rgba(60,35,15,.25)}
-/* one picture per result and rival when the art exists; otherwise the shared closing scene */
+.endart{display:block;margin:-6px -6px 14px;aspect-ratio:16/7;border-radius:10px;background-color:#3a2a20;background-position:center;background-size:cover;background-repeat:no-repeat;box-shadow:inset 0 0 0 1px rgba(120,86,38,.35),0 6px 16px rgba(60,35,15,.25)}
+/* one picture per result and rival (the shared ka_end scene only if one is missing) */
 .endart.win.cirak{background-image:var(--ka-end-win-cirak,var(--ka-end))}
 .endart.lose.cirak{background-image:var(--ka-end-lose-cirak,var(--ka-end))}
 .endart.draw.cirak{background-image:var(--ka-end-draw-cirak,var(--ka-end))}

@@ -48,10 +48,10 @@ def _b64(name):
     return base64.b64encode(open(os.path.join(H, "art", name), "rb").read()).decode()
 ART_VARS = {  # css variable -> art file
     "cirak": "ka_rival_cirak", "usta": "ka_rival_usta", "seal-uc": "ka_seal_threepans", "seal-kes": "ka_seal_cut",
-    "ic-S": "ka_icon_S", "ic-I": "ka_icon_I", "ic-K": "ka_icon_K", "ic-B": "ka_icon_B", "ic-caravan": "ka_icon_caravan",
+    "ic-S": "ka_icon_S", "ic-I": "ka_icon_I", "ic-K": "ka_icon_K", "ic-B": "ka_icon_B", 
     "coin": "ka_coin", "light": "ka_lightload", "burn": "ka_burn", "narh": "ka_narh", "emblem": "ka_emblem",
     "beam": "ka_scale_beam", "pan": "ka_scale_pan", "stand": "ka_scale_stand",
-    "cardback": "ka_cardback", "end": "ka_end", "bg-tall": "ka_bg_tall",
+    "cardback": "ka_cardback", "bg-tall": "ka_bg_tall",
     # optional: used when the file exists (art.css falls back to ka_end / the pan bowl)
     "end-win-cirak": "ka_end_win_cirak", "end-lose-cirak": "ka_end_lose_cirak", "end-draw-cirak": "ka_end_draw_cirak",
     "end-win-usta": "ka_end_win_usta", "end-lose-usta": "ka_end_lose_usta", "end-draw-usta": "ka_end_draw_usta",
