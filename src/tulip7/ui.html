@@ -9,38 +9,40 @@
 <style>
 :root{
   --paper:#fffaf0; --cream:#f6ecd6; --ink:#2a2018; --muted:#75604a; --line:rgba(90,58,34,.2);
-  --delft:#1f4e9c; --delft2:#e2eaf8; --delft3:#163a76; --tulip:#d7261e; --leaf:#3f8a4a; --gold:#e0a82e; --gold2:#a87618;
-  --wood:#4a2f1c; --good:#2f8a4a; --bad:#c0392b;
-  --cw:104px; --mw:48px;
+  --delft:#1f4e9c; --delft2:#e2eaf8; --delft3:#163a76; --tulip:#d7261e; --leaf:#3f8a4a; --gold:#e0a82e; --gold2:#a87618; --goldl:#c9a24a;
+  --good:#2f8a4a; --bad:#c0392b; --oak:#4a2c18; --oak2:#2e1a0e;
+  --cw:112px; --mw:50px;
   color-scheme:light;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{min-height:100vh;color:var(--ink);font:16px/1.45 "Source Sans 3",system-ui,sans-serif;background:#3a2516}
-body::before{content:"";position:fixed;inset:0;z-index:-2;background:var(--bg) center/cover no-repeat}
-body::after{content:"";position:fixed;inset:0;z-index:-1;background:linear-gradient(rgba(40,24,12,.35),rgba(40,24,12,.05) 30%,rgba(40,24,12,.25));backdrop-filter:blur(2px)}
+html{overflow-x:hidden}
+.wrap>*,.main>*,.rivals>*,.center>*{min-width:0}
+body{min-height:100vh;color:var(--ink);font:16px/1.45 "Source Sans 3",system-ui,sans-serif;background:#2a1a0f}
+body::before{content:"";position:fixed;inset:0;z-index:-2;background:var(--bg) center/cover no-repeat;filter:blur(3px) brightness(.8);transform:scale(1.03)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;background:radial-gradient(ellipse at 50% 30%,rgba(40,20,8,0),rgba(30,14,4,.55))}
 h1,h2,h3{font-family:"EB Garamond",Georgia,serif;font-weight:600;margin:0}
 button{font:inherit;cursor:pointer}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px}
-.wrap{max-width:1180px;margin:0 auto;padding:10px 16px 28px;display:grid;gap:10px}
+.wrap{max-width:1320px;margin:0 auto;padding:10px 16px 26px;display:grid;gap:10px}
 
 /* header */
 .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#fff6e2;text-shadow:0 1px 3px rgba(0,0,0,.6)}
 .top .hl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.85;color:#fff6e2;text-decoration:none;display:block}
 .top h1{font-size:38px;line-height:1}
 .top h1 span{color:#ffd45c}
+.top .logo{height:46px;display:block}
 .top .where{font-style:italic;font-family:"EB Garamond",serif;font-size:18px}
 .top .sp{flex:1}
-.tbtn{background:rgba(255,250,240,.9);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600;text-shadow:none}
+.tbtn{background:rgba(255,250,240,.92);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600;text-shadow:none}
 .tbtn:hover{background:#fff}
 .tbtn.on{background:var(--delft);color:#fff;border-color:var(--delft)}
+.panel{background:rgba(255,250,240,.94);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 18px rgba(30,15,5,.3)}
 
-.panel{background:rgba(255,250,240,.93);border:1px solid var(--line);border-radius:14px;box-shadow:0 6px 18px rgba(30,15,5,.25)}
-
-/* index board */
-.board[hidden]{display:none}
+/* index board + news */
 .board{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;padding:6px}
-.cell{border-radius:9px;padding:4px 4px 5px;text-align:center;background:var(--cream);border:1px solid var(--line);font-size:12px;line-height:1.2;position:relative}
+.board[hidden],.strip[hidden]{display:none}
+.cell{border-radius:9px;padding:4px 4px 5px;text-align:center;background:var(--cream);border:1px solid var(--line);font-size:12px;line-height:1.2}
 .cell b{display:block;font-family:"EB Garamond",serif;font-size:15px}
 .cell .ix{font-weight:700;font-size:15px;color:var(--delft)}
 .cell .rk{color:var(--muted)}
@@ -53,105 +55,156 @@ button{font:inherit;cursor:pointer}
 .cell.alk{background:#fff2c9;border-color:#e9c96a}
 .cell.alk.now{background:var(--gold2);color:#fff}
 .cell .rk.hot{color:var(--bad);font-weight:700}
+.strip{padding:7px 14px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;font-family:"EB Garamond",serif;font-size:17px;line-height:1.3}
+.strip b{font:700 12.5px "Source Sans 3",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--delft);white-space:nowrap}
 
-/* seats */
-.rivals{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.seat{padding:10px 12px;position:relative;transition:box-shadow .2s, transform .2s}
-.seat.turn{box-shadow:0 0 0 3px var(--delft),0 8px 20px rgba(30,15,5,.3)}
-.seat.pick{cursor:pointer;box-shadow:0 0 0 3px var(--gold),0 8px 20px rgba(30,15,5,.3);animation:pulse 1s infinite alternate}
-@keyframes pulse{to{box-shadow:0 0 0 6px rgba(224,168,46,.55),0 8px 20px rgba(30,15,5,.3)}}
-.who{display:flex;gap:10px;align-items:center}
-.who img{width:56px;height:56px;border-radius:50%;object-fit:cover;object-position:50% 18%;background:var(--cream);border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
-.who .nm{font-family:"EB Garamond",serif;font-size:19px;font-weight:600;line-height:1.1}
-.who small{display:block;color:var(--muted);font-size:13px;line-height:1.25}
-.who .sp{flex:1}
-.chip{font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--cream);color:var(--muted);white-space:nowrap}
+/* main: the table + the side panel */
+.main{display:grid;grid-template-columns:1fr 318px;gap:14px;align-items:start}
+.table{position:relative;margin:12px;border-radius:34px;padding:16px 18px 18px;
+  background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 35%,rgba(25,8,2,.6) 100%),var(--carpet) center/cover,#7a1f16;
+  box-shadow:0 0 0 13px var(--oak),0 0 0 15px var(--oak2),0 0 0 16px rgba(255,220,150,.15),0 22px 50px rgba(0,0,0,.6),inset 0 0 50px rgba(0,0,0,.55)}
+.table .glow{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(circle at 50% 50%,rgba(255,190,90,.16),transparent 55%)}
+.rivals{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;position:relative}
+.seat{position:relative;border-radius:18px;padding:8px 10px 10px;background:rgba(20,8,2,.32);transition:box-shadow .2s}
+.seat.turn{box-shadow:0 0 0 3px #ffd45c,0 0 24px rgba(255,212,92,.45)}
+.seat.pick{cursor:pointer;animation:pulse 1s infinite alternate}
+@keyframes pulse{from{box-shadow:0 0 0 3px var(--gold)}to{box-shadow:0 0 0 7px rgba(224,168,46,.55)}}
+.plate{position:relative;display:flex;align-items:center;gap:8px;background:rgba(255,250,240,.95);border-radius:999px;padding:3px 10px 3px 3px;box-shadow:0 2px 6px rgba(0,0,0,.35);min-height:52px}
+.me .plate{padding-left:14px}
+.plate img.pt{width:50px;height:50px;border-radius:50%;object-fit:cover;object-position:50% 18%;background:var(--cream);border:2px solid #fff;box-shadow:0 0 0 1px var(--goldl);flex:none}
+.plate .who{flex:1;min-width:0;line-height:1.15}
+.plate .nm{font-family:"EB Garamond",serif;font-size:18px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.plate .sn{display:none}
+.plate .mn{font-size:12.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.plate .mn b{color:var(--ink);font-variant-numeric:tabular-nums}
+.plate .chip{position:absolute;top:-11px;right:12px;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.chip{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 8px;background:var(--cream);color:var(--muted);white-space:nowrap}
 .chip.stayed{background:#e2f2e6;color:var(--good)}
 .chip.bust{background:#fbe1dc;color:var(--bad)}
 .chip.book{background:#efe2fb;color:#6a2ca0}
-.chip.frozen{background:#e3f0e6;color:var(--leaf)}
 .chip.turn{background:var(--delft);color:#fff}
-.money{display:flex;gap:10px;font-size:14px;margin:6px 0 4px;flex-wrap:wrap}
-.money span{display:flex;align-items:center;gap:4px}
-.money img{width:22px;height:22px}
-.money b{font-variant-numeric:tabular-nums}
-.money .tot{margin-left:auto;font-weight:700}
-.hand{display:flex;flex-wrap:wrap;gap:4px;min-height:calc(var(--mw)*1.38 + 4px);position:relative}
-.tally{font-size:13px;color:var(--muted);margin-top:4px;min-height:18px}
-.tally b{color:var(--ink)}
-.sc{position:absolute;top:8px;right:10px}
+.hand{display:flex;flex-wrap:wrap;gap:5px;min-height:calc(var(--mw)*1.4 + 6px);margin-top:8px;position:relative;perspective:800px}
+.below{display:flex;align-items:center;gap:8px;margin-top:6px;min-height:20px;flex-wrap:wrap}
+.tag{background:rgba(255,250,240,.9);border-radius:999px;padding:1px 9px;font-size:12.5px;color:var(--muted)}
+.tag b{color:var(--ink)}
+.book{display:flex;gap:3px;align-items:center;background:rgba(255,250,240,.88);border-radius:8px;padding:3px 5px}
+.book span{width:22px;height:22px;border-radius:5px;border:1.5px dashed #cdb894;font:700 12px/19px "EB Garamond",serif;text-align:center}
+.book span.f{border:1.5px solid #fff;background:var(--c);color:var(--ci);box-shadow:0 0 0 1px var(--line)}
+.book small{margin:0 3px 0 5px;color:var(--muted);font-size:12px;white-space:nowrap}
+.book.sm{gap:2px;padding:3px 4px}.book.sm span{width:11px;height:11px;border-radius:3px;border-width:1px}
+.bubble{position:absolute;top:-22px;left:54px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:3px 11px;font:600 16px "EB Garamond",serif;box-shadow:0 3px 10px rgba(0,0,0,.3);z-index:6;animation:pop .18s ease-out;white-space:nowrap}
+.bubble::after{content:"";position:absolute;left:16px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+@keyframes pop{from{transform:scale(.5);opacity:0}}
 
-/* cards */
-.card{position:relative;width:var(--cw);aspect-ratio:96/134;border-radius:10px;background:linear-gradient(#fffdf7,#f7ecd5);border:3px solid var(--c,#c9a96a);box-shadow:0 2px 5px rgba(40,20,5,.25);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:4px 3px 3px;flex:none}
-.card img{width:100%;aspect-ratio:1;object-fit:contain;margin-top:6px;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}
-.card .bd{position:absolute;top:-9px;left:-9px;min-width:38px;height:38px;padding:0 6px;border-radius:999px;background:var(--c);color:var(--ci,#fff);font:700 22px/33px "EB Garamond",Georgia,serif;text-align:center;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);z-index:1}
-.card .bd.b2{top:auto;left:auto;bottom:-13px;right:-13px}
-.you .hand{padding-bottom:12px}
-.card .cp{font-size:10px;line-height:1.1;color:var(--muted);text-align:center;margin-top:1px;padding:0 15px}
-.card.mod .bd,.card.x2 .bd{font-size:19px}
-.card .nm.long{font-size:10px;max-height:3.4em}
-.card .nm{font-family:"EB Garamond",serif;font-weight:600;font-size:12.5px;line-height:1.05;text-align:center;margin-top:auto;padding:0 15px;max-height:2.2em;overflow:hidden}
-.card.mod,.card.x2{--c:var(--gold);--ci:#3a2510}
-.card.act{--c:var(--delft)}
-.card.held{--c:var(--leaf)}
-.card.dupe{--c:var(--bad);box-shadow:0 0 0 3px rgba(192,57,43,.35)}
-.mini .card{width:var(--mw);border-width:2px;border-radius:7px;padding:2px}
-.mini .card img{margin-top:2px}
-.mini .card .bd{top:-7px;left:-7px;min-width:26px;height:26px;font-size:16px;line-height:22px;padding:0 3px;border-width:2px}
-.mini .card .nm,.mini .card .b2,.mini .card .cp{display:none}
-.card.new{animation:deal .45s cubic-bezier(.2,1.3,.4,1)}
-@keyframes deal{from{transform:translateY(-60px) rotateY(80deg) scale(.6);opacity:0}}
-.blown .card{animation:blow 1.1s ease-in forwards;animation-delay:calc(var(--k)*40ms)}
-@keyframes blow{to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(.6);opacity:0}}
-.sheet{position:fixed;width:70px;pointer-events:none;z-index:40;animation:fly 1.4s ease-in forwards}
-@keyframes fly{to{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
+.center{display:grid;grid-template-columns:auto auto 1fr;gap:18px;align-items:center;margin:18px 6px}
+.pile{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px}
+.pile .stack{position:relative;width:78px;aspect-ratio:5/7}
+.pile .stack .card{position:absolute;inset:0;--w:78px;width:78px}
+.pile .stack .card:nth-child(1){transform:translate(4px,4px)}
+.pile .stack .card:nth-child(2){transform:translate(2px,2px)}
+.pile .floor{width:78px;aspect-ratio:5/7;border-radius:9px;border:2px dashed rgba(255,230,180,.45);display:grid;place-items:center;color:rgba(255,240,210,.8);font-size:12px;text-align:center}
+.host{display:flex;gap:12px;align-items:center;background:rgba(255,250,240,.94);border-radius:16px;padding:8px 14px;box-shadow:0 3px 10px rgba(0,0,0,.35)}
+.host img{width:60px;height:60px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid #fff;box-shadow:0 0 0 1px var(--goldl);flex:none}
+.host p{margin:0;font-family:"EB Garamond",serif;font-size:19px;line-height:1.3}
+.host small{display:block;color:var(--muted);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}
+.you{border-radius:18px;padding:8px 10px 12px;background:rgba(20,8,2,.32);position:relative}
+.you .plate{max-width:540px}
+.you .hand{min-height:calc(var(--cw)*1.4 + 8px);gap:10px}
+.tip{background:#fff4cf;border:1px solid #e9c96a;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.35;display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tip button{flex:none;border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 9px;font-size:13px;font-weight:700}
 
-/* middle */
-.mid{display:grid;grid-template-columns:auto 1fr 280px;gap:10px;align-items:stretch}
-.deck{padding:10px 14px;display:flex;gap:12px;align-items:center}
-.back{width:76px;aspect-ratio:96/134;border-radius:9px;border:3px solid #fff;box-shadow:0 0 0 1px var(--line),2px 2px 0 #e9dcc0,4px 4px 0 #d9c7a2,0 6px 12px rgba(0,0,0,.3);
-  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.95) 0 15%,transparent 16%),repeating-linear-gradient(45deg,var(--delft) 0 6px,#2d61b8 6px 12px);display:grid;place-items:center}
-.back svg{width:38px;height:38px}
-.deck .ct{font-size:13px;color:var(--muted);line-height:1.3}
-.deck .ct b{font-size:20px;color:var(--ink);display:block;font-variant-numeric:tabular-nums}
-.say{padding:10px 14px;display:flex;gap:12px;align-items:center}
-.say img{width:62px;height:62px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);flex:none}
-.say p{margin:0;font-family:"EB Garamond",serif;font-size:19px;line-height:1.3}
-.say small{display:block;color:var(--muted);font-family:"Source Sans 3",sans-serif;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
-.log{padding:8px 12px;font-size:13px;overflow:auto;max-height:110px}
+/* side panel */
+.side{display:flex;flex-direction:column;gap:10px;position:sticky;top:10px}
+.ctrl{padding:12px;display:flex;flex-direction:column;gap:8px;min-height:140px}
+.log{padding:8px 12px;font-size:13px;overflow:auto;max-height:180px}
 .log p{margin:0 0 3px}
-
-/* you */
-.you{padding:12px 14px;display:grid;grid-template-columns:1fr 300px;gap:14px}
-.you .hand{min-height:calc(var(--cw)*1.4 + 8px);gap:10px;padding-top:6px}
-.ctrl{display:flex;flex-direction:column;gap:8px;justify-content:center}
-.ctrl .odds{font-size:14px;color:var(--muted);min-height:20px}
-.ctrl .odds b{color:var(--ink)}
+.odds{font-size:14px;color:var(--muted)}
+.odds b{color:var(--ink)} .odds b.hot,.hot{color:var(--bad)}
 .meter{height:8px;border-radius:999px;background:#ead9b8;overflow:hidden}
 .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--leaf),var(--gold),var(--bad));background-size:300px 100%;width:0;transition:width .3s}
+.stake{display:flex;align-items:baseline;gap:8px;color:var(--muted);font-size:14px}
+.stake b{font:700 32px/1 "EB Garamond",serif;color:var(--ink)}
+.danger{display:flex;flex-wrap:wrap;gap:4px}
+.dchip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 8px 1px 2px;font-size:12.5px;background:#fbe4df;color:var(--bad);font-weight:700}
+.dchip i{width:21px;height:21px;border-radius:50%;background:var(--c);color:var(--ci);font:700 13px/21px "EB Garamond",serif;text-align:center;font-style:normal}
+.dchip.safe{background:#e6f2e8;color:var(--good)}
 .btn{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:9px 14px;font-weight:700;color:var(--ink);text-align:left;display:flex;align-items:center;gap:10px}
 .btn img{width:30px;height:30px}
 .btn small{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
 .btn:hover:not(:disabled){filter:brightness(1.04);transform:translateY(-1px)}
 .btn:disabled{opacity:.4;cursor:default}
-.btn.hit{background:var(--delft);border-color:var(--delft3);color:#fff;justify-content:center;font-size:18px}
+.btn.hit{background:var(--delft);border-color:var(--delft3);color:#fff;justify-content:center;font-size:18px;flex-direction:column;gap:0;text-align:center}
 .btn.hit small{color:#dfe8fb}
-.btn.purse{background:#fff7e3}
-.btn.paper{background:#eef3fc}
-.btn.alk{background:#fff1c4}
+.btn.purse{background:#fff7e3}.btn.paper{background:#eef3fc}.btn.alk{background:#fff1c4}
 .picker{display:flex;flex-direction:column;gap:6px}
-.picker .t{font-weight:700}
-.wait{color:var(--muted);font-style:italic;text-align:center}
+.picker .t,.cash .t{font:600 20px "EB Garamond",serif}
+.cash{display:flex;flex-direction:column;gap:8px}
+.wait{color:var(--muted);font-style:italic;text-align:center;margin:auto}
+
+/* ---------- the card ---------- */
+.card{--w:var(--cw);position:relative;width:var(--w);aspect-ratio:5/7;border-radius:calc(var(--w)*.085);background:var(--c,#c9a24a);padding:calc(var(--w)*.045);box-shadow:0 3px 8px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.35);flex:none;color:var(--ink)}
+.card .fr{position:relative;height:100%;border-radius:calc(var(--w)*.055);background:var(--frame,linear-gradient(#fffaf0,#f1e2c2));box-shadow:inset 0 0 0 1.5px var(--goldl),inset 0 0 0 3.5px #fffaf0,inset 0 0 0 4.5px var(--goldl);display:flex;flex-direction:column;align-items:center;overflow:hidden}
+.card .win{width:66%;margin-top:9%;aspect-ratio:1/1.08;border-radius:50% 50% 12% 12% / 40% 40% 8% 8%;background:radial-gradient(circle at 50% 42%,#fff 0,color-mix(in srgb,var(--c) 22%,#fffaf0) 72%);box-shadow:inset 0 0 0 1px rgba(150,110,40,.45);display:grid;place-items:center;overflow:hidden}
+.card .win img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
+.card .pip{position:absolute;z-index:2;width:calc(var(--w)*.27);height:calc(var(--w)*.27);border-radius:50%;background:var(--c);color:var(--ci,#fff);font:700 calc(var(--w)*.16)/1 "EB Garamond",Georgia,serif;display:grid;place-items:center;box-shadow:0 0 0 calc(var(--w)*.018) #fffaf0,0 0 0 calc(var(--w)*.03) var(--goldl),0 2px 3px rgba(0,0,0,.3);letter-spacing:-.02em}
+.card .pip.tl{top:4%;left:5%}
+.card .pip.br{bottom:4%;right:5%}
+.card .rb{width:88%;margin-top:5%;text-align:center;font:600 calc(var(--w)*.105)/1.02 "EB Garamond",serif;color:var(--ink);min-height:2.04em;display:flex;align-items:center;justify-content:center}
+.card .rb.long{font-size:calc(var(--w)*.088)}
+.card .cp{position:absolute;left:8%;bottom:6%;font:700 calc(var(--w)*.07)/1.1 "Source Sans 3",sans-serif;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);max-width:58%}
+.card.act .cp{max-width:84%}
+.card.act,.card.mod,.card.x2{--ci:#fff}
+.card.act{--c:var(--delft)}
+.card.mod,.card.x2{--c:var(--gold2)}
+.card.held{--c:var(--leaf)}
+.card.dupe{box-shadow:0 0 0 3px var(--bad),0 0 16px rgba(220,60,30,.8)}
+.card.facedown{background:var(--cardback,repeating-linear-gradient(45deg,var(--delft) 0 6px,#2d61b8 6px 12px));box-shadow:0 0 0 2px #fff inset,0 3px 8px rgba(0,0,0,.45);display:grid;place-items:center}
+.card.facedown .mark{width:44%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.95);display:grid;place-items:center;box-shadow:0 0 0 2px var(--goldl)}
+.card.facedown .mark svg{width:72%}
+.card.facedown.img .mark{display:none}
+.card.facedown.shake{animation:shake .22s infinite}
+@keyframes shake{25%{transform:rotate(-3deg) translateX(-2px)}75%{transform:rotate(3deg) translateX(2px)}}
+.mini .card{--w:var(--mw)}
+.mini .card .rb,.mini .card .cp,.mini .card .pip.br{display:none}
+.mini .card .pip.tl{width:calc(var(--w)*.46);height:calc(var(--w)*.46);font-size:calc(var(--w)*.3);top:3%;left:4%}
+.mini .card .win{width:84%;margin-top:30%}
+/* burning */
+.burn .card{animation:burn 1.5s ease-in forwards;animation-delay:calc(var(--k)*70ms)}
+.burn .card::after{content:"";position:absolute;inset:-18% -8% -2%;border-radius:40% 40% 10% 10%;pointer-events:none;mix-blend-mode:screen;transform-origin:50% 100%;
+  background:radial-gradient(ellipse at 50% 100%,rgba(255,240,150,.98),rgba(255,150,30,.9) 30%,rgba(220,60,0,.55) 55%,transparent 72%);
+  animation:flame 1.5s ease-in forwards,flick .13s steps(2) infinite;animation-delay:calc(var(--k)*70ms)}
+@keyframes burn{0%{filter:none}30%{filter:brightness(1.3) saturate(1.5) sepia(.3)}62%{filter:grayscale(1) brightness(.3) contrast(1.3);transform:none}100%{filter:grayscale(1) brightness(.18);transform:translateY(16px) scale(.78) rotate(var(--rot));opacity:0}}
+@keyframes flame{0%{transform:scaleY(0);opacity:0}15%{opacity:1}55%{transform:scaleY(1.35);opacity:1}100%{transform:scaleY(.5);opacity:0}}
+@keyframes flick{50%{filter:hue-rotate(-14deg) brightness(1.2)}}
+.spark{position:fixed;pointer-events:none;z-index:40;border-radius:50%;animation:spark var(--t) ease-out forwards}
+.spark.ember{width:5px;height:5px;background:#ffc04a;box-shadow:0 0 7px 3px rgba(255,130,20,.85)}
+.spark.ash{width:6px;height:4px;border-radius:2px;background:#6b6560;animation-timing-function:ease-in}
+@keyframes spark{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r));opacity:0}}
+.float{position:fixed;z-index:44;font:700 28px "EB Garamond",serif;color:#ffe9a8;text-shadow:0 2px 8px rgba(0,0,0,.8);animation:rise 1.3s ease-out forwards;pointer-events:none;white-space:nowrap}
+@keyframes rise{to{transform:translateY(-56px);opacity:0}}
+
+/* special-paper announcement */
+.ann{position:fixed;inset:0;z-index:46;display:grid;place-items:center;background:rgba(20,10,4,.45);padding:16px;cursor:pointer;animation:fade .2s}
+.ann[hidden]{display:none}
+@keyframes fade{from{opacity:0}}
+.abox{display:flex;gap:20px;align-items:center;background:var(--paper);border-radius:18px;padding:18px 22px;max-width:620px;box-shadow:0 20px 50px rgba(0,0,0,.5);border:1px solid var(--line);animation:pop .25s ease-out}
+.abox .card{--w:150px;flex:none}
+.abox .kick{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.abox h2{font-size:32px;line-height:1.05}
+.abox .eff{font-size:17px;margin:8px 0}
+.abox .hist{font-family:"EB Garamond",serif;font-style:italic;color:var(--muted);font-size:16px;margin:0}
+.abox .who{font-size:13px;color:var(--delft);font-weight:700;margin-top:8px}
 
 /* modal */
-.modal{position:fixed;inset:0;z-index:50;background:rgba(30,16,6,.55);display:grid;place-items:center;padding:16px;overflow:auto}
+.modal{position:fixed;inset:0;z-index:50;background:rgba(30,16,6,.6);display:grid;place-items:center;padding:16px;overflow:auto}
 .modal[hidden]{display:none}
-.mbox{background:var(--paper);border-radius:16px;max-width:620px;width:100%;padding:22px 24px;box-shadow:0 20px 50px rgba(0,0,0,.45);border:1px solid var(--line)}
+.mbox{background:var(--paper);border-radius:16px;max-width:640px;width:100%;padding:22px 24px;box-shadow:0 20px 50px rgba(0,0,0,.45);border:1px solid var(--line)}
+.mbox.wide{max-width:900px}
 .mbox h2{font-size:30px;line-height:1.1}
 .mbox .kick{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
 .mbox p{margin:10px 0}
 .mbox .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.mbox .btn{flex:1;min-width:200px}
+.mbox .btn{flex:1;min-width:160px}
 .mbox .btn.primary{background:var(--delft);color:#fff;border-color:var(--delft3);justify-content:center}
 .mbox .btn.primary small{color:#dfe8fb}
 .mbox table{width:100%;border-collapse:collapse;font-size:15px;margin-top:8px}
@@ -161,104 +214,79 @@ button{font:inherit;cursor:pointer}
 .mbox .facts li{margin:4px 0}
 .mbox .src{font-size:12.5px;color:var(--muted)}
 .news{font-family:"EB Garamond",serif;font-size:20px;line-height:1.35;border-left:4px solid var(--gold);padding-left:12px}
-.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
-.stat{flex:1;min-width:120px;background:var(--cream);border-radius:10px;padding:8px 10px;font-size:13px;color:var(--muted)}
-.stat b{display:block;font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums}
-.stat.hot b{color:var(--bad)}
-.cover{max-width:760px;padding:0;overflow:hidden}
-.cover .art{height:260px;background:var(--cover) center 40%/cover;position:relative}
-.cover .art h1{position:absolute;left:24px;bottom:16px;font-size:64px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.7);font-family:"EB Garamond",serif;line-height:.9}
+.cover{max-width:780px;padding:0;overflow:hidden}
+.cover .art{height:230px;background:var(--cover) center 40%/cover;position:relative}
+.cover .art h1{position:absolute;left:24px;bottom:16px;font-size:64px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.7);line-height:.9}
 .cover .art h1 small{display:block;font-size:14px;letter-spacing:.2em;text-transform:uppercase;font-family:"Source Sans 3",sans-serif;font-weight:700;margin-bottom:6px}
-.cover .in{padding:18px 24px 22px}
-.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.cover .art img.logo{position:absolute;left:18px;bottom:10px;height:120px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6))}
+.cover .in{padding:16px 24px 22px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
 .mode{border:2px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;background:#fff}
 .mode.sel{border-color:var(--delft);background:var(--delft2)}
 .mode b{font-family:"EB Garamond",serif;font-size:20px}
 .mode small{display:block;color:var(--muted);font-size:13.5px}
+.traders{display:flex;gap:12px;margin-top:10px;flex-wrap:wrap;align-items:flex-start}
+.trader{border:none;background:none;padding:0;display:flex;flex-direction:column;align-items:center;gap:3px;width:90px;font-size:12.5px;color:var(--muted);line-height:1.15;text-align:center}
+.trader img{width:64px;height:64px;border-radius:50%;object-fit:cover;object-position:50% 18%;border:2px solid #fff;box-shadow:0 0 0 2px var(--line);transition:.15s}
+.trader:hover img,.trader.sel img{box-shadow:0 0 0 3px var(--delft)}
+.trader b{color:var(--ink);font-size:13px}
+.tinfo{background:var(--cream);border-radius:12px;padding:10px 14px;font-size:14.5px;margin-top:10px}
+.tinfo h3{font-size:20px}
+.tinfo p{margin:6px 0}
+.tinfo .src{font-size:12px;color:var(--muted)}
 .rules h3{margin-top:14px;font-size:20px}
 .rules ul{padding-left:20px;margin:6px 0}
 .rules li{margin:3px 0}
-.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.legend .card{--cw:62px}
-.legend .card .cp,.legend .card .b2{display:none}
-.legend .card .bd{min-width:24px!important;height:24px!important;font-size:15px!important;line-height:20px!important}
-.legend .card .nm{font-size:9.5px}
-.legend .card .bd{min-width:22px;height:22px;font-size:12px;line-height:18px;top:-5px;left:-5px}
-.toast{position:fixed;left:50%;top:18%;transform:translate(-50%,0) scale(.9);z-index:45;background:var(--paper);border-radius:14px;padding:12px 20px;box-shadow:0 10px 30px rgba(0,0,0,.4);font-family:"EB Garamond",serif;font-size:26px;font-weight:600;display:flex;align-items:center;gap:12px;opacity:0;transition:.25s;pointer-events:none}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.legend .card{--w:70px}
+.legend .card .cp{display:none}
+/* achievements */
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:12px}
+.ach{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.seal{width:74px;height:74px;border-radius:50%;display:grid;place-items:center;background:var(--sealimg,radial-gradient(circle at 40% 35%,#d0453a,#8e1a14 70%));box-shadow:0 0 0 3px #b8322a inset,0 3px 6px rgba(0,0,0,.3);flex:none}
+.seal img{width:64%;height:64%;object-fit:contain;border-radius:50%;background:rgba(255,245,230,.92);padding:4px}
+.ach.locked .seal{filter:grayscale(1) brightness(1.15);opacity:.5}
+.ach b{font-family:"EB Garamond",serif;font-size:17px;line-height:1.1}
+.ach small{color:var(--muted);font-size:12.5px;line-height:1.3}
+.ach .h{font-family:"EB Garamond",serif;font-style:italic;font-size:14px;line-height:1.3}
+.ach .d{font-size:11px;color:var(--good);font-weight:700}
+.achtoast{position:fixed;left:16px;bottom:16px;z-index:48;display:flex;gap:10px;align-items:center;background:var(--paper);border-radius:14px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45);border:2px solid var(--gold);transform:translateY(160%);transition:transform .35s cubic-bezier(.2,1.2,.4,1);max-width:360px}
+.achtoast.on{transform:none}
+.achtoast .seal{width:46px;height:46px}
+.achtoast small{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);font-weight:700}
+.achtoast b{font-family:"EB Garamond",serif;font-size:18px}
+.toast{position:fixed;left:50%;top:16%;transform:translate(-50%,0) scale(.9);z-index:45;background:var(--paper);border-radius:14px;padding:12px 20px;box-shadow:0 10px 30px rgba(0,0,0,.4);font-family:"EB Garamond",serif;font-size:26px;font-weight:600;opacity:0;transition:.25s;pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0) scale(1)}
-.toast img{width:56px}
 .foot{color:#fff6e2;font-size:12.5px;text-shadow:0 1px 2px rgba(0,0,0,.7);text-align:center}
-.foot a{color:#ffe08a}
 
-.who .sn{display:none}
-.strip{padding:7px 14px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;font-family:"EB Garamond",serif;font-size:17px;line-height:1.3}
-.strip[hidden]{display:none}
-.strip b{font:700 12.5px "Source Sans 3",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--delft);white-space:nowrap}
-.stake{display:flex;align-items:baseline;gap:8px;color:var(--muted);font-size:14px}
-.stake b{font:700 30px/1 "EB Garamond",serif;color:var(--ink)}
-.danger{display:flex;flex-wrap:wrap;gap:4px}
-.dchip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 8px 1px 2px;font-size:12.5px;background:#fbe4df;color:var(--bad);font-weight:700}
-.dchip i{width:21px;height:21px;border-radius:50%;background:var(--c);color:var(--ci);font:700 13px/21px "EB Garamond",serif;text-align:center;font-style:normal}
-.dchip.safe{background:#e6f2e8;color:var(--good)}
-.odds b.hot{color:var(--bad)}
-.book{display:flex;gap:3px;margin-top:8px;align-items:center}
-.book span{width:22px;height:22px;border-radius:5px;border:1.5px dashed #cdb894;font:700 12px/19px "EB Garamond",serif;text-align:center;background:rgba(255,255,255,.4)}
-.book span.f{border:1.5px solid #fff;background:var(--c);color:var(--ci);box-shadow:0 0 0 1px var(--line)}
-.book small{margin-left:6px;color:var(--muted);font-size:12.5px}
-.book.sm{gap:2px;margin-top:5px}.book.sm span{width:11px;height:11px;border-radius:3px;border-width:1px}
-.card.facedown{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.95) 0 17%,transparent 18%),repeating-linear-gradient(45deg,var(--delft) 0 6px,#2d61b8 6px 12px);border-color:#fff;justify-content:center;box-shadow:0 0 0 1px var(--line),0 4px 10px rgba(0,0,0,.3)}
-.card.facedown svg{width:46%;margin:auto}
-.card.facedown.shake{animation:deal .3s,shake .22s .3s infinite}
-@keyframes shake{25%{transform:rotate(-3deg) translateX(-2px)}75%{transform:rotate(3deg) translateX(2px)}}
-.bubble{position:absolute;top:-14px;left:64px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:3px 11px;font:600 16px "EB Garamond",serif;box-shadow:0 3px 10px rgba(0,0,0,.22);z-index:6;animation:pop .18s ease-out;white-space:nowrap}
-.bubble::after{content:"";position:absolute;left:16px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
-@keyframes pop{from{transform:scale(.5);opacity:0}}
-.float{position:fixed;z-index:44;font:700 28px "EB Garamond",serif;color:var(--good);text-shadow:0 1px 0 #fff,0 0 12px rgba(255,255,255,.9);animation:rise 1.3s ease-out forwards;pointer-events:none;white-space:nowrap}
-@keyframes rise{to{transform:translateY(-56px);opacity:0}}
-.tip{margin-bottom:8px;background:#fff4cf;border:1px solid #e9c96a;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.35;display:flex;gap:8px;align-items:flex-start}
-.tip button{flex:none;border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 9px;font-size:13px;font-weight:700}
-.cash{display:flex;flex-direction:column;gap:8px}
-.cash .t{font:600 20px "EB Garamond",serif}
-.cash .odds b.hot{color:var(--bad)}
-@media (max-width:900px){
-  .board{grid-template-columns:repeat(5,1fr)}
-  .rivals{grid-template-columns:1fr}
-  .mid{grid-template-columns:1fr}
-  .log{display:none}
-  .you{grid-template-columns:1fr}
-  :root{--cw:74px}
-  .modes{grid-template-columns:1fr}
-  .cover .art h1{font-size:48px}
-}
+@media (max-width:1050px){ .main{grid-template-columns:1fr} .side{position:static} .log{max-height:110px} }
+@media (max-width:900px){ .board{grid-template-columns:repeat(5,1fr)} .modes{grid-template-columns:1fr} }
 @media (max-width:700px){
-  .wrap{padding:8px 10px 20px;gap:8px}
+  :root{--cw:78px;--mw:30px}
+  .wrap{padding:8px 8px 20px;gap:8px}
   .top h1{font-size:30px}.top .where{font-size:15px;flex-basis:100%;order:3}
   .tbtn{padding:3px 9px;font-size:12.5px}
-  .board{padding:4px;gap:3px}.cell{font-size:10.5px;padding:3px 2px}.cell b{font-size:13px}.cell .ix{font-size:13px}
-  .rivals{grid-template-columns:repeat(3,1fr);gap:6px}
-  .rivals .seat{padding:6px 7px}
-  .rivals .who{flex-wrap:wrap;gap:4px 6px}
-  .rivals .who img{width:34px;height:34px}
-  .rivals .who .nm{font-size:14px}.rivals .who .fn,.rivals .who small{display:none}.rivals .who .sn{display:inline}
-  .rivals .who .sp{display:none}.rivals .chip{font-size:10.5px;padding:1px 6px;white-space:normal}
-  .rivals .money{font-size:12.5px;margin:4px 0 2px}.rivals .money span:not(.tot){display:none}.rivals .money .tot{margin-left:0}
-  .rivals .tally{display:none}
-  .bubble{left:8px;top:-16px;font-size:14px}
-  .stake b{font-size:24px}
+  .board{padding:4px;gap:3px}.cell{font-size:10.5px;padding:3px 2px}.cell b,.cell .ix{font-size:13px}
   .strip{font-size:15px;padding:6px 10px}
-  .rivals{--mw:30px}
-  .rivals .mini .card .bd{min-width:19px;height:19px;font-size:12.5px;line-height:15px;top:-6px;left:-6px;padding:0 2px}
-  .rivals .hand{gap:3px;min-height:46px}
-  .say img{width:44px;height:44px}.say p{font-size:16.5px}
-  .deck{padding:8px 10px}.back{width:52px}
-  .mid{grid-template-columns:auto 1fr}
-  :root{--cw:76px}
+  .table{margin:8px;padding:10px 7px 12px;border-radius:24px}
+  .rivals{gap:5px}
+  .seat{padding:5px 5px 7px}
+  .plate{flex-wrap:wrap;border-radius:12px;padding:3px 5px;gap:3px 5px;min-height:0}
+  .rivals .plate img.pt{width:30px;height:30px}
+  .rivals .plate .nm{font-size:13.5px}.rivals .plate .fn{display:none}.rivals .plate .sn{display:inline}
+  .rivals .plate .mn span:not(.tot){display:none}
+  .rivals .chip{font-size:10px;padding:1px 5px;top:auto;bottom:-9px;right:4px}
+  .rivals .below .tag{display:none}
+  .bubble{left:4px;top:-20px;font-size:14px}
+  .center{grid-template-columns:auto 1fr;gap:10px;margin:12px 2px}
+  .center .pile:nth-child(2){display:none}
+  .pile .stack{width:52px}.pile .stack .card{--w:52px;width:52px}
+  .host img{width:42px;height:42px}.host p{font-size:16px}
   .you .hand{gap:7px}
-  .card .bd{min-width:27px;height:27px;font-size:16.5px;line-height:22px;top:-7px;left:-7px}
   .card .cp{display:none}
-  .card .bd.b2{bottom:-10px;right:-10px}
-  .card .nm{padding:0 15px 0 1px;font-size:11.5px;text-align:left;align-self:stretch}
-  .card .nm.long{font-size:9.5px}
+  .abox{flex-direction:column;text-align:center;gap:10px}
+  .abox .card{--w:110px}
+  .cover .art h1{font-size:46px}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition:none!important}}
 </style>
@@ -266,474 +294,45 @@ button{font:inherit;cursor:pointer}
 <body>
 <div class="wrap">
   <header class="top">
-    <div><a class="hl" href="/">Homo Ludens</a><h1>Tulip <span>7</span></h1></div>
+    <div id="brand"><a class="hl" href="/">Homo Ludens</a><h1>Tulip <span>7</span></h1></div>
     <div class="where" id="where">Menniste Bruyloft, Amsterdam</div>
     <span class="sp"></span>
     <button class="tbtn" id="bRules">Rules</button>
-    <button class="tbtn" id="bOdds">Odds</button>
-    <button class="tbtn" id="bSpeed">Speed: normal</button>
+    <button class="tbtn" id="bAch">Achievements</button>
+    <button class="tbtn" id="bHelp">Help</button>
+    <button class="tbtn" id="bSpeed">Speed</button>
     <button class="tbtn" id="bSound">Sound</button>
     <button class="tbtn" id="bNew">New game</button>
   </header>
-  <div class="panel board" id="board"></div>
-  <div class="panel strip" id="strip" aria-live="polite"></div>
-  <section class="rivals" id="rivals"></section>
-  <section class="mid">
-    <div class="panel deck"><div class="back" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 36V20" stroke="#3f8a4a" stroke-width="2.5"/><path d="M20 26c-6-1-9-5-10-9 5 0 9 3 10 9zM20 26c6-1 9-5 10-9-5 0-9 3-10 9z" fill="#3f8a4a"/><path d="M12 8c2 6 4 10 8 12 4-2 6-6 8-12-3 2-5 3-6 5-1-3-1-5-2-7-1 2-1 4-2 7-1-2-3-3-6-5z" fill="#d7261e"/></svg></div>
-      <div class="ct"><b id="deckN">94</b>papers in the pile<br><span id="discN">0 on the floor</span></div></div>
-    <div class="panel say"><img id="sayImg" alt=""><div><small>Jan Theunisz, the host</small><p id="say">Sit down. The wine is poured.</p></div></div>
-    <div class="panel log" id="log" aria-live="polite"></div>
-  </section>
-  <section class="panel you seat" id="you" data-i="0"></section>
-  <div class="foot">A Homo Ludens prototype. History: Garber 1989, Goldgar 2007. Art made for this game.</div>
+  <div class="panel board" id="board" hidden></div>
+  <div class="panel strip" id="strip" hidden aria-live="polite"></div>
+  <div class="main">
+    <section class="table" id="table">
+      <div class="glow"></div>
+      <div class="rivals" id="rivals"></div>
+      <div class="center">
+        <div class="pile"><div class="stack" id="deckPile"></div><span class="tag"><b id="deckN">94</b> in the pile</span></div>
+        <div class="pile"><div class="floor">the floor</div><span class="tag"><b id="discN">0</b> on the floor</span></div>
+        <div class="host"><img id="hostImg" alt=""><div><small>Jan Theunisz, the host</small><p id="say">Sit down. The wine is poured.</p></div></div>
+      </div>
+      <div class="you" id="you"></div>
+    </section>
+    <aside class="side">
+      <div class="panel ctrl" id="ctrl"></div>
+      <div class="panel log" id="log" aria-live="polite"></div>
+    </aside>
+  </div>
+  <div class="foot">A Homo Ludens prototype. History: Garber 1989; Goldgar 2007 and in <i>History Today</i>. Art made for this game.</div>
 </div>
+<div class="ann" id="ann" hidden></div>
 <div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
 <div class="toast" id="toast"></div>
+<div class="achtoast" id="achToast"></div>
 
 <script>/*ART*/</script>
 <script>/*ENGINE*/</script>
 <script>
-const {VARIETIES:V, SPECIAL:SP, IDX, RISK, EVENINGS:EV, ROMAN, STYLES, GPP, FEE, SETTLE, TARGET} = T7;
-const $ = s => document.querySelector(s);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const fmt = g => 'f' + Math.round(g).toLocaleString('en-US');
-const pct = x => Math.round(x * 100) + '%';
-document.body.style.setProperty('--bg', `url(${ART.bg_tavern})`);
-$('#sayImg').src = ART.c_theunisz;
-
-/* ---------- settings ---------- */
-const SET = Object.assign({help:true, fast:false, sound:true, mode:'winter'}, (() => { try { return JSON.parse(localStorage.getItem('tulip7.set')) || {}; } catch(e){ return {}; } })());
-if (SET.odds === false && SET.help === undefined) SET.help = false;
-const saveSet = () => { try { localStorage.setItem('tulip7.set', JSON.stringify(SET)); } catch(e){} };
-function syncBtns(){
-  $('#bOdds').classList.toggle('on', SET.help); $('#bOdds').textContent = 'Help: ' + (SET.help ? 'on' : 'off');
-  $('#bSpeed').textContent = 'Speed: ' + (SET.fast ? 'fast' : 'normal');
-  $('#bSound').classList.toggle('on', SET.sound); $('#bSound').textContent = 'Sound: ' + (SET.sound ? 'on' : 'off');
-}
-$('#bOdds').onclick = () => { SET.help = !SET.help; if (!SET.help && ui.tip) ui.tip = null; saveSet(); syncBtns(); render(); };
-$('#bSpeed').onclick = () => { SET.fast = !SET.fast; saveSet(); syncBtns(); };
-$('#bSound').onclick = () => { SET.sound = !SET.sound; saveSet(); syncBtns(); };
-$('#bRules').onclick = () => showRules();
-$('#bNew').onclick = () => showStart();
-syncBtns();
-const sleep = ms => new Promise(r => setTimeout(r, ms));
-const pace = (k = 1) => sleep((SET.fast ? 260 : 680) * k);
-
-/* ---------- sound (Web Audio, no files) ---------- */
-let AC = null;
-function ac(){ if (!SET.sound) return null; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); return AC; } catch(e){ return null; } }
-function noise(a, dur, f1, f2, q = 1, gain = .25){
-  const n = a.createBuffer(1, a.sampleRate * dur, a.sampleRate), d = n.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  const s = a.createBufferSource(); s.buffer = n; const f = a.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = q;
-  f.frequency.setValueAtTime(f1, a.currentTime); f.frequency.exponentialRampToValueAtTime(f2, a.currentTime + dur);
-  const g = a.createGain(); g.gain.setValueAtTime(0, a.currentTime); g.gain.linearRampToValueAtTime(gain, a.currentTime + dur * .15); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + dur);
-  s.connect(f).connect(g).connect(a.destination); s.start();
-}
-function tone(a, f, dur, gain = .12, type = 'sine', t0 = 0){
-  const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = f;
-  g.gain.setValueAtTime(gain, a.currentTime + t0); g.gain.exponentialRampToValueAtTime(.001, a.currentTime + t0 + dur);
-  o.connect(g).connect(a.destination); o.start(a.currentTime + t0); o.stop(a.currentTime + t0 + dur);
-}
-const SND = {
-  flip(){ const a = ac(); if (a) noise(a, .09, 3000, 1500, .7, .18); },
-  clink(){ const a = ac(); if (!a) return; [2637, 3520, 4186].forEach((f, i) => tone(a, f * (1 + Math.random() * .01), .9, .05, 'sine', i * .002)); tone(a, 2700, .7, .04, 'sine', .09); },
-  wind(){ const a = ac(); if (a){ noise(a, 1.3, 300, 1400, .6, .35); noise(a, 1.0, 900, 300, .8, .15); } },
-  book(){ const a = ac(); if (!a) return; [523, 659, 784, 1047].forEach((f, i) => tone(a, f, .5, .08, 'triangle', i * .09)); },
-  thud(){ const a = ac(); if (a){ tone(a, 110, .25, .25, 'sine'); noise(a, .12, 400, 120, .7, .2); } },
-  coin(){ const a = ac(); if (!a) return; tone(a, 1800, .25, .06, 'square'); tone(a, 2400, .3, .05, 'sine', .05); },
-  chalk(){ const a = ac(); if (!a) return; for (let i = 0; i < 3; i++) setTimeout(() => noise(a, .12, 5000, 3000, 2, .12), i * 140); },
-  heart(){ const a = ac(); if (!a) return; tone(a, 62, .16, .4, 'sine'); tone(a, 56, .2, .3, 'sine', .2); },
-  phew(){ const a = ac(); if (!a) return; tone(a, 660, .25, .05, 'triangle'); tone(a, 880, .35, .05, 'triangle', .1); },
-  crash(){ const a = ac(); if (!a) return; tone(a, 196, 1.6, .16, 'triangle'); tone(a, 185, 1.6, .12, 'triangle', .05); noise(a, 1.6, 600, 150, .5, .2); }
-};
-
-/* ---------- state ---------- */
-let G = null, ui = freshUI();
-function freshUI(){ return {pick:null, turn:null, cash:null, seen:new Set(), log:[], blown:new Set(), pending:null, bubbles:{}, tip:null, after:false, lastOdds:0}; }
-const RIVALS = [
-  {name:'Joost van Cuyck', short:'Van Cuyck', style:'cautious', img:'c_cuyck', bio:'29, Amsterdam. On 7 February 1637 he walked away from a deal: "not satisfied with the guarantor".'},
-  {name:'Andries de Busscher', short:'De Busscher', style:'balanced', img:'c_busscher', bio:'31, a cooper from Haarlem, from a family of art collectors.'},
-  {name:'Abraham van Meeckeren', short:'Van Meeckeren', style:'greedy', img:'c_meeckeren', bio:'A Haarlem brewer. Never leaves the table early.'}
-];
-const LINES = {
-  bust:["Gone with the wind, {p}.","Windhandel! {p}'s papers blow off the table.","Two {v}s in one evening, {p}? The wind takes it all.","That is what they call wind trade, {p}."],
-  book:["A full tulip book! {p} closes the evening.","Seven tulips, seven pages. Well played, {p}.","{p} has the whole book. Everyone stops."],
-  freeze:["{p} pays the wine money for {q}. Sealed.","{q}'s evening is sealed with {p}'s wine.","Drink up, {q}. {p} has closed your deal."],
-  freezeSelf:["{p} pays the wine money and stands up.","{p} seals the evening with a glass."],
-  flip3:["The seghsman chalks three more for {q}.","{p} calls the broker: three papers for {q}!","Three strokes on the slate for {q}."],
-  saved:["{p} pays rouwkoop and walks away from the second {v}.","Regret money! {p} escapes the duplicate.","{p} buys their way out. Honour saved."],
-  stay:["{p} stands up.","{p} has had enough for tonight.","{p} calls for wine and stands up."],
-  turnYou:["Your turn. Another paper?","Well? The seghsman is waiting.","Another, or a glass of wine?"],
-  give:["{p} hands a spare rouwkoop to {q}."]
-};
-const BUB = {
-  hit:["Another!","Keep them coming.","One more paper.","Easy money."],
-  hitRisky:["Fortune favours the bold!","Just one more…","I can feel it.","Don't look at me like that."],
-  stay:["That'll do.","Wine, please.","Enough for tonight.","I'll stand."],
-  bust:["Ach!","No, no, no!","The wind!","Not again…"],
-  phew:["Phew!","Ha! Lucky.","Close one!"],
-  book:["A full book!","Seven!"],
-  sold:["Cashing in.","Coins, please.","I'll take the money."],
-  held:["I'll hold.","It can only go up.","Paper suits me."]
-};
-const pickA = a => a[Math.floor(Math.random() * a.length)];
-const pickLine = (k, d) => pickA(LINES[k]).replace(/\{(\w)\}/g, (_, x) => x === 'p' ? d.p : x === 'q' ? d.q : d.v);
-function say(t){ $('#say').textContent = t; }
-function log(h){ ui.log.unshift(h); ui.log = ui.log.slice(0, 40); $('#log').innerHTML = ui.log.map(x => `<p>${x}</p>`).join(''); }
-function toast(html, img, ms = 1100){ const t = $('#toast'); t.innerHTML = (img ? `<img src="${ART[img]}" alt="">` : '') + html; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), SET.fast ? ms * .6 : ms); }
-const nm = p => p.human ? 'You' : p.short;
-const nmIn = p => p.human ? 'you' : p.short;
-const bubT = {};
-function bubble(p, text, ms = 1500){
-  if (p.human) return;
-  ui.bubbles[p.i] = text; render();
-  clearTimeout(bubT[p.i]); bubT[p.i] = setTimeout(() => { delete ui.bubbles[p.i]; if (G) render(); }, SET.fast ? ms * .6 : ms);
-}
-function floatAt(p, text, color){
-  const el = document.querySelector(`.seat[data-i="${p.i}"] .hand`); if (!el) return;
-  const r = el.getBoundingClientRect(), f = document.createElement('div');
-  f.className = 'float'; f.textContent = text; if (color) f.style.color = color;
-  f.style.left = (r.left + Math.min(r.width, 240) / 2 - 30) + 'px'; f.style.top = (r.top + 6) + 'px';
-  document.body.appendChild(f); setTimeout(() => f.remove(), 1400);
-}
-
-/* ---------- first-game tips ---------- */
-const TIPS = {
-  first:"Each paper is a tulip. Keep collecting different ones, or stand up to bank what is on the table. If a tulip you already hold comes a second time, the whole evening blows away.",
-  danger:"The red chips count the copies of your tulips still in the pile: the papers that would blow you away. The more tulips you hold, the riskier the next paper.",
-  book:"Two more different tulips and your tulip book is full: +15, and the evening ends for everyone.",
-  bust:"Gone with the wind: a duplicate tulip wipes out that player's whole evening.",
-  action:"Special papers have no number. Wijnkoop stops a player, Seghsman makes a player take three, Rouwkoop saves you from one duplicate.",
-  cash:"Everything you win in the winter is paper. It grows with the index each evening, but if the crash comes first it is worth only 3½%. Cash in when the risk looks too high."
-};
-let TIPSEEN = (() => { try { return JSON.parse(localStorage.getItem('tulip7.tips')) || {}; } catch(e){ return {}; } })();
-function tip(k){ if (!SET.help || TIPSEEN[k] || ui.tip) return; ui.tip = {k, t:TIPS[k]}; render(); }
-function dismissTip(){ if (!ui.tip) return; TIPSEEN[ui.tip.k] = 1; try { localStorage.setItem('tulip7.tips', JSON.stringify(TIPSEEN)); } catch(e){} ui.tip = null; render(); }
-
-/* ---------- cards ---------- */
-function cardHTML(c, extra = ''){
-  const isNew = !ui.seen.has(c.uid); ui.seen.add(c.uid);
-  const cls = 'card ' + (isNew ? 'new ' : '') + extra;
-  if (c.k === 'num'){ const v = V[c.v];
-    return `<div class="${cls} num" style="--c:${v.hex};--ci:${v.ink}" title="${esc(v.name + ' (' + v.n + '): ' + v.note)}" aria-label="${esc(v.name)}, ${v.n}"><b class="bd">${v.n}</b><img src="${ART[v.id]}" alt=""><span class="nm ${v.name.length > 16 ? 'long' : ''}">${esc(v.name)}</span><span class="cp">${v.n ? v.n + ' in deck' : 'only one'}</span><b class="bd b2" aria-hidden="true">${v.n}</b></div>`; }
-  if (c.k === 'mod') return `<div class="${cls} mod" title="${esc(SP.mod.note)}"><b class="bd">+${c.v}</b><img src="${ART.m_offset}" alt=""><span class="nm">Offsets</span><b class="bd b2" aria-hidden="true">+${c.v}</b></div>`;
-  if (c.k === 'x2') return `<div class="${cls} x2" title="${esc(SP.x2.note)}"><b class="bd">×2</b><img src="${ART.m_broken}" alt=""><span class="nm">Broken tulip</span><b class="bd b2" aria-hidden="true">×2</b></div>`;
-  const s = SP[c.k]; return `<div class="${cls} act ${c.k === 'second' ? 'held' : ''}" title="${esc(s.name + ': ' + s.note)}"><img src="${ART[s.art]}" alt=""><span class="nm">${s.name}</span></div>`;
-}
-const BACK_SVG = `<svg viewBox="0 0 40 40"><path d="M20 36V20" stroke="#3f8a4a" stroke-width="2.5"/><path d="M20 26c-6-1-9-5-10-9 5 0 9 3 10 9zM20 26c6-1 9-5 10-9-5 0-9 3-10 9z" fill="#3f8a4a"/><path d="M12 8c2 6 4 10 8 12 4-2 6-6 8-12-3 2-5 3-6 5-1-3-1-5-2-7-1 2-1 4-2 7-1-2-3-3-6-5z" fill="#d7261e"/></svg>`;
-function handHTML(p){
-  if (ui.blown.has(p.i)) return '';
-  let h = p.cards.map(c => cardHTML(c)).join('');
-  if (p.second) h += cardHTML(p.second);
-  if (p.bustCard) h += cardHTML({...p.bustCard}, 'dupe');
-  if (ui.pending && ui.pending.p === p) h += `<div class="card facedown new ${ui.pending.odds >= .25 ? 'shake' : ''}">${BACK_SVG}</div>`;
-  return h;
-}
-function bookHTML(p, big){
-  if (!p.nums.length && p.status !== 'active') return '';
-  let h = '';
-  for (let k = 0; k < 7; k++){ const n = p.nums[k]; if (n === undefined) h += '<span></span>'; else { const v = V[n]; h += `<span class="f" style="--c:${v.hex};--ci:${v.ink}">${big ? n : ''}</span>`; } }
-  return `<div class="book ${big ? '' : 'sm'}" title="Tulip book: ${p.nums.length} of 7 different tulips">${h}${big ? `<small>tulip book ${p.nums.length}/7${p.nums.length >= 5 ? ' · +15 at seven' : ''}</small>` : ''}</div>`;
-}
-function statusChip(p){
-  if (G && G.turn === p && p.status === 'active') return `<span class="chip turn">${p.human ? 'Your turn' : 'Thinking…'}</span>`;
-  if (ui.after && p.status !== 'idle'){
-    if (p.status === 'bust') return `<span class="chip bust">Gone with the wind</span>`;
-    const g = G.mode === 'classic' ? '+' + p.last : '+' + fmt(p.lastG);
-    return `<span class="chip ${p.status === 'book' ? 'book' : 'stayed'}">${g}${p.status === 'book' ? ' · tulip book' : ''}</span>`;
-  }
-  const m = {active:['', 'At the table'], stayed:['stayed', p.frozen ? 'Sealed (wijnkoop)' : 'Stood up'], bust:['bust', 'Gone with the wind'], book:['book', 'Tulip book!'], idle:['', '']};
-  const [c, t] = m[p.status] || ['', '']; return t ? `<span class="chip ${c}">${t}</span>` : '';
-}
-function moneyHTML(p){
-  if (G.mode === 'classic') return `<div class="money"><span>Total <b>${p.total}</b> / ${TARGET}</span></div>`;
-  const paper = G.crashed ? `<span title="Settled at 3½ per cent"><img src="${ART.i_paper}" alt="">Settled <b>${fmt(p.settled)}</b></span>` : `<span title="Paper: worth its guilders times the index, until the crash"><img src="${ART.i_paper}" alt="">Paper <b>${fmt(G.paperValue(p))}</b></span>`;
-  return `<div class="money"><span title="Cash, safe"><img src="${ART.i_purse}" alt="">Purse <b>${fmt(p.purse)}</b></span>${paper}<span class="tot">${fmt(G.standing(p))}</span></div>`;
-}
-function tallyHTML(p){
-  if (!p.cards.length && !p.bustCard) return '';
-  if (p.status === 'bust') return 'Nothing this evening.';
-  const s = G.roundScore(p);
-  return `On the table <b>${G.mode === 'winter' ? fmt(s * GPP * (G.alkmaar ? 2 : 1)) : s}</b>${p.x2 ? ' · broken ×2' : ''}`;
-}
-const tableValue = p => { const s = G.roundScore(p); return G.mode === 'classic' ? s + ' pts' : fmt(s * GPP * (G.alkmaar ? 2 : 1)); };
-
-/* ---------- render ---------- */
-function renderBoard(){
-  const b = $('#board'), st = $('#strip');
-  if (!G || G.mode === 'classic'){ b.hidden = true; st.hidden = true; return; }
-  b.hidden = false; st.hidden = false;
-  let h = '';
-  for (let e = 0; e < IDX.length; e++){
-    const dead = G.crashed && e > G.crashAfter, now = !G.crashed && e === G.evening && !G.alkmaar, past = e < G.evening || (G.crashed && e <= G.crashAfter);
-    const rk = RISK[e] ? `crash ${pct(RISK[e])}` : 'no risk';
-    h += `<div class="cell ${now ? 'now' : ''} ${past && !now ? 'past' : ''} ${dead ? 'dead' : ''}" title="Index ×${IDX[e]} on this evening. Chance the crash comes before this evening: ${pct(RISK[e])}"><b>${ROMAN[e]}</b>${EV[e].short}<div class="ix">×${IDX[e]}</div><div class="rk ${RISK[e] >= .2 ? 'hot' : ''}">${rk}</div></div>`;
-  }
-  h += `<div class="cell crash ${G.crashed ? 'hit' : ''}" title="After evening VIII the crash is certain"><b>3 Feb</b>Haarlem<div class="ix" style="color:inherit">crash</div><div class="rk" style="color:inherit">paper → 3½%</div></div>`;
-  h += `<div class="cell alk ${G.alkmaar && !G.over ? 'now' : ''}" title="A cash auction: winnings go to the purse, doubled"><b>5 Feb</b>Alkmaar<div class="ix" style="color:inherit">cash ×2</div><div class="rk" style="color:inherit">final</div></div>`;
-  b.innerHTML = h;
-  st.innerHTML = G.alkmaar ? `<b>Alkmaar · 5 February 1637</b><span>Cash auction for Wouter Winckel's orphans. What you win tonight goes into your purse, twice over.</span>`
-    : G.crashed ? `<b>3 February 1637</b><span>The crash. All paper has settled at 3½ per cent.</span>`
-    : `<b>Evening ${ROMAN[G.evening]} · ${EV[G.evening].date}</b><span>${EV[G.evening].news}</span>`;
-}
-function seatHTML(p, r){
-  const big = p.human;
-  return `${ui.bubbles[p.i] ? `<div class="bubble">${esc(ui.bubbles[p.i])}</div>` : ''}${big ? '' : `<div class="who"><img src="${ART[r.img]}" alt=""><div><div class="nm"><span class="fn">${esc(p.name)}</span><span class="sn">${esc(p.short)}</span></div><small>${STYLES[p.style].label}</small></div><span class="sp"></span>${statusChip(p)}</div>`}
-    ${moneyHTML(p)}<div class="hand ${big ? '' : 'mini'}">${handHTML(p)}</div>${bookHTML(p, big)}${big ? '' : `<div class="tally">${tallyHTML(p)}</div>`}`;
-}
-function render(){
-  if (!G) return;
-  renderBoard();
-  const R = $('#rivals');
-  R.innerHTML = G.players.slice(1).map((p, k) => `<div class="panel seat ${G.turn === p ? 'turn' : ''} ${ui.pick && ui.pick.cands.includes(p) ? 'pick' : ''}" data-i="${p.i}" title="${esc(RIVALS[k].bio)}">${seatHTML(p, RIVALS[k])}</div>`).join('');
-  const me = G.players[0], you = $('#you');
-  you.classList.toggle('turn', G.turn === me); you.classList.toggle('pick', !!(ui.pick && ui.pick.cands.includes(me)));
-  if (!$('#youSeat')){ you.innerHTML = `<div><div id="tipBox"></div><div id="youSeat"></div></div><div class="ctrl" id="ctrl"></div>`; ui.ctrlH = null; ui.tipH = null; }
-  const th = ui.tip ? `<div class="tip"><span>${esc(ui.tip.t)}</span><button data-tip="1">Got it</button></div>` : '';
-  if (th !== ui.tipH){ $('#tipBox').innerHTML = th; ui.tipH = th; const tb = $('#tipBox [data-tip]'); if (tb) tb.onclick = dismissTip; }
-  $('#youSeat').innerHTML = `<div class="who" style="margin-bottom:2px"><div class="nm">You</div><span class="sp"></span>${statusChip(me)}</div>${seatHTML(me)}`;
-  const ch = ctrlHTML(); if (ch !== ui.ctrlH){ $('#ctrl').innerHTML = ch; ui.ctrlH = ch; }  // keep buttons stable under the pointer
-  $('#deckN').textContent = G.draw.length; $('#discN').textContent = G.discard.length + ' on the floor';
-  const ev = G.alkmaar ? 'Alkmaar, 5 February 1637' : G.mode === 'winter' ? `Evening ${ROMAN[G.evening]} · ${EV[G.evening].date}` : `Round ${G.round} · first to ${TARGET}`;
-  $('#where').textContent = ev + (G.alkmaar ? '' : ' · Menniste Bruyloft, Amsterdam');
-  document.querySelectorAll('.seat.pick').forEach(el => el.onclick = () => ui.pick && ui.pick.done(G.players[+el.dataset.i]));
-  wireCtrl();
-}
-function dangerHTML(me){
-  if (!me.nums.length || me.status !== 'active') return '';
-  const pl = G.pile(), cnt = {}; for (const c of pl) if (c.k === 'num') cnt[c.v] = (cnt[c.v] || 0) + 1;
-  const chips = [...me.nums].sort((a, b) => b - a).map(n => { const k = cnt[n] || 0, v = V[n]; return `<span class="dchip ${k ? '' : 'safe'}" title="${k} more ${esc(v.name)} in the pile"><i style="--c:${v.hex};--ci:${v.ink}">${n}</i>${k} left</span>`; }).join('');
-  const dup = me.nums.reduce((s, n) => s + (cnt[n] || 0), 0), od = pl.length ? dup / pl.length : 0;
-  return `<div class="danger">${chips}</div><div class="odds"><b>${dup}</b> of ${pl.length} papers would blow you away: <b class="${od >= .25 ? 'hot' : ''}">${pct(od)}</b>${me.second ? '<br>Your Rouwkoop saves you from one.' : ''}</div><div class="meter"><i style="width:${Math.min(100, od * 100)}%;background-position:${-od * 300}px 0"></i></div>`;
-}
-function stakeHTML(me){
-  if (me.status !== 'active' || !me.cards.length) return '';
-  return `<div class="stake"><span>On the table</span><b>${tableValue(me)}</b></div>`;
-}
-function cashHTML(){
-  const me = G.players[0], e = G.evening, v = me.units * IDX[e], fee = Math.round(v * FEE), rn = G.riskNext(), last = e + 1 >= IDX.length;
-  const next = last ? `After this evening <b class="hot">the crash is certain</b>.`
-    : `Evening ${ROMAN[e + 1]}: index ×${IDX[e]} → ×${IDX[e + 1]} (+${Math.round((IDX[e + 1] / IDX[e] - 1) * 100)}%), but <b class="${rn >= .2 ? 'hot' : ''}">${pct(rn)}</b> chance the crash comes first.`;
-  return `<div class="cash"><div class="t">End of evening ${ROMAN[e]}. Your paper: ${fmt(v)}</div><div class="odds">${next}</div>
-    <button class="btn paper" data-cash="hold"><img src="${ART.i_paper}" alt="">Hold it<small>${last ? 'it will settle at 3½%' : 'worth ' + fmt(me.units * IDX[e + 1]) + ' next evening, if no crash'}</small></button>
-    <button class="btn purse" data-cash="sell"><img src="${ART.i_purse}" alt="">Cash it all in: ${fmt(v - fee)}<small>safe in your purse · wine money ${fmt(fee)}</small></button></div>`;
-}
-function ctrlHTML(){
-  const me = G.players[0];
-  const tipH = '';
-  if (ui.pick){
-    const lbl = ui.pick.kind === 'give' ? 'Give your spare Rouwkoop to:' : `Who gets ${SP[ui.pick.card.k].name}?`;
-    return tipH + `<div class="picker"><div class="t">${lbl}</div><small class="wait" style="text-align:left">${esc(SP[ui.pick.kind === 'give' ? 'second' : ui.pick.card.k].note)}</small>${ui.pick.cands.map(q => `<button class="btn" data-pick="${q.i}">${q.human ? 'Yourself' : esc(q.name)}${q.status === 'active' ? `<small>on the table ${tableValue(q)} · ${q.nums.length} tulips</small>` : ''}</button>`).join('')}</div>`;
-  }
-  if (ui.cash) return tipH + cashHTML();
-  if (!ui.turn) return tipH + stakeHTML(me) + (SET.help ? dangerHTML(me) : '') + `<div class="wait">${me.status === 'active' ? 'Wait for your turn…' : G.over ? '' : 'Watching the others…'}</div>`;
-  const s = G.roundScore(me);
-  let stay;
-  if (G.mode === 'classic') stay = `<button class="btn purse" data-act="stay"><img src="${ART.i_purse}" alt="">Stand up · bank ${s}<small>total would be ${me.total + s}</small></button>`;
-  else if (G.alkmaar) stay = `<button class="btn alk" data-act="stay"><img src="${ART.i_purse}" alt="">Stand up · cash ${fmt(s * GPP * 2)}<small>Alkmaar pays double, in cash</small></button>`;
-  else stay = `<button class="btn paper" data-act="stay"><img src="${ART.i_paper}" alt="">Stand up · ${fmt(s * GPP)} on paper<small>you can cash it in at the end of the evening</small></button>`;
-  return tipH + stakeHTML(me) + (SET.help ? dangerHTML(me) : '') + `<button class="btn hit" data-act="hit">Take another paper<small>one more tulip from the pile</small></button>${stay}`;
-}
-function wireCtrl(){
-  document.querySelectorAll('#ctrl [data-act]').forEach(b => b.onclick = () => { const f = ui.turn; ui.turn = null; f && f(b.dataset.act); });
-  document.querySelectorAll('#ctrl [data-pick]').forEach(b => b.onclick = () => ui.pick && ui.pick.done(G.players[+b.dataset.pick]));
-  document.querySelectorAll('#ctrl [data-cash]').forEach(b => b.onclick = () => ui.cash && ui.cash.done(b.dataset.cash));
-  document.querySelectorAll('#ctrl [data-tip]').forEach(b => b.onclick = dismissTip);
-}
-
-/* ---------- modal helpers ---------- */
-function modal(html, cls = ''){ const m = $('#modal'), b = $('#mbox'); b.className = 'mbox ' + cls; b.innerHTML = html; m.hidden = false; const f = b.querySelector('button'); f && f.focus(); return b; }
-function closeModal(){ $('#modal').hidden = true; }
-function ask(html, cls){ return new Promise(res => { const b = modal(html, cls); b.querySelectorAll('[data-v]').forEach(x => x.onclick = () => { closeModal(); res(x.dataset.v); }); }); }
-
-/* ---------- human agent ---------- */
-const Human = {
-  hitOrStay(g, p){
-    return new Promise(res => {
-      say(pickLine('turnYou', {}));
-      ui.turn = a => { res(a === 'hit' ? 'hit' : 'stay'); render(); };
-      tip('first'); if (g.bustOdds(p) >= .2) tip('danger'); if (p.nums.length >= 5) tip('book');
-      render();
-    });
-  },
-  sell(g, p){ return new Promise(res => { say('The evening is over. Hold your paper, or cash it in?'); ui.cash = {done(v){ ui.cash = null; res(v === 'sell'); render(); }}; tip('cash'); render(); }); },
-  target(g, p, c, cands){ return pickFrom('target', c, cands); },
-  giveSecond(g, p, cands){ return pickFrom('give', null, cands); }
-};
-function pickFrom(kind, card, cands){
-  return new Promise(res => { ui.pick = {kind, card, cands, done(q){ ui.pick = null; res(q); render(); }}; say(kind === 'give' ? 'You already have a Rouwkoop. Who gets the spare?' : `${SP[card.k].name}! Choose a player.`); render(); });
-}
-const Bot = {
-  async hitOrStay(g, p){
-    const od = g.bustOdds(p) * (p.second ? 0 : 1);
-    await pace(.4 + od * 1.8);                 // they think longer when it is dangerous
-    const d = T7.AI.hitOrStay(g, p);
-    bubble(p, pickA(d === 'hit' ? (od >= .25 ? BUB.hitRisky : BUB.hit) : BUB.stay));
-    await pace(.45); return d;
-  },
-  sell: (g, p) => T7.AI.sell(g, p),
-  async target(g, p, c, cands){ await pace(.5); return T7.AI.target(g, p, c, cands); },
-  giveSecond: (g, p, c) => T7.AI.giveSecond(g, p, c)
-};
-
-/* ---------- events from the engine ---------- */
-async function onEvent(t, d){
-  const p = d.p, q = d.q;
-  switch (t){
-    case 'evening': {
-      ui.after = false; G.players.forEach(x => { x.status = 'idle'; }); render();
-      toast(`Evening ${ROMAN[d.e]} · ${EV[d.e].date}`, null, 1600); say(EV[d.e].news); log(`<b>Evening ${ROMAN[d.e]}</b>: index ×${IDX[d.e]}.`);
-      await pace(1.6); break; }
-    case 'roundStart': ui.seen = new Set(); ui.blown = new Set(); ui.after = false; render(); await pace(.4); break;
-    case 'turn': render(); if (!p.human) await pace(.15); break;
-    case 'draw': {
-      ui.pending = {p, odds:d.odds}; ui.lastOdds = d.odds; render();
-      if (d.odds >= .25) SND.heart();
-      await sleep((SET.fast ? 110 : 240) + d.odds * (SET.fast ? 450 : 1100));
-      ui.pending = null; break; }
-    case 'card':
-      SND.flip(); render();
-      if (ui.lastOdds >= .3 && d.c.k === 'num'){ floatAt(p, p.human ? 'Phew!' : pickA(BUB.phew)); SND.phew(); if (!p.human) bubble(p, pickA(BUB.phew)); }
-      if (p.human && p.nums.length >= 5) tip('book');
-      await pace(.65); break;
-    case 'action': {
-      SND.flip(); const s = SP[d.c.k];
-      toast(`${nm(p)}: ${s.name}`, s.art, 900); log(`<b>${nm(p)}</b> drew <b>${s.name}</b>.`);
-      if (p.human) tip('action');
-      if (d.c.k === 'flip3') SND.chalk(); render(); await pace(.9); break; }
-    case 'keep': render(); break;
-    case 'give': log(`${nm(p)} gave a spare Rouwkoop to ${nmIn(q)}.`); say(pickLine('give', {p:nm(p), q:nmIn(q)})); render(); await pace(.8); break;
-    case 'waste': log(`${nm(p)}'s spare Rouwkoop is discarded.`); render(); break;
-    case 'saved': SND.coin(); say(pickLine('saved', {p:nm(p), v:V[d.c.v].name})); log(`<b>${nm(p)}</b> paid rouwkoop: the second ${V[d.c.v].name} is gone.`); floatAt(p, 'Rouwkoop!', 'var(--leaf)'); render(); await pace(1.1); break;
-    case 'bust':
-      await blow(p); bubble(p, pickA(BUB.bust), 1800); floatAt(p, p.human ? 'Gone with the wind' : 'Wind!', 'var(--bad)');
-      say(pickLine('bust', {p:nm(p), v:V[d.c.v].name})); log(`<b>${nm(p)}</b> drew a second ${V[d.c.v].name}. Gone with the wind.`);
-      tip('bust'); break;
-    case 'book': SND.book(); toast(`${nm(p)}: tulip book complete! +15`, 'i_book', 1600); bubble(p, pickA(BUB.book)); say(pickLine('book', {p:nm(p)})); log(`<b>${nm(p)}</b> completed a tulip book (+15). The evening ends.`); render(); await pace(1.6); break;
-    case 'freeze': SND.clink(); say(p === q ? pickLine('freezeSelf', {p:nm(p)}) : pickLine('freeze', {p:nm(p), q:nmIn(q)})); log(`<b>${nm(p)}</b> sealed ${p === q ? 'their own' : nmIn(q) + "'s"} evening with Wijnkoop.`); render(); await pace(1.1); break;
-    case 'flip3': say(pickLine('flip3', {p:nm(p), q:nmIn(q)})); log(p === q ? `<b>${nm(p)}</b> called the seghsman on ${p.human ? 'yourself' : 'themselves'}: three more papers.` : `<b>${nm(p)}</b> sent the seghsman to ${nmIn(q)}: three more papers.`); render(); await pace(.9); break;
-    case 'stay': SND.thud(); say(pickLine('stay', {p:nm(p)})); log(`<b>${nm(p)}</b> stood up with ${tableValue(p)}.`); render(); await pace(.5); break;
-    case 'reshuffle': log('The floor is swept: the discards are shuffled into a new pile.'); break;
-    case 'roundEnd': {
-      ui.after = true; render();
-      for (const x of G.players){ if (x.status === 'bust') continue; floatAt(x, G.mode === 'classic' ? '+' + x.last : '+' + fmt(x.lastG)); }
-      SND.coin(); await pace(G.mode === 'classic' ? 2.2 : 1.4); break; }
-    case 'cashout': render(); break;
-    case 'sold': if (!p.human){ bubble(p, pickA(BUB.sold), 1800); log(`<b>${nm(p)}</b> cashed in ${fmt(d.v - d.fee)}.`); } else log(`You cashed in ${fmt(d.v - d.fee)} (wine money ${fmt(d.fee)}).`); SND.coin(); render(); await pace(.5); break;
-    case 'held': if (!p.human){ bubble(p, pickA(BUB.held), 1800); log(`<b>${nm(p)}</b> holds ${fmt(G.paperValue(p))} of paper.`); } render(); await pace(.4); break;
-    case 'cashoutDone': await pace(1.1); break;
-    case 'crash': await crashScene(); break;
-    case 'alkmaar': await alkmaarScene(); break;
-    case 'gameOver': try { localStorage.removeItem(SAVE_KEY); } catch(e){} render(); await pace(1); await endScene(); break;
-    case 'resume': render(); await pace(.5); break;
-  }
-}
-async function blow(p){
-  render(); await pace(.6);
-  const seat = document.querySelector(`.seat[data-i="${p.i}"]`), hand = seat && seat.querySelector('.hand');
-  SND.wind();
-  if (hand){
-    hand.classList.add('blown');
-    hand.querySelectorAll('.card').forEach((c, k) => { c.style.setProperty('--k', k); c.style.setProperty('--dx', (200 + Math.random() * 300) + 'px'); c.style.setProperty('--dy', (-120 + Math.random() * 160) + 'px'); c.style.setProperty('--rot', (Math.random() * 120 - 30) + 'deg'); });
-    const r = hand.getBoundingClientRect();
-    for (let k = 0; k < 4; k++){
-      const s = document.createElement('img'); s.src = ART.i_wind; s.className = 'sheet'; s.alt = '';
-      s.style.left = (r.left + Math.random() * r.width * .7) + 'px'; s.style.top = (r.top + Math.random() * r.height * .6) + 'px';
-      s.style.setProperty('--dx', (250 + Math.random() * 350) + 'px'); s.style.setProperty('--dy', (-200 + Math.random() * 120) + 'px'); s.style.setProperty('--rot', (Math.random() * 360) + 'deg');
-      s.style.animationDelay = (k * 90) + 'ms'; document.body.appendChild(s); setTimeout(() => s.remove(), 1800);
-    }
-  }
-  await sleep(SET.fast ? 700 : 1200);
-  ui.blown.add(p.i); render();
-}
-
-/* ---------- scenes ---------- */
-async function crashScene(){
-  SND.crash();
-  const early = G.crashAfter < IDX.length - 1;
-  const rows = G.players.map(p => `<tr><td>${p.human ? '<b>You</b>' : esc(p.name)}</td><td class="n">${fmt(p.atCrash)}</td><td class="n">${fmt(p.settled)}</td></tr>`).join('');
-  renderBoard();
-  await ask(`<div class="kick">${early ? 'Weeks pass in the taverns. Then:' : 'Then:'}</div><h2>Tuesday, 3 February 1637</h2>
-    <p class="news">In Haarlem a pound of Witte Croonen is offered at 1,250 guilders, then 1,100, then 1,000. Nobody bids.</p>
-    <p>Within a week nobody in any town is buying. Buyers stop paying, and the courts will not touch contracts they call gambling. Every paper in this room is now worth what a buyer can be made to pay: in the end, in May 1638, Haarlem settled on <b>3½ per cent</b>.</p>
-    <table><tr><th></th><th class="n">Paper at the crash</th><th class="n">Settled at 3½%</th></tr>${rows}</table>
-    <div class="row"><button class="btn primary" data-v="ok">On to Alkmaar</button></div>`);
-  render();
-}
-async function alkmaarScene(){
-  await ask(`<div class="kick">The last evening</div><h2>Thursday, 5 February 1637, Alkmaar</h2>
-    <p class="news">Two days after Haarlem, the orphans of Wouter Winckel sell his bulbs for cash in the Nieuwe Schutters-Doelen. A Viceroy goes for 4,203 guilders; the sale makes about 90,000.</p>
-    <p>An estate sale for cash, watched over by the orphans' guardians, not paper in a tavern. Tonight there is no paper: everything you win goes into your purse, <b>twice over</b>.</p>
-    <div class="row"><button class="btn primary" data-v="ok">Ride to Alkmaar</button></div>`);
-  say('Cash tonight. The orphan masters are watching.'); render();
-}
-async function endScene(){
-  const P = [...G.players].sort((a, b) => G.standing(b) - G.standing(a));
-  const me = G.players[0], win = P[0] === me, top = G.standing(P[0]);
-  const rows = P.map((p, k) => `<tr><td>${k + 1}. ${p.human ? '<b>You</b>' : esc(p.name)}</td><td class="n">${G.mode === 'classic' ? p.total : fmt(p.purse + p.settled)}</td></tr>`).join('');
-  let mine = '';
-  if (G.mode === 'winter') mine = me.atCrash > 0 ? `<p>Your paper at the crash was worth <b>${fmt(me.atCrash)}</b>. It settled for <b>${fmt(me.settled)}</b>.</p>` : `<p>You held no paper when the crash came.</p>`;
-  const facts = G.mode === 'winter' ? `<div class="facts"><b>What really happened</b><ul>
-    <li>Only a few hundred people traded: about 285 in Haarlem and 60 in Amsterdam. Only 37 spent more than 400 guilders.</li>
-    <li>Most of the winter's prices were never paid. On 27 April 1637 the States of Holland suspended the contracts; in May 1638 Haarlem let buyers walk away for 3½ per cent: <i>rouwkoop</i>.</li>
-    <li>Historians have found almost no bankruptcies caused by tulips, and nobody drowned in a canal. Those stories came from pamphlets, from Charles Mackay's 1841 book and from a novel.</li>
-    <li>The commonest bulbs swelled the most. That is why the 12s are the most valuable cards and the most dangerous.</li></ul>
-    <div class="src">Sources: Peter Garber, "Tulipmania" (1989); Anne Goldgar, <i>Tulipmania</i> (2007).</div></div>` : '';
-  const v = await ask(`<div class="kick">${G.mode === 'winter' ? 'The winter of 1636–37' : 'Game over'}</div><h2>${win ? 'You finish richest.' : esc(P[0].name) + ' finishes richest.'}</h2>
-    <table>${rows}</table>${mine}${facts}<div class="row"><button class="btn primary" data-v="again">Play again</button><button class="btn" data-v="menu">Change mode</button></div>`);
-  if (v === 'again') start(G.mode); else showStart();
-}
-function legendHTML(){ return `<div class="legend">${V.slice().reverse().map(v => `<div class="card num" style="--c:${v.hex};--ci:${v.ink}" title="${esc(v.note)}"><b class="bd">${v.n}</b><img src="${ART[v.id]}" alt=""><span class="nm">${esc(v.name)}</span></div>`).join('')}</div>`; }
-function showRules(){
-  modal(`<div class="rules"><div class="kick">How to play</div><h2>Tulip 7</h2>
-  <p>Amsterdam, winter 1636. The bulbs are in the ground; what changes hands in the tavern is paper. Each evening you take papers one at a time, each a promise for a tulip you have not seen.</p>
-  <h3>Each evening</h3><ul>
-  <li>On your turn, <b>take another paper</b> or <b>stand up</b> and bank what is in front of you.</li>
-  <li>If a tulip you already have comes again, your evening is <b>gone with the wind</b>: you score nothing.</li>
-  <li>Seven different tulips is a <b>tulip book</b>: +15, and the evening ends for everyone.</li>
-  <li>Your evening = the tulip numbers added up, doubled by a <b>Broken tulip</b>, plus any <b>Offsets</b>.</li></ul>
-  <h3>Special papers</h3><ul>
-  <li><b>Wijnkoop</b> (wine money): choose a player at the table; their evening is sealed and banked.</li>
-  <li><b>Seghsman</b> (the broker): choose a player; they must take three more papers.</li>
-  <li><b>Rouwkoop</b> (regret money): keep it; it cancels your next duplicate.</li></ul>
-  <h3>The winter</h3><ul>
-  <li>What you win in an evening (${GPP} guilders a point) is written <b>on paper</b>. Paper grows with the index: ×1 in November, ×7 in February.</li>
-  <li>At the end of each evening you choose: <b>hold</b> your paper into the next evening, or <b>cash it all in</b> to your purse (2½% wine money). Money in the purse is safe.</li>
-  <li>The board shows the chance that the crash comes before each evening. After evening VIII it is certain. When it comes, all paper settles at <b>3½ per cent</b>.</li>
-  <li>The last evening is the Alkmaar auction: cash only, doubled. Richest at the end wins.</li></ul>
-  <h3>Why are the common tulips worth most?</h3><p>The number on a card is how much that variety swelled on paper that winter, and how many of its papers are in the pile. Cheap bulbs sold by the pound swelled fifty times; the famous rarities hardly moved. Semper Augustus is 0: its owner would not sell.</p><p>Each card shows its number in two corners, and the small line under the name tells you how many of that tulip are in the deck: a 12 has twelve copies, so it is the likeliest to come twice.</p>
-  ${legendHTML()}
-  <div class="row"><button class="btn primary" data-v="x">Back to the table</button></div></div>`);
-  $('#mbox [data-v]').onclick = closeModal;
-}
-function loadSave(){ try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.v === 1 && s.players && s.players.length === 4 ? s : null; } catch(e){ return null; } }
-function showStart(){
-  let mode = SET.mode; const sv = loadSave();
-  const b = modal(`<div class="art" style="--cover:url(${ART.bg_cover})"><h1><small>Homo Ludens</small>Tulip 7</h1></div><div class="in">
-    <p style="font-family:'EB Garamond',serif;font-size:20px;margin-top:0">Amsterdam, winter 1636. Seven tulips, one tavern, and a market made of paper.</p>
-    <div class="modes"><div class="mode" data-m="winter" tabindex="0"><b>The winter of 1636</b><small>Eight evenings, a rising price index and a crash you can see coming. Cash in, or hold?</small></div>
-    <div class="mode" data-m="classic" tabindex="0"><b>The tavern game</b><small>Just the evenings, no winter and no crash: first to ${TARGET} points wins.</small></div></div>
-    <p style="font-size:14px;color:var(--muted)">You play against three traders from the archives: Joost van Cuyck (cautious), Andries de Busscher (steady) and Abraham van Meeckeren (greedy).</p>
-    <div class="row">${sv ? `<button class="btn primary" id="cont">Continue your ${sv.mode === 'winter' ? 'winter' : 'tavern game'}<small>${sv.mode === 'winter' ? (sv.alkmaar ? 'Alkmaar, the last evening' : 'Evening ' + ROMAN[sv.evening] + ', ' + EV[sv.evening].date) : 'Round ' + (sv.round + 1)}</small></button>` : ''}<button class="btn ${sv ? '' : 'primary'}" id="go">${sv ? 'New game' : 'Sit down at the table'}</button><button class="btn" id="rl">How to play</button></div></div>`, 'cover');
-  const sel = () => b.querySelectorAll('.mode').forEach(m => m.classList.toggle('sel', m.dataset.m === mode));
-  b.querySelectorAll('.mode').forEach(m => { m.onclick = () => { mode = m.dataset.m; sel(); }; m.onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); mode = m.dataset.m; sel(); } }; });
-  sel(); $('#go').onclick = () => { SET.mode = mode; saveSet(); closeModal(); start(mode); }; $('#rl').onclick = showRules;
-  if (sv) $('#cont').onclick = () => { closeModal(); start(sv.mode, sv); };
-}
-let runId = 0;
-const SAVE_KEY = 'tulip7.save.v1';
-async function start(mode, snap){
-  const my = ++runId;
-  ui = freshUI(); $('#log').innerHTML = '';
-  const players = [{name:'You', short:'You', human:true, style:'balanced', agent:Human}, ...RIVALS.map(r => ({...r, agent:Bot}))];
-  G = new T7.Game({mode, players, snap, emit: async (t, d) => { if (my !== runId) throw 'stale'; await onEvent(t, d); if (my !== runId) throw 'stale'; },
-    onSave: s => { if (my === runId) try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch(e){} }});
-  window.G = G;
-  render(); say(snap ? 'Welcome back. Your seat is still warm.' : 'Sit down. The wine is poured.');
-  if (snap) log('Game resumed from the start of the evening.');
-  try { await G.run(); } catch(e){ if (e !== 'stale') { console.error(e); } }
-}
-showStart();
+/*GAME*/
 </script>
 </body>
 </html>

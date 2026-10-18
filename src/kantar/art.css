@@ -20,6 +20,9 @@
 .ki.coin{background-image:var(--ka-coin)}.ki.light{background-image:var(--ka-light)}.ki.narh{background-image:var(--ka-narh)}.ki.burn{background-image:var(--ka-burn)}.ki.emblem{background-image:var(--ka-emblem)}
 h3[data-i18n="caravan"]::before,h3[data-i18n="burned"]::before{content:"";display:inline-block;width:30px;height:30px;margin:-8px 8px -8px 0;vertical-align:middle;background:center/contain no-repeat}
 h3[data-i18n="caravan"]::before{background-image:var(--ka-ic-caravan)}
+/* the caravan camel leads the incoming goods (it walks to the left, the goods follow) */
+#caravan{align-items:flex-end}
+#caravan::before{content:"";flex:none;width:66px;height:62px;margin:0 2px -2px -4px;background:var(--ka-caravan) center bottom/contain no-repeat;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
 h3[data-i18n="burned"]::before{background-image:var(--ka-burn)}
 .modeTag.narh::before{content:"";display:inline-block;width:16px;height:16px;margin:-3px 5px -3px -3px;vertical-align:middle;background:var(--ka-narh) center/contain no-repeat}
 .rp-ic{display:block;flex:none;width:44px;height:44px;background:center/contain no-repeat}
@@ -73,11 +76,11 @@ body.narrow .dish .card.tile+.card.tile{margin-left:calc(-18px - (var(--cz,1) - 
 .pan.suggest .dish{box-shadow:none!important}
 .pan .tag{bottom:-44px!important}
 body.narrow .pan .tag{bottom:-52px!important}
-/* Three Pans seal: the beam stays level and the third pile sits on the counter in front of the post, in the
-   pan's bowl (no chains). A footed brass tray (--ka-tray) replaces it when that art exists. */
+/* Three Pans seal: the beam stays level and the third pile goes on a footed brass tray (sini) on the counter,
+   in front of the post. */
 .scale.three{height:calc(470px*var(--f,1))}
 .scale.three .scaleIn{height:470px}
-.pan.M{left:calc(50% - 95px);top:320px;width:190px;height:84px;background:var(--ka-pan) center bottom/190px auto no-repeat;z-index:3}
-.pan.M .dish{bottom:12px;height:96px}
+.pan.M{left:calc(50% - 105px);top:318px;width:210px;height:102px;background:var(--ka-tray,var(--ka-pan)) center bottom/contain no-repeat;z-index:3}
+.pan.M .dish{bottom:52px;height:96px;left:10%;right:10%}
 .pan.M .tag{bottom:-40px!important}
 @media(prefers-reduced-motion:reduce){.beam,.pan{transition:none}.pan.droppable{animation:none}}

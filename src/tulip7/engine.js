@@ -12,7 +12,7 @@ const VARIETIES = [
   {n:8, id:'t08', name:'Gheele ende Roote van Leyden', hex:'#EE7417', ink:'#fff', note:"From 17.5 to 136.5 guilders in the five weeks before the crash."},
   {n:9, id:'t09', name:'Admirael de Man', hex:'#D92B23', ink:'#fff', note:"From 18 to 209 guilders in the five weeks before the crash."},
   {n:10, id:'t10', name:'Witte Croonen', hex:'#EDE6D3', ink:'#2a2018', note:"A cheap white tulip sold by the pound. From 2.2 to 57 in five weeks; by 1642 almost worthless again."},
-  {n:11, id:'t11', name:'Switsers', hex:'#F2B705', ink:'#2a2018', note:"Red and yellow like a Swiss guard's uniform. A pound fetched 1,100 guilders in Amsterdam on 6 February 1637: about three years of a master carpenter's pay."},
+  {n:11, id:'t11', name:'Switsers', hex:'#F2B705', ink:'#2a2018', note:"Red and yellow like a Swiss guard's uniform. A pound sold for 1,100 guilders in this very tavern on 6 February 1637: about the price of a reasonably nice house."},
   {n:12, id:'t12', name:'Gheele Croonen', hex:'#F7CE3E', ink:'#2a2018', note:"The commonest yellow tulip, sold by the pound. From 0.41 to 20.5 between 2 January and 5 February 1637: fifty times in five weeks."}
 ];
 const SPECIAL = {
@@ -27,7 +27,7 @@ const IDX  = [1, 1.25, 1.5, 2, 2.5, 3.5, 5, 7];
 const RISK = [0, 0, 0, .04, .08, .12, .20, .35];   // after evening VIII the crash is certain
 const EVENINGS = [
   {date:'Mid-November 1636', short:'Nov', news:"The bulbs are in the ground until June. From now on only paper changes hands in the taverns: promises to deliver at the lifting."},
-  {date:'22 November 1636', short:'Nov', news:"Jacob van Halmael buys 12,000 guilders' worth of bulbs and pays half of it in cash."},
+  {date:'22 November 1636', short:'Nov', news:"Jacob van Halmael, a Mennonite merchant weighing tulip deals, buys goods worth a full 12,000 guilders and pays half in cash."},
   {date:'Early December 1636', short:'Dec', news:"Haarlem's small-claims court hears more tulip cases every month."},
   {date:'Late December 1636', short:'Dec', news:"Some contracts have now changed hands five times. Nobody has seen the bulbs."},
   {date:'2 January 1637', short:'Jan', news:"New price lists for the year. The cheapest bulbs, sold by the pound, are on every slate."},
