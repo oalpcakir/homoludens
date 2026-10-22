@@ -55,6 +55,11 @@ Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` o
 - `build_kantar.py` — adds the shared head (meta tags, canonical, icon, analytics, feedback button) and writes `public/kantar/`, `public/og-kantar.jpg` and the portal plate (`ART` picks the home-page art).
 - Rules, AI, balance numbers, save keys and analytics events: see `kantar/STATUS.md`. `tests/kantar.test.mjs` checks the AI uses only public information.
 
+## tulip7/ (No. 6)
+- Sources: `ui.html` (styles and layout), `engine.js` (rules, winter, AI; no DOM, `node` can load it), `game.js` (table, animations, achievements, analytics), `art.js` (all art as WebP data URIs) and `carpet.b64`. `build_prototype.py` joins them into a standalone `prototype.html`; `build_tulip7.py` does the same with the shared head and writes `public/tulip7/`, `public/og-tulip7.jpg` and the portal plate (`plate.jpg`).
+- Art: `ART-BRIEF.html` (tulips and objects), `ART-BRIEF-UI.html` (card back, frame, logo, table, sign, seal) and `ART-BRIEF-ACH.html` (achievement tiles) give the prompts and export packs; `python3 merge_pack.py <pack>.html` writes the pack into `art.js` (packs are git-ignored).
+- Rules, balance, save keys, analytics events and history notes: `tulip7/STATUS.md` and `tulip7/TASARIM.md`.
+
 ## platform/ (itch.io and CrazyGames)
 - `build_platforms.py` makes all ten upload ZIPs from `public/` (`dist/platforms/<platform>/<game>-<platform>.zip`); `platform.js` is the adapter they share (SDK, saves, sound, gameplay events, ads, links). `npm run platforms` tests the packages with a mocked CrazyGames SDK. Settings for both stores and what is still open: `platform/README.md`.
 - `public/next.js` — the "next game" card at the end of every game (`<div data-hl-next>`); in itch packages it links to the site.

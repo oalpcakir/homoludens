@@ -1,5 +1,5 @@
 /* Homo Ludens "next game" card. Include with:
-   <script src="/next.js" defer data-game="borderlines|retourvloot|cupoftea|polder|kantar"></script>
+   <script src="/next.js" defer data-game="borderlines|retourvloot|cupoftea|polder|kantar|tulip"></script>
    Then put <div data-hl-next></div> anywhere in a game's end screen (static or added later): it is filled in
    automatically with one other game to play next. data-hl-lang="tr" gives Turkish labels.
    Choice: a game this browser has not played yet comes first; on a phone, games marked "devices": "desktop"
@@ -13,11 +13,12 @@
   var TARGET = BASE ? ' target="_blank" rel="noopener"' : '';
   // games that pair well, in order of preference
   var NEXT = {
-    borderlines: ['kantar', 'polder', 'cupoftea', 'retourvloot'],
-    retourvloot: ['cupoftea', 'kantar', 'polder', 'borderlines'],
-    cupoftea: ['retourvloot', 'kantar', 'borderlines', 'polder'],
-    polder: ['retourvloot', 'borderlines', 'kantar', 'cupoftea'],
-    kantar: ['borderlines', 'retourvloot', 'cupoftea', 'polder']
+    borderlines: ['kantar', 'tulip', 'polder', 'cupoftea', 'retourvloot'],
+    retourvloot: ['tulip', 'cupoftea', 'kantar', 'polder', 'borderlines'],
+    cupoftea: ['retourvloot', 'tulip', 'kantar', 'borderlines', 'polder'],
+    polder: ['tulip', 'retourvloot', 'borderlines', 'kantar', 'cupoftea'],
+    kantar: ['tulip', 'borderlines', 'retourvloot', 'cupoftea', 'polder'],
+    tulip: ['kantar', 'retourvloot', 'polder', 'borderlines', 'cupoftea']
   };
   // localStorage keys that mean "this browser has played it"
   var PLAYED = {
@@ -25,7 +26,8 @@
     retourvloot: /^retourvloot\.(v1|runs)$/,
     cupoftea: /^cupoftea\.v1$/,
     polder: /^polder\.(progress|run)\.v1$/,
-    kantar: /^kantar(\.stats\.v1|-game-v04)$/
+    kantar: /^kantar(\.stats\.v1|-game-v04)$/,
+    tulip: /^tulip7\.(save\.v1|record\.v1)$/
   };
   var T = {
     en: { kicker: 'Next at Homo Ludens', play: 'Play', all: 'All games', any: 'Any screen', desk: 'Best on a desktop', fresh: 'New to you' },

@@ -19,7 +19,7 @@
 // Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT (rate limit), SUBSCRIBERS (KV namespace).
 
 const KINDS = { idea: 'Idea', bug: 'Bug', history: 'Historical mistake', other: 'Other' };
-const GAMES = { portal: 'Portal', borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder', kantar: 'Kantar' };
+const GAMES = { portal: 'Portal', borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder', kantar: 'Kantar', tulip: 'Tulip 7' };
 const COLORS = { idea: 0x2c6a47, bug: 0x962f2a, history: 0x9a6a14, other: 0x26457d };
 const EMAIL_RE = /^[^\s@<>"',;]{1,64}@[^\s@<>"',;]{1,190}\.[a-z]{2,24}$/i;
 const PENDING_TTL = 7 * 24 * 3600;      // unconfirmed sign-ups disappear after a week

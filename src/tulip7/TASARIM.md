@@ -272,3 +272,16 @@ Görsel değişikliği iptal edildi (lale görselleri eski hâlinde; rozet renkl
 
 `ART-BRIEF-ACH.html`: 14 başarım + 1 boş "kilitli" taş için ChatGPT istemleri. Ortak format: **1630'ların renkli Hollanda duvar çinisi (majolika)**. O yıllarda Delft, Haarlem ve Rotterdam çinileri henüz mavi-beyaz değil, kobalt, okr, turuncu, bakır yeşili ve mangan moruyla renkliydi; laleler sevilen bir konuydu. Her taşta aynı çerçeve (ortada mavi çift halka, dört köşede aynı zambak süsü), halkanın içinde başarımın kendi sahnesi (Pauw tekliflere el kaldırıyor, kantarda soğan tartan tüccar, roemer kadehleriyle şerefe, yırtık sözleşmeye konan paralar, yel değirmeninin önünden uçan kâğıtlar, Haarlem belediyesinde terazide kâğıt ve birkaç sikke, Alkmaar müzayedesi, bira fıçıları yanında Van Meeckeren, basamaklı kalkanlı kanal evi, Menniste Bruyloft'un tabelası…). Yazı ve rakam yok.
 - Oyun hazır: paket `merge_pack.py` ile birleşince başarım sayfası ve bildirim, mühür yerine çiniyi gösterir; kilitli başarımlar `ach_locked` taşını, o yoksa çininin gri hâlini gösterir (sahte görsellerle denendi).
+
+## 14. Arayüz ve başarım görselleri oyunda (2026-10-23)
+
+ChatGPT paketleri (`tulip7-art-pack-ui.html`, `tulip7-art-pack-ach.html`) `merge_pack.py` ile `art.js`'e eklendi (WebP, küçültülmüş; prototip ~2,7 MB).
+- Kart arkası (Delft çini deseni, ortada lale): deste ve kapalı çekilen kartlar.
+- Kart çerçevesi: bütün kartların parşömen zemini (köşelerde altın süsler); kodla çizilen çift altın çizgi kaldırıldı.
+- Logo ("Tulip7", 7 lalenin sapı): üst çubuk ve açılış ekranı. Not: ChatGPT boşluksuz yazdı; bırakıldı.
+- Amblem: tarayıcı sekmesi simgesi.
+- Masa yüzeyi (tepeden halı): oyun masası.
+- Meyhane tabelası: üst çubukta tarih satırının yanında ve açılış ekranında (masanın üstüne konunca isimleri örtüyordu).
+- Mum mühür: başarım çinisi olmayan durumlar için yedek.
+- 14 başarım çinisi + boş kilitli taş: başarım sayfası ve bildirim.
+Test: üç tam otomatik oyun (kış 1366 px, meyhane 1280 px, kış 390 px), hata yok.

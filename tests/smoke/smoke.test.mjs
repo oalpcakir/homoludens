@@ -38,7 +38,7 @@ async function open(path, { viewport = { width: 1400, height: 900 }, storage } =
 }
 const store = page => page.evaluate(() => Object.fromEntries(Object.keys(localStorage).map(k => [k, localStorage.getItem(k)])));
 
-const PAGES = ['/', '/borderlines/', '/retourvloot/', '/cupoftea/', '/cupoftea/2/', '/cupoftea/3/', '/polder/', '/kantar/', '/privacy/'];
+const PAGES = ['/', '/borderlines/', '/retourvloot/', '/cupoftea/', '/cupoftea/2/', '/cupoftea/3/', '/polder/', '/kantar/', '/tulip7/', '/privacy/'];
 for (const p of PAGES) {
   test(`loads cleanly: ${p}`, async () => {
     const t = await open(p);

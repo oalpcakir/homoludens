@@ -58,5 +58,17 @@
     "image": "/og-kantar.jpg",
     "short": "A two-player duel in the Grand Bazaar of Istanbul. You divide three goods between two pans; your rival chooses.",
     "announce": "Istanbul, the Grand Bazaar. Saffron, silk, coffee and copper come to the stall over six rounds, and you share them with a rival merchant. You put three goods into the pans of a brass scale; your rival takes one pan and leaves you the other. Win the majority in a good to earn its price, but carry too much and you lose the light-load bonus. Two wax seals, a narh price that moves with supply, a teacher that explains the best move at every step, and your own stats. Easy to learn, hard to master; about 10 minutes a game, in English or Turkish, on any screen."
+  },
+  {
+    "id": "tulip",
+    "no": 6,
+    "version": "2026.10.23",
+    "title": "Tulip 7",
+    "url": "/tulip7/",
+    "devices": "any",
+    "length": "15 minutes",
+    "image": "/og-tulip7.jpg",
+    "short": "Amsterdam, winter 1636. Collect seven different tulips at a tavern table, write your winnings on paper and cash in before the crash.",
+    "announce": "Amsterdam, the winter of 1636, in the Menniste Bruyloft tavern. Take papers one at a time, each a promise for a tulip you have not seen: collect seven different ones for a full tulip book, but if the same tulip comes twice your whole evening goes up in smoke. Your winnings are written on paper and grow with a price index that rises every evening, until the crash of 3 February 1637 settles all paper at 3½ per cent. Cash in or hold? Three traders from the archives sit at the table with you, and fourteen achievements tell what really happened. About 15 minutes, on any screen."
   }
 ]

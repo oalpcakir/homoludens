@@ -84,3 +84,35 @@ body.narrow .pan .tag{bottom:-52px!important}
 .pan.M .dish{bottom:52px;height:96px;left:10%;right:10%}
 .pan.M .tag{bottom:-40px!important}
 @media(prefers-reduced-motion:reduce){.beam,.pan{transition:none}.pan.droppable{animation:none}}
+
+/* pans swing from their rings (JS animates `rotate`) */
+.pan.L,.pan.R{transform-origin:50% 3px}
+
+/* the teacher is Kâtip Rıza Efendi: his portrait sits at the left of the suggestion box */
+.teacher.adv{position:relative;padding-left:88px!important;min-height:86px}
+.teacher.adv::before{content:"";position:absolute;left:16px;top:16px;width:58px;height:58px;border-radius:50%;background:var(--ka-advisor) 50% 18%/cover no-repeat;box-shadow:0 0 0 2px rgba(127,199,187,.8),0 3px 8px rgba(0,0,0,.45)}
+@media(max-width:600px){.teacher.adv{padding-left:66px!important}.teacher.adv::before{left:12px;top:14px;width:42px;height:42px}}
+
+/* layout pass 2026-10-23: larger pans and cards; the whole scale sits 17 px higher (the finial reaches up toward the stall) */
+.scale{height:calc(404px*var(--f,1))}
+.scaleIn{height:404px}
+.beam{top:-30px}
+.pan{top:71px}
+.scaleIn::after{top:51px}
+.scale.three{height:calc(452px*var(--f,1))}
+.scale.three .scaleIn{height:452px}
+.pan.M{top:301px}
+.pan{width:196px;height:249px}
+.pan.L{left:calc(50% - 328px)}
+.pan.R{left:calc(50% + 132px)}
+.dish{height:112px}
+.dish .card.tile{--ts:calc(76px*var(--cz,1))}
+.dish .card.tile+.card.tile{margin-left:4px}
+.dish:has(.card.tile:nth-child(3)) .card.tile+.card.tile{margin-left:-30px}
+body.narrow .dish .card.tile+.card.tile{margin-left:calc(-18px - (var(--cz,1) - 1)*50px)}
+body.narrow .dish:has(.card.tile:nth-child(3)) .card.tile+.card.tile{margin-left:calc(-30px - (var(--cz,1) - 1)*60px)}
+.pan.M .dish .card.tile{--ts:calc(70px*var(--cz,1))}
+/* the rival's pick: a warm glow on the pan he takes, a cool one on the pan you keep */
+.pan.aipick{filter:drop-shadow(0 0 11px rgba(240,144,126,.95)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
+.pan.aikeep{filter:drop-shadow(0 0 9px rgba(143,208,165,.85)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
+.pan.aipick .dish,.pan.aikeep .dish{outline:0!important}

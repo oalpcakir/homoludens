@@ -1,4 +1,3 @@
-s=open('ui.html').read()
-art=open('art.js').read()+'\nconst CARPET="'+open('carpet.b64').read().strip()+'";'
-s=s.replace('/*ART*/',art).replace('/*ENGINE*/',open('engine.js').read()).replace('/*GAME*/',open('game.js').read())
-open('prototype.html','w').write(s); print(len(s)//1024,'KB')
+"""Kept for old habits: builds the standalone prototype. The site page is built by build_tulip7.py."""
+import runpy, os
+runpy.run_path(os.path.join(os.path.dirname(os.path.abspath(__file__)), "build_prototype.py"), run_name="__main__")

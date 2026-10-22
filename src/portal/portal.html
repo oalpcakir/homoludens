@@ -134,8 +134,6 @@ footer a { color: var(--ink-soft); }
 @media (max-width: 960px) and (min-width: 721px) {
   .games { grid-template-columns: 1fr 1fr; }
   .game.top, .game.pair { grid-column: auto; }
-  .game.top:nth-child(3) { grid-column: 1 / -1; grid-template-columns: 1.15fr 1fr; grid-template-rows: auto; }
-  .game.top:nth-child(3) .plate { border-bottom: 0; border-right: 1px solid var(--rule); aspect-ratio: auto; min-height: 100%; }
 }
 @media (max-width: 720px) {
   .wrap { padding-block: 28px 32px; padding-inline: 16px; }
@@ -162,6 +160,34 @@ footer a { color: var(--ink-soft); }
     <span class="eyebrow" id="gamesLabel">The games</span>
     <div class="games">
       <article class="game top">
+        <a class="plate" href="/tulip7/" data-from="card" aria-label="Play Tulip 7">
+          <img src="/tulip7/img/portal-plate.jpg" alt="Flamed tulips, contracts and coins flying over a tavern table in Amsterdam (art made for the game)" loading="lazy">
+          <img class="shot" src="/shots/tulip7.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
+          <span class="cap">Winter 1636 · A tavern in Amsterdam</span>
+        </a>
+        <div class="body">
+          <span class="numeral">No. 6 · New</span>
+          <h3>Tulip 7</h3>
+          <p>Amsterdam, winter 1636. Take tulip papers one by one at a tavern table: seven different ones fill your tulip book, a second copy burns the evening. Then cash in your paper before the crash.</p>
+          <div class="tags"><span class="tag">Push your luck</span><span class="tag">15-minute game</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
+          <div class="row"><a class="btn" href="/tulip7/" data-from="card">Play</a></div>
+        </div>
+      </article>
+      <article class="game top">
+        <a class="plate" href="/kantar/" data-from="card" aria-label="Play Kantar">
+          <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi" loading="lazy">
+          <img class="shot" src="/shots/kantar.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
+          <span class="cap">19th c. · The Grand Bazaar, Istanbul</span>
+        </a>
+        <div class="body">
+          <span class="numeral">No. 5</span>
+          <h3>Kantar</h3>
+          <p>A two-player duel in the Grand Bazaar of Istanbul. Put three goods on a brass scale; your rival takes one pan and you keep the other. A teacher shows the best move while you learn.</p>
+          <div class="tags"><span class="tag">Card duel</span><span class="tag">10-minute game</span><span class="tag">English · Türkçe</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
+          <div class="row"><a class="btn" href="/kantar/" data-from="card">Play</a></div>
+        </div>
+      </article>
+      <article class="game top">
         <a class="plate" href="/borderlines/" data-from="card" aria-label="Play Borderlines">
           <svg viewBox="0 0 {{W}} {{H}}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The Roman Empire in 1 BC, painted on a map of the Mediterranean">
             <path class="land" d="{{LAND}}"/>
@@ -180,20 +206,6 @@ footer a { color: var(--ink-soft); }
         </div>
       </article>
       <article class="game top">
-        <a class="plate" href="/kantar/" data-from="card" aria-label="Play Kantar">
-          <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi" loading="lazy">
-          <img class="shot" src="/shots/kantar.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
-          <span class="cap">19th c. · The Grand Bazaar, Istanbul</span>
-        </a>
-        <div class="body">
-          <span class="numeral">No. 5 · New</span>
-          <h3>Kantar</h3>
-          <p>A two-player duel in the Grand Bazaar of Istanbul. Put three goods on a brass scale; your rival takes one pan and you keep the other. A teacher shows the best move while you learn.</p>
-          <div class="tags"><span class="tag">Card duel</span><span class="tag">10-minute game</span><span class="tag">English · Türkçe</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
-          <div class="row"><a class="btn" href="/kantar/" data-from="card">Play</a></div>
-        </div>
-      </article>
-      <article class="game top">
         <a class="plate" href="/polder/" data-from="card" aria-label="Play Polder">
           <img src="/polder/img/portal-plate.jpg" alt="The Windmill at Wijk bij Duurstede, painted by Jacob van Ruisdael around 1670" loading="lazy">
           <img class="shot" src="/shots/polder.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
@@ -208,7 +220,7 @@ footer a { color: var(--ink-soft); }
           <div class="row"><a class="btn" href="/polder/" data-from="card">Play</a></div>
         </div>
       </article>
-      <article class="game pair">
+      <article class="game top">
         <a class="plate" href="/retourvloot/" data-from="card" aria-label="Play Retourvloot">
           <img src="/retourvloot/img/portal-plate.jpg" alt="The Castle of Batavia, painted by Andries Beeckman around 1661" loading="lazy">
           <img class="shot" src="/shots/retourvloot.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
@@ -223,7 +235,7 @@ footer a { color: var(--ink-soft); }
           <div class="row"><a class="btn" href="/retourvloot/" data-from="card">Play</a></div>
         </div>
       </article>
-      <article class="game pair">
+      <article class="game top">
         <a class="plate" href="/cupoftea/" data-from="card" aria-label="Play A Cup of Tea">
           <img src="/cupoftea/img/portal-plate.jpg" alt="The Flor de Cuba sugar estate in Cuba, with the chimneys of its boiling houses; lithograph by Eduardo Laplante, 1857" loading="lazy">
           <img class="shot" src="/shots/cupoftea.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
@@ -282,6 +294,14 @@ footer a { color: var(--ink-soft); }
         <div class="meta" id="kaMeta"></div>
       </div>
       <a class="btn" id="kaGo" href="/kantar/" data-from="today">Continue</a>
+    </div>
+    <div class="today" id="tuToday" hidden>
+      <div>
+        <div class="eyebrow">Tulip 7 · Your winter</div>
+        <h2 id="tuTitle">Evening I</h2>
+        <div class="meta" id="tuMeta"></div>
+      </div>
+      <a class="btn" id="tuGo" href="/tulip7/" data-from="today">Continue</a>
     </div>
   </section>
 
@@ -475,17 +495,43 @@ footer a { color: var(--ink-soft); }
     a.addEventListener("click", function () { track("portal_play", { game: "kantar", from: a.getAttribute("data-from") }); });
   });
 
+  // Tulip 7: a game in progress (the game saves at the start of each evening) and the record it writes at the end
+  var TS = get("tulip7.save.v1");
+  if (TS && TS.v === 1 && TS.players && TS.players[0]) {
+    var TIDX = [1, 1.25, 1.5, 2, 2.5, 3.5, 5, 7], TROM = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"], tMe = TS.players[0];
+    var tF = function (n) { return "f" + Math.round(n || 0).toLocaleString("en-US"); };
+    if (TS.mode === "winter") {
+      document.getElementById("tuTitle").textContent = TS.alkmaar ? "Alkmaar, the last evening" : "Evening " + TROM[TS.evening] + " of the winter";
+      document.getElementById("tuMeta").innerHTML = "Purse <b>" + tF(tMe.purse) + "</b> · " + (TS.crashed ? "settled <b>" + tF(tMe.settled) : "paper <b>" + tF((tMe.units || 0) * TIDX[TS.evening])) + "</b>";
+    } else {
+      document.getElementById("tuTitle").textContent = "The tavern game, round " + ((TS.round || 0) + 1);
+      document.getElementById("tuMeta").innerHTML = "Your total <b>" + (tMe.total || 0) + "</b> of 200";
+    }
+    document.getElementById("tuToday").hidden = false;
+  }
+  var TR = get("tulip7.record.v1");
+  if (TR && TR.v === 1 && TR.played) {
+    tiles.push(TR.winters
+      ? ["<b>" + (TR.wintersWon || 0) + "/" + TR.winters + "</b><span>Tulip winters won</span><small>" + (TR.ach || 0) + "/14 achievements</small>"]
+      : ["<b>" + (TR.won || 0) + "/" + TR.played + "</b><span>Tulip 7 games won</span><small>" + (TR.ach || 0) + "/14 achievements</small>"]);
+    document.getElementById("record").innerHTML = tiles.map(function (x) { return "<div>" + x[0] + "</div>"; }).join("");
+    document.getElementById("recordSec").hidden = false;
+  }
+  document.querySelectorAll("a[href='/tulip7/']").forEach(function (a) {
+    a.addEventListener("click", function () { track("portal_play", { game: "tulip", from: a.getAttribute("data-from") }); });
+  });
+
   // New games by email (shown only when the server side is configured)
   var SITE_KEY = "0x4AAAAAAFRMZwiuLLLgZLqX", token = null, wid = null;
   // the "continue" strip: one link per game with something in progress (from the cards below)
   (function () {
     var bar = document.getElementById("resumeBar"), n = 0;
-    [["rvToday", "rvPlay", "Retourvloot"], ["polToday", "polGo", "Polder"], ["teaToday", "teaGo", "A Cup of Tea"], ["kaToday", "kaGo", "Kantar"]].forEach(function (x) {
+    [["rvToday", "rvPlay", "Retourvloot"], ["polToday", "polGo", "Polder"], ["teaToday", "teaGo", "A Cup of Tea"], ["kaToday", "kaGo", "Kantar"], ["tuToday", "tuGo", "Tulip 7"]].forEach(function (x) {
       var box = document.getElementById(x[0]), go = document.getElementById(x[1]);
       if (!box || box.hidden || !go) return;
       var a = document.createElement("a"); a.href = go.getAttribute("href"); a.setAttribute("data-from", "resume");
       a.textContent = x[2] + " →"; bar.appendChild(a); n++;
-      a.addEventListener("click", function () { track("portal_play", { game: x[1].replace(/Go|Play/, "").replace("rv", "retourvloot").replace("pol", "polder").replace("tea", "cupoftea").replace("ka", "kantar"), from: "resume" }); });
+      a.addEventListener("click", function () { track("portal_play", { game: x[1].replace(/Go|Play/, "").replace("rv", "retourvloot").replace("pol", "polder").replace("tea", "cupoftea").replace("ka", "kantar").replace(/^tu$/, "tulip"), from: "resume" }); });
     });
     if (n) bar.hidden = false;
     var dt = document.getElementById("dTitle"), dm = document.getElementById("dMeta"), note = document.getElementById("blCardNote");

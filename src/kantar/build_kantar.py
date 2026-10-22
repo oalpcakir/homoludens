@@ -55,9 +55,9 @@ ART_VARS = {  # css variable -> art file
     # optional: used when the file exists (art.css falls back to ka_end / the pan bowl)
     "end-win-cirak": "ka_end_win_cirak", "end-lose-cirak": "ka_end_lose_cirak", "end-draw-cirak": "ka_end_draw_cirak",
     "end-win-usta": "ka_end_win_usta", "end-lose-usta": "ka_end_lose_usta", "end-draw-usta": "ka_end_draw_usta",
-    "tray": "ka_tray", "caravan": "ka_caravan",
+    "tray": "ka_tray", "caravan": "ka_caravan", "advisor": "ka_advisor",
 }
-OPTIONAL = {"end-win-cirak", "end-lose-cirak", "end-draw-cirak", "end-win-usta", "end-lose-usta", "end-draw-usta", "tray", "caravan"}
+OPTIONAL = {"end-win-cirak", "end-lose-cirak", "end-draw-cirak", "end-win-usta", "end-lose-usta", "end-draw-usta", "tray", "caravan", "advisor"}
 ART_VARS = {v: f for v, f in ART_VARS.items() if v not in OPTIONAL or os.path.exists(os.path.join(H, "art", f + ".webp"))}
 _art = (":root{" + ";".join(f"--ka-{v}:url(data:image/webp;base64,{_b64(f + '.webp')})" for v, f in ART_VARS.items()) + "}\n"
         + open(os.path.join(H, "art.css"), encoding="utf-8").read())

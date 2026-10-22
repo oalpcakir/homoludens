@@ -8,6 +8,9 @@ document.body.style.setProperty('--bg', `url(${ART.bg_tavern})`);
 $('#table').style.setProperty('--carpet', `url(${ART.ui_table || CARPET})`);
 if (ART.ui_cardback) document.documentElement.style.setProperty('--cardback', `url(${ART.ui_cardback}) center/cover`);
 if (ART.ui_frame) document.documentElement.style.setProperty('--frame', `url(${ART.ui_frame}) center/100% 100%`);
+if (ART.ui_frame) document.documentElement.classList.add('has-frame');
+if (ART.ui_emblem){ const l = document.createElement('link'); l.rel = 'icon'; l.href = ART.ui_emblem; document.head.appendChild(l); }
+if (ART.ui_sign){ const s = document.createElement('img'); s.className = 'hsign'; s.src = ART.ui_sign; s.alt = 'The sign of the Menniste Bruyloft'; s.title = 'The Menniste Bruyloft, Oude Brugsteeg, Amsterdam'; $('#where').before(s); }
 if (ART.ui_seal) document.documentElement.style.setProperty('--sealimg', `url(${ART.ui_seal}) center/cover`);
 if (ART.ui_logo) $('#brand').innerHTML = `<a class="hl" href="/">Homo Ludens</a><img class="logo" src="${ART.ui_logo}" alt="Tulip 7">`;
 $('#hostImg').src = ART.c_theunisz;
@@ -28,6 +31,18 @@ $('#bAch').onclick = () => showAchievements();
 $('#bNew').onclick = () => showStart();
 syncBtns();
 const pace = (k = 1) => sleep((SET.fast ? 260 : 680) * k);
+/* Analytics (the site adds PostHog; standalone this does nothing). Event names map to the shared ones in posthog_head.html. */
+function track(ev, props){ try { if (window.posthog && posthog.capture) posthog.capture(ev, Object.assign({mode:G ? G.mode : SET.mode}, props || {})); } catch(e){} }
+/* A small summary the Homo Ludens portal reads for "Your record". */
+function saveRecord(win, worth){
+  try {
+    const r = JSON.parse(localStorage.getItem('tulip7.record.v1')) || {v:1, played:0, won:0, winters:0, wintersWon:0, best:0};
+    r.played++; if (win) r.won++;
+    if (G.mode === 'winter'){ r.winters++; if (win) r.wintersWon++; r.best = Math.max(r.best || 0, Math.round(worth)); }
+    r.ach = Object.keys(ACHS).length; r.last = Date.now();
+    localStorage.setItem('tulip7.record.v1', JSON.stringify(r));
+  } catch(e){}
+}
 
 /* ---------- sound (Web Audio, no files) ---------- */
 let AC = null;
@@ -165,7 +180,7 @@ const achQueue = [];
 function unlock(id){
   if (ACHS[id]) return; const a = ACH.find(x => x.id === id); if (!a) return;
   ACHS[id] = new Date().toISOString().slice(0, 10); try { localStorage.setItem('tulip7.ach', JSON.stringify(ACHS)); } catch(e){}
-  log(`<b>Achievement:</b> ${esc(a.t)}`); achQueue.push(a); if (achQueue.length === 1) showAchToast();
+  log(`<b>Achievement:</b> ${esc(a.t)}`); track('tulip_achievement', {id}); achQueue.push(a); if (achQueue.length === 1) showAchToast();
 }
 /* Achievement art: a painted Dutch tile per achievement once the tile pack is merged (ach_<id>, ach_locked); until then a wax seal. */
 const sealHTML = (a, locked) => {
@@ -291,7 +306,7 @@ function render(){
   setPart($('#deckPile'), backHTML() + backHTML() + (G.draw.length ? backHTML() : ''));
   $('#deckN').textContent = G.draw.length; $('#discN').textContent = G.discard.length;
   const ev = G.alkmaar ? 'Alkmaar, 5 February 1637' : G.mode === 'winter' ? `Evening ${ROMAN[G.evening]} · ${EV[G.evening].date}` : `Round ${G.round} · first to ${TARGET}`;
-  $('#where').textContent = ev + (G.alkmaar ? '' : ' · Menniste Bruyloft, Amsterdam');
+  $('#where').textContent = ev + (G.alkmaar || ART.ui_sign ? '' : ' · Menniste Bruyloft, Amsterdam');
   animateNew();
 }
 /* Every new card flies in from the pile; a drawn card is turned over where it lands. */
@@ -363,7 +378,7 @@ const Human = {
   hitOrStay(g, p){
     return new Promise(res => {
       say(pickLine('turnYou', {}));
-      ui.turn = a => { res(a === 'hit' ? 'hit' : 'stay'); render(); };
+      ui.turn = a => { if (a === 'hit' && !ui.firstDraw){ ui.firstDraw = true; track('tulip_first_draw', {}); } res(a === 'hit' ? 'hit' : 'stay'); render(); };
       tip('first'); if (g.bustOdds(p) >= .2) tip('danger'); if (p.nums.length >= 5) tip('book');
       render();
     });
@@ -395,6 +410,7 @@ async function onEvent(t, d){
   switch (t){
     case 'evening':
       ui.after = false; G.players.forEach(x => { x.status = 'idle'; x.nums = []; }); render();
+      track('tulip_evening', {evening:d.e + 1, worth:Math.round(G.standing(G.players[0]))});
       toast(`Evening ${ROMAN[d.e]} · ${EV[d.e].date}`, 1600); say(EV[d.e].news); log(`<b>Evening ${ROMAN[d.e]}</b>: index ×${IDX[d.e]}.`);
       await pace(1.6); break;
     case 'roundStart': ui.blown = new Set(); ui.after = false; render(); await pace(.4); break;
@@ -449,6 +465,7 @@ async function onEvent(t, d){
       render(); await pace(.4); break;
     case 'cashoutDone': await pace(1.1); break;
     case 'crash':
+      track('tulip_crash', {after:G.crashAfter + 1, paper:me.atCrash});
       if (me.atCrash >= 1500) unlock('settle');
       if (ui.st.soldAt === G.crashAfter && G.crashAfter < IDX.length - 1 && me.atCrash === 0) unlock('guarantor');
       await crashScene(); break;
@@ -458,6 +475,9 @@ async function onEvent(t, d){
       const best = Math.max(...G.players.map(x => G.standing(x)));
       if (G.mode === 'winter'){ if (G.standing(me) >= 4000) unlock('the37'); if (G.standing(me) === best) unlock('house'); }
       else if (me.total === best) unlock('tavern');
+      { const rank = 1 + G.players.filter(x => G.standing(x) > G.standing(me)).length, worth = G.standing(me);
+        track('tulip_game_end', {result:rank === 1 ? 'win' : 'lose', rank, worth:Math.round(worth), rounds:G.round, crash_after:G.mode === 'winter' ? G.crashAfter + 1 : null, achievements:Object.keys(ACHS).length});
+        saveRecord(rank === 1, worth); }
       render(); await pace(1); await endScene(); break; }
     case 'resume': render(); await pace(.5); break;
   }
@@ -518,7 +538,7 @@ async function endScene(){
     <div class="src">Sources: Peter Garber, "Tulipmania" (1989); Anne Goldgar, <i>Tulipmania</i> (2007).</div></div>` : '';
   const n = ACH.filter(a => ACHS[a.id]).length;
   const v = await ask(`<div class="kick">${G.mode === 'winter' ? 'The winter of 1636–37' : 'Game over'}</div><h2>${win ? 'You finish richest.' : esc(P[0].name) + ' finishes richest.'}</h2>
-    <table>${rows}</table>${mine}${facts}<div class="row"><button class="btn primary" data-v="again">Play again</button><button class="btn" data-v="ach">Achievements (${n}/${ACH.length})</button><button class="btn" data-v="menu">Change mode</button></div>`);
+    <table>${rows}</table>${mine}${facts}<div data-hl-next></div><div class="row"><button class="btn primary" data-v="again">Play again</button><button class="btn" data-v="ach">Achievements (${n}/${ACH.length})</button><button class="btn" data-v="menu">Change mode</button></div>`);
   if (v === 'again') start(G.mode); else if (v === 'ach'){ G = null; showAchievements(); } else showStart();
 }
 function legendHTML(){ return `<div class="legend">${V.slice().reverse().map(v => cardHTML({k:'num', v:v.n, uid:'L' + v.n})).join('')}</div>`; }
@@ -549,7 +569,8 @@ function showStart(){
   let mode = SET.mode; const sv = loadSave();
   const people = [...RIVALS.map(r => ({name:r.name, img:r.img, role:STYLES[r.style].label, info:r.info})), {name:'Jan Theunisz', img:'c_theunisz', role:'The host', info:HOST_INFO}];
   const head = ART.ui_logo ? `<img class="logo" src="${ART.ui_logo}" alt="Tulip 7">` : `<h1><small>Homo Ludens</small>Tulip 7</h1>`;
-  const b = modal(`<div class="art" style="--cover:url(${ART.bg_cover})">${head}</div><div class="in">
+  const sign = ART.ui_sign ? `<img class="sign" src="${ART.ui_sign}" alt="">` : '';
+  const b = modal(`<div class="art" style="--cover:url(${ART.bg_cover})">${head}${sign}</div><div class="in">
     <p style="font-family:'EB Garamond',serif;font-size:20px;margin-top:0">Amsterdam, winter 1636. Seven tulips, one tavern, and a market made of paper.</p>
     <div class="modes"><div class="mode" data-m="winter" tabindex="0"><b>The winter of 1636</b><small>Eight evenings, a rising price index and a crash you can see coming. Cash in, or hold?</small></div>
     <div class="mode" data-m="classic" tabindex="0"><b>The tavern game</b><small>Just the evenings, no winter and no crash: first to ${TARGET} points wins.</small></div></div>
@@ -579,6 +600,7 @@ async function start(mode, snap){
   window.G = G;
   buildSeats(); render(); say(snap ? 'Welcome back. Your seat is still warm.' : 'Sit down. The wine is poured.');
   if (snap) log('Game resumed from the start of the evening.');
+  track(snap ? 'tulip_resume' : 'tulip_game_start', {mode});
   try { await G.run(); } catch(e){ if (e !== 'stale') { console.error(e); } }
 }
 showStart();
