@@ -82,6 +82,7 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
     <button data-tab="tea"><span data-icon="cupoftea"></span>A Cup of Tea</button>
     <button data-tab="pd"><span data-icon="polder"></span>Polder</button>
     <button data-tab="ka"><span data-icon="kantar"></span>Kantar</button>
+    <button data-tab="tu"><span data-icon="tulip"></span>Tulip 7</button>
     <button data-tab="main">Email</button>
   </nav>
 
@@ -91,6 +92,7 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
   <section class="pane" id="tea" hidden></section>
   <section class="pane" id="pd" hidden></section>
   <section class="pane" id="ka" hidden></section>
+  <section class="pane" id="tu" hidden></section>
 
   <section class="pane" id="bl" hidden>
     <div class="row" style="justify-content:space-between;align-items:baseline">
@@ -191,8 +193,8 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
   }
   document.addEventListener('click', function (e) { var b = e.target.closest('button[data-fresh]'); if (b) loadGame(b.dataset.fresh, true); });
 
-  var TITLES = { ov: 'Overview · whole site', vs: 'Visitors', rv: 'Retourvloot', tea: 'A Cup of Tea', pd: 'Polder', ka: 'Kantar' };
-  var GAMES = { ov: 'overview', vs: 'visitors', rv: 'retourvloot', tea: 'cupoftea', pd: 'polder', ka: 'kantar' };
+  var TITLES = { ov: 'Overview · whole site', vs: 'Visitors', rv: 'Retourvloot', tea: 'A Cup of Tea', pd: 'Polder', ka: 'Kantar', tu: 'Tulip 7' };
+  var GAMES = { ov: 'overview', vs: 'visitors', rv: 'retourvloot', tea: 'cupoftea', pd: 'polder', ka: 'kantar', tu: 'tulip' };
   function loadGame(tab, fresh) {
     var el = $(tab);
     el.innerHTML = head(TITLES[tab], tab) + '<p class="slog">Loading…</p>';
@@ -202,14 +204,15 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
     }).catch(function () { el.innerHTML = head(TITLES[tab], tab) + '<p class="slog">Could not load stats.</p>'; });
   }
 
-  var GAME_NAMES = { borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder', kantar: 'Kantar' };
+  var GAME_NAMES = { borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder', kantar: 'Kantar', tulip: 'Tulip 7' };
   // ---------- icons: game glyphs, country flags, site logos ----------
   var GAME_SVG = {
     borderlines: '<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/>',
     retourvloot: '<path d="M3 16h18l-2.5 4h-13z"/><path d="M12 3v13"/><path d="M12 4l6 9h-6"/><path d="M12 6l-5 7h5"/>',
     cupoftea: '<path d="M4 10h12v4a6 6 0 0 1-12 0z"/><path d="M16 11h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3c-1 1.5 1 2.5 0 4M12 3c-1 1.5 1 2.5 0 4"/>',
     polder: '<path d="M10 21l1-9h2l1 9z"/><path d="M12 11L6 5M12 11l6-6M12 11l-6 6M12 11l6 6"/><path d="M3 21h18"/>',
-    kantar: '<path d="M12 3v17M8 20h8M5 6h14"/><path d="M5 6l-3 7h6zM19 6l-3 7h6z"/><path d="M2 13a3 3 0 0 0 6 0M16 13a3 3 0 0 0 6 0"/>'
+    kantar: '<path d="M12 3v17M8 20h8M5 6h14"/><path d="M5 6l-3 7h6zM19 6l-3 7h6z"/><path d="M2 13a3 3 0 0 0 6 0M16 13a3 3 0 0 0 6 0"/>',
+    tulip: '<path d="M7 4l2.5 3L12 3l2.5 4L17 4v6a5 5 0 0 1-10 0z"/><path d="M12 15v6M12 19c-2-2.5-4.5-3-6-2.5M12 18c1.5-2 3.5-2.5 5-2"/>'
   };
   function gameIcon(g) { return GAME_SVG[g] ? '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + GAME_SVG[g] + '</svg>' : ''; }
   function gameCell(g) { return gameIcon(g) + esc(GAME_NAMES[g] || g || '?'); }
@@ -243,7 +246,7 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
       var h = tiles([[t.visitors || 0, 'visitors today'], [sum('visitors'), 'visitors, last 7 days', 'Each day\'s visitors added up, so someone who came on two days counts twice'], [d.reduce(function (a, r) { return a + (r.signups || 0); }, 0), 'email sign-ups']]);
       h += '<div class="tbl" style="margin-top:14px">' + table('Per day (Amsterdam time)', d, [
         ['date', 'Date', function (v) { var p = v.split('-'); return new Date(+p[0], p[1] - 1, +p[2]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }],
-        ['visitors', 'Visitors'], ['portal', 'Portal'], ['borderlines', 'Borderlines'], ['retourvloot', 'Retourvloot'], ['cupoftea', 'Tea'], ['polder', 'Polder'], ['kantar', 'Kantar'], ['signups', 'Sign-ups']
+        ['visitors', 'Visitors'], ['portal', 'Portal'], ['borderlines', 'Borderlines'], ['retourvloot', 'Retourvloot'], ['cupoftea', 'Tea'], ['polder', 'Polder'], ['kantar', 'Kantar'], ['tulip', 'Tulip 7'], ['signups', 'Sign-ups']
       ], 'Visitors = anyone who opened any page. Game columns = people who started or resumed a game that day.') + '</div>';
       h += '<div class="grid">' +
         table('Where visitors come from', j.sources, [['source', 'Source', function (v) { return sourceCell(srcName(v), v); }, false, true], ['visitors', 'Visitors']]) +
@@ -314,6 +317,28 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
         ['players', 'People'], ['starts', 'Games started'], ['ends', 'Finished'], ['ends', 'Done %', function (v, r) { return pct(v, r.starts); }]]) + '</div>';
       return h;
     },
+    tu: function (j) {
+      var f = (j.funnel || [])[0] || {}, MODE = { winter: 'Winter 1636–37', classic: 'Tavern game' };
+      var ACH = { pauw: "Dr Pauw's tulip", book: 'A tulip book', pound: 'Pound goods', wijnkoop: 'Wine money', rouwkoop: 'Regret money', broken: 'The breaking virus', windhandel: 'Windhandel', fivetimes: 'Five times sold', guarantor: 'Not content with the guarantor', settle: 'Three and a half per cent', alkmaar: "The orphans' auction", the37: 'One of the 37', house: 'A reasonably nice house', tavern: 'The Menniste Bruyloft' };
+      var FL = function (v) { return v == null ? '–' : 'f' + Math.round(v).toLocaleString('en-GB'); };
+      var MW = function (v, r) { return r.mode === 'classic' ? (v == null ? '–' : v + ' pts') : FL(v); };
+      var h = tiles([[f.players || 0, 'started a game'], [f.firstDrawers || 0, 'drew a first card'], [f.finishers || 0, 'finished one', 'People; ' + (f.ends || 0) + ' games finished of ' + (f.starts || 0) + ' started'],
+        [pct(f.ends, f.starts), 'of games finished'], [f.resumes || 0, 'resumed a saved game'], [pct(f.wins, f.ends), 'player win rate', 'Four at the table, so about 25–33% is fair'],
+        [f.achievers || 0, 'unlocked an achievement', (f.achievements || 0) + ' unlocks']]);
+      h += '<div class="tbl" style="margin-top:14px">' +
+        table('By mode', j.modes, [['mode', 'Mode', function (v) { return MODE[v] || v; }], ['players', 'People'], ['starts', 'Started'], ['games', 'Finished'], ['games', 'Done %', function (v, r) { return pct(v, r.starts); }],
+          ['wins', 'Won'], ['wins', 'Win %', function (v, r) { return pct(v, r.games); }], ['rank', 'Avg place'], ['worth', 'Avg worth', MW], ['medianWorth', 'Median worth', MW], ['rounds', 'Avg rounds']],
+          'Worth is guilders in the winter and points in the tavern game. Bot balance (3,000 winters): cautious 33%, steady 21% each, greedy 25%.') + '</div>';
+      h += '<div class="grid">' +
+        table('Winter: evenings reached', j.evenings, [['evening', 'Evening'], ['players', 'People'], ['games', 'Games'], ['worth', 'Avg worth', FL], ['medianWorth', 'Median', FL]], 'Counted when an evening ends. The drop between rows is where people stop.') +
+        table('Winter: the crash', j.crash, [['after', 'After evening'], ['games', 'Games'], ['caught', 'Held paper', function (v, r) { return pct(v, r.games); }], ['paper', 'Avg paper', FL]], 'Paper held when the crash came; it settles at 3.5%.') +
+        table('Games finished per person', j.depth, [['games', 'Games'], ['players', 'People']], 'People who started at least once; 0 = never finished a game.') + '</div>';
+      h += '<div class="grid">' + table('Achievements', j.achievements, [['id', 'Achievement', function (v) { return ACH[v] || v; }], ['players', 'People'], ['n', 'Unlocks']]) + '</div>';
+      h += '<div class="tbl" style="margin-top:14px">' + table('Per day (Amsterdam time)', j.daily, [
+        ['date', 'Date', function (v) { var p = v.split('-'); return new Date(+p[0], p[1] - 1, +p[2]).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }); }],
+        ['players', 'People'], ['starts', 'Games started'], ['ends', 'Finished'], ['ends', 'Done %', function (v, r) { return pct(v, r.starts); }]]) + '</div>';
+      return h;
+    },
   };
 
 
@@ -336,7 +361,7 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
     if (/discord(app)?\.com$/.test(d)) return 'Discord';
     return d;
   }
-  var GKEYS = [['blStarts', 'Borderlines'], ['rvStarts', 'Retourvloot'], ['teaStarts', 'Tea'], ['pdStarts', 'Polder'], ['kaStarts', 'Kantar']];
+  var GKEYS = [['blStarts', 'Borderlines'], ['rvStarts', 'Retourvloot'], ['teaStarts', 'Tea'], ['pdStarts', 'Polder'], ['kaStarts', 'Kantar'], ['tuStarts', 'Tulip 7']];
   function tried(v) { return GKEYS.filter(function (g) { return v[g[0]] > 0; }).length; }
   function groupBy(list, keyOf) {
     var m = {};
@@ -362,6 +387,7 @@ svg.ic{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;strok
     if (v.teaStarts) a.push('Tea ' + v.teaDone + ' scene' + (v.teaDone === 1 ? '' : 's') + ' done');
     if (v.pdStarts) a.push('Polder ' + v.pdDone + ' region' + (v.pdDone === 1 ? '' : 's') + ' done');
     if (v.kaStarts) a.push('Kantar ' + v.kaWins + '/' + v.kaDone + ' won');
+    if (v.tuStarts) a.push('Tulip 7 ' + v.tuWins + '/' + v.tuDone + ' won');
     if (v.shares) a.push('shared');
     if (v.signups) a.push('signed up');
     return a.join(' · ') || 'looked around';
