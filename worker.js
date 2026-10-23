@@ -475,6 +475,7 @@ const GAME_SQL = {
         uniqIf(distinct_id, event = 'tea_scene_start') AS cupoftea,
         uniqIf(distinct_id, event IN ('polder_level_start', 'polder_resume')) AS polder,
         uniqIf(distinct_id, event IN ('kantar_game_start', 'kantar_resume')) AS kantar,
+        uniqIf(distinct_id, event IN ('tulip_game_start', 'tulip_resume')) AS tulip,
         countIf(event = 'newsletter_signup') AS signups
       FROM events WHERE ${R90} GROUP BY date ORDER BY date DESC`,
     sources: `SELECT coalesce(nullIf(toString(properties.$referring_domain), ''), '$direct') AS source, uniq(distinct_id) AS visitors
@@ -510,6 +511,8 @@ const GAME_SQL = {
         countIf(event IN ('polder_level_start', 'polder_resume')) AS pdStarts, countIf(event = 'polder_level_end') AS pdDone,
         countIf(event IN ('kantar_game_start', 'kantar_resume')) AS kaStarts, countIf(event = 'kantar_game_end') AS kaDone,
         countIf(event = 'kantar_game_end' AND properties.result = 'win') AS kaWins,
+        countIf(event IN ('tulip_game_start', 'tulip_resume')) AS tuStarts, countIf(event = 'tulip_game_end') AS tuDone,
+        countIf(event = 'tulip_game_end' AND properties.result = 'win') AS tuWins,
         countIf(event = 'newsletter_signup') AS signups, countIf(event LIKE 'share%' OR event = 'polder_share') AS shares
       FROM events WHERE ${R90} GROUP BY id ORDER BY first DESC`,
     spots: `SELECT toString(properties.game) AS game, coalesce(toString(properties.from), '?') AS spot, count() AS clicks, uniq(distinct_id) AS people
@@ -610,6 +613,42 @@ const GAME_SQL = {
         uniqIf(distinct_id, event IN ('kantar_game_start', 'kantar_resume')) AS players,
         countIf(event = 'kantar_game_start') AS starts, countIf(event = 'kantar_game_end') AS ends
       FROM events WHERE event IN ('kantar_game_start', 'kantar_game_end', 'kantar_resume') AND ${R90} GROUP BY date ORDER BY date DESC`,
+  },
+  // Tulip 7 (every event carries mode: winter|classic): tulip_game_start, tulip_resume, tulip_first_draw,
+  // tulip_evening {evening, worth}, tulip_crash {after, paper}, tulip_game_end {result: win|lose, rank, worth, rounds, crash_after},
+  // tulip_achievement {id}.
+  tulip: {
+    funnel: `SELECT uniqIf(distinct_id, event = 'tulip_game_start') AS players, countIf(event = 'tulip_game_start') AS starts,
+        uniqIf(distinct_id, event = 'tulip_first_draw') AS firstDrawers,
+        uniqIf(distinct_id, event = 'tulip_game_end') AS finishers, countIf(event = 'tulip_game_end') AS ends,
+        uniqIf(distinct_id, event = 'tulip_resume') AS resumes,
+        countIf(event = 'tulip_game_end' AND properties.result = 'win') AS wins,
+        uniqIf(distinct_id, event = 'tulip_achievement') AS achievers, countIf(event = 'tulip_achievement') AS achievements
+      FROM events WHERE event IN ('tulip_game_start', 'tulip_first_draw', 'tulip_game_end', 'tulip_resume', 'tulip_achievement') AND ${R90}`,
+    modes: `SELECT coalesce(nullIf(toString(properties.mode), ''), '?') AS mode, uniq(distinct_id) AS players,
+        countIf(event = 'tulip_game_start') AS starts, countIf(event = 'tulip_game_end') AS games,
+        countIf(event = 'tulip_game_end' AND properties.result = 'win') AS wins,
+        round(avgIf(toFloat(properties.rank), event = 'tulip_game_end'), 2) AS rank,
+        round(avgIf(toFloat(properties.worth), event = 'tulip_game_end')) AS worth,
+        round(quantileIf(0.5)(toFloat(properties.worth), event = 'tulip_game_end')) AS medianWorth,
+        round(avgIf(toFloat(properties.rounds), event = 'tulip_game_end'), 1) AS rounds
+      FROM events WHERE event IN ('tulip_game_start', 'tulip_game_end') AND ${R90} GROUP BY mode ORDER BY players DESC`,
+    evenings: `SELECT toInt(properties.evening) AS evening, uniq(distinct_id) AS players, count() AS games,
+        round(avg(toFloat(properties.worth))) AS worth, round(quantile(0.5)(toFloat(properties.worth))) AS medianWorth
+      FROM events WHERE event = 'tulip_evening' AND properties.evening IS NOT NULL AND ${R90} GROUP BY evening ORDER BY evening`,
+    crash: `SELECT toInt(properties.after) AS after, count() AS games, countIf(toFloat(properties.paper) > 0) AS caught,
+        round(avgIf(toFloat(properties.paper), toFloat(properties.paper) > 0)) AS paper
+      FROM events WHERE event = 'tulip_crash' AND properties.after IS NOT NULL AND ${R90} GROUP BY after ORDER BY after`,
+    depth: `SELECT multiIf(n = 0, '0', n = 1, '1', n = 2, '2', n <= 4, '3–4', n <= 9, '5–9', '10+') AS games, count() AS players
+      FROM (SELECT distinct_id, countIf(event = 'tulip_game_end') AS n FROM events
+        WHERE event IN ('tulip_game_start', 'tulip_game_end') AND ${R90} GROUP BY distinct_id)
+      GROUP BY games ORDER BY min(n)`,
+    achievements: `SELECT toString(properties.id) AS id, uniq(distinct_id) AS players, count() AS n
+      FROM events WHERE event = 'tulip_achievement' AND ${R90} GROUP BY id ORDER BY players DESC`,
+    daily: `SELECT toString(toDate(toTimeZone(timestamp, 'Europe/Amsterdam'))) AS date,
+        uniqIf(distinct_id, event IN ('tulip_game_start', 'tulip_resume')) AS players,
+        countIf(event = 'tulip_game_start') AS starts, countIf(event = 'tulip_game_end') AS ends
+      FROM events WHERE event IN ('tulip_game_start', 'tulip_game_end', 'tulip_resume') AND ${R90} GROUP BY date ORDER BY date DESC`,
   },
 };
 
