@@ -322,7 +322,7 @@ test('crazygames: gameplay stops on menus, results and modal events, and starts 
   await t.page.click('#rulesBtn'); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStop'");
   let log = await cgLog(t.page);
   assert.equal(log.filter(x => /^gameplay/.test(x)).at(-1), 'gameplayStop', 'Kantar rules: ' + log.join(','));
-  await t.page.click('#resumeBtn'); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStart'");
+  await t.page.click('#rulesX'); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStart'");
   log = await cgLog(t.page);
   assert.equal(log.filter(x => /^gameplay/.test(x)).at(-1), 'gameplayStart', 'Kantar resume: ' + log.join(','));
   await t.page.evaluate(() => { while (G.phase !== 'end') G = aiAct(G)[1]; showEnd(); }); await waitLog(t.page, "l => l.filter(x => /^gameplay/.test(x)).at(-1) === 'gameplayStop'");
