@@ -96,10 +96,10 @@ section > .eyebrow { display: block; margin-bottom: 16px; }
 .tag { font: 500 11px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; padding: 5px 7px; border: 1px solid var(--rule); color: var(--ink-soft); }
 .tag.dev { display: inline-flex; align-items: center; gap: 5px; }
 .tag.dev svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-.game .desknote { display: none; font-size: 13px; color: var(--ink-soft); }
+.game .desknote, .brief .desknote { display: none; font-size: 13px; color: var(--ink-soft); }
 @media (max-width: 720px), (pointer: coarse) {
   .tag.dev.desk { border-color: #c9b48a; color: #7a5a1c; background: #f6efdf; }
-  .game .desknote { display: block; }
+  .game .desknote, .brief .desknote { display: block; }
 }
 .game .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 6px; }
 .game.wide { grid-column: 1 / -1; grid-template-columns: 1.15fr 1fr; grid-template-rows: auto; }
@@ -130,7 +130,63 @@ footer a { color: var(--ink-soft); }
 .news .fine { font-size: 12.5px; color: var(--ink-soft); }
 .news .msg { font-size: 14px; min-height: 20px; }
 .news .msg.ok { color: #2c6a47; } .news .msg.err { color: #962f2a; }
-@media (max-width: 720px) { .news { grid-template-columns: 1fr; } .record { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* The games, two ways: cards, or a world map you pick a place and time from (like a scenario screen) */
+.sechead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.viewtabs { display: inline-flex; border: 1px solid var(--ink); border-radius: 2px; overflow: hidden; }
+.viewtabs button { font: 500 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; padding: 8px 12px; border: 0; background: transparent; color: var(--ink); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.viewtabs button + button { border-left: 1px solid var(--ink); }
+.viewtabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
+.viewtabs button:not([aria-selected="true"]):hover { background: #eef0f3; }
+.viewtabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.viewtabs svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
+.atlas { background: var(--card); border: 1px solid var(--rule); }
+.atlas-scroll { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.atlas-map { position: relative; min-width: 780px; background: var(--sea); border-bottom: 1px solid var(--rule); }
+.atlas-map > svg { display: block; width: 100%; height: auto; }
+.atlas-map .land { fill: var(--paper); stroke: var(--coast); stroke-width: .6; stroke-linejoin: round; }
+.atlas-map .grat { fill: none; stroke: #c7d4d8; stroke-width: .8; }
+.atlas-map .route { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-dasharray: 2 4; stroke-linecap: round; opacity: .28; transition: opacity .2s ease; }
+.atlas-map .route.on { opacity: .9; stroke: var(--accent); }
+.atlas-map .leader { stroke: var(--ink); stroke-width: .9; opacity: .5; }
+.atlas-map .leader.on { opacity: 1; stroke: var(--accent); stroke-width: 1.3; }
+.atlas-map .pin { fill: var(--ink); stroke: var(--paper); stroke-width: 1.6; }
+.atlas-map .pin.on { fill: var(--accent); }
+.atlas-map .halo { fill: var(--accent); opacity: 0; }
+.atlas-map .halo.on { animation: atlasPulse 2.2s ease-out infinite; }
+@keyframes atlasPulse { 0% { opacity: .45; r: 4; } 100% { opacity: 0; r: 16; } }
+@media (prefers-reduced-motion: reduce) { .atlas-map .halo.on { animation: none; opacity: .25; r: 9; } }
+.atlas-map .stop { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; }
+.atlas-map .stoplab { font: 500 9.5px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; fill: var(--ink-soft); paint-order: stroke; stroke: var(--sea); stroke-width: 3px; }
+.atlas-map .seal { font: italic 13px var(--f-text); fill: #8a9aa0; letter-spacing: .04em; }
+.atlas-pick { position: absolute; transform: translate(-50%, -50%); display: grid; gap: 2px; justify-items: start; text-align: left; padding: 6px 9px 7px; background: rgba(247, 246, 242, .96); border: 1px solid var(--ink); border-radius: 2px; color: var(--ink); cursor: pointer; white-space: nowrap; box-shadow: 0 1px 0 rgba(31, 43, 74, .15); transition: background .15s ease, color .15s ease, transform .15s ease; }
+.atlas-pick b { font: 400 17px/1 var(--f-display); }
+.atlas-pick span { font: 500 10.5px/1.2 var(--f-mono); letter-spacing: .06em; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.atlas-pick:hover { background: #fff; transform: translate(-50%, -50%) translateY(-1px); }
+.atlas-pick[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.atlas-pick[aria-pressed="true"] span { color: #c9d0dc; }
+.atlas-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.atlas-pick .new { font: 500 9px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.atlas-pick[aria-pressed="true"] .new { color: #f1b9c4; }
+.atlas-era { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--rule); }
+.atlas-era .eyebrow { margin-right: 6px; }
+.atlas-era button { font: 500 11.5px/1 var(--f-mono); letter-spacing: .04em; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 2px; background: var(--paper); color: var(--ink); cursor: pointer; font-variant-numeric: tabular-nums; }
+.atlas-era button b { font-weight: 500; color: var(--ink-soft); margin-right: 5px; }
+.atlas-era button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.atlas-era button[aria-pressed="true"] b { color: #c9d0dc; }
+.atlas-era button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.brief { display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 0; min-height: 220px; }
+.brief .bplate { position: relative; background: var(--sea); border-right: 1px solid var(--rule); overflow: hidden; min-height: 200px; }
+.brief .bplate > img, .brief .bplate > svg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+.brief .btext { padding: 18px 22px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.brief .bwhen { font: 500 12px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.brief h3 { font-family: var(--f-display); font-weight: 400; font-size: 34px; line-height: 1; margin: 0; }
+.brief p { margin: 0; font-size: 15px; max-width: 40em; }
+.brief .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: auto; padding-top: 6px; }
+.brief .hint { font: 12px var(--f-mono); color: var(--ink-soft); }
+@media (max-width: 720px) { .news { grid-template-columns: 1fr; }
+  .brief { grid-template-columns: 1fr; }
+  .brief .bplate { border-right: 0; border-bottom: 1px solid var(--rule); aspect-ratio: 16 / 9; min-height: 0; }
+  .brief h3 { font-size: 30px; } .record { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 960px) and (min-width: 721px) {
   .games { grid-template-columns: 1fr 1fr; }
   .game.top, .game.pair { grid-column: auto; }
@@ -157,8 +213,30 @@ footer a { color: var(--ink-soft); }
   </header>
 
   <section aria-labelledby="gamesLabel">
-    <span class="eyebrow" id="gamesLabel">The games</span>
-    <div class="games">
+    <div class="sechead">
+      <span class="eyebrow" id="gamesLabel">The games</span>
+      <div class="viewtabs" role="tablist" aria-label="Show the games as">
+        <button type="button" role="tab" id="tabCards" aria-selected="true" aria-controls="viewCards"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></svg>Cards</button>
+        <button type="button" role="tab" id="tabMap" aria-selected="false" aria-controls="viewMap" tabindex="-1"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5z M5.5 2v10 M10.5 4v10"/></svg>World map</button>
+      </div>
+    </div>
+    <div class="atlas" id="viewMap" role="tabpanel" aria-labelledby="tabMap" hidden>
+      <div class="atlas-scroll" id="atlasScroll">
+        <div class="atlas-map" id="atlasMap">
+          <svg viewBox="0 0 {{WW}} {{WH}}" role="img" aria-label="A map of the world with a pin for each game, at the place and time it is set">
+            <path class="grat" d="{{WGRAT}}"/>
+            <path class="land" d="{{WORLD}}"/>
+            <text class="seal" x="250" y="320">Atlantic Ocean</text>
+            <text class="seal" x="700" y="400">Indian Ocean</text>
+            <g id="atlasLines"></g>
+            <g id="atlasPins"></g>
+          </svg>
+        </div>
+      </div>
+      <div class="atlas-era" id="atlasEra"><span class="eyebrow">By date</span></div>
+      <div class="brief" id="atlasBrief" aria-live="polite"></div>
+    </div>
+    <div class="games" id="viewCards" role="tabpanel" aria-labelledby="tabCards">
       <article class="game top">
         <a class="plate" href="/tulip7/" data-from="card" aria-label="Play Tulip 7">
           <img src="/tulip7/img/portal-plate.jpg" alt="Flamed tulips, contracts and coins flying over a tavern table in Amsterdam (art made for the game)" loading="lazy">
@@ -566,6 +644,136 @@ footer a { color: var(--ink-soft); }
         }).catch(function () { btn.disabled = false; say("That didn't work. Check your connection and try again.", "err"); });
     });
   }).catch(function () {});
+})();
+</script>
+<script>
+// The "World map" tab: each game pinned where and when it is set. Pick one like a scenario, then play.
+// Titles, text, pictures and links come from the cards above, so a new game needs only a line in ATLAS
+// (lon/lat of the pin, and where its label sits in map units: the map is {{WW}} wide).
+(function () {
+  var C = {{MAPCFG}};
+  var ATLAS = [
+    { href: "/tulip7/", game: "tulip", when: "Winter 1636–37", place: "Amsterdam", year: 1636, at: [4.9, 52.37], label: [392, 46], isNew: true },
+    { href: "/kantar/", game: "kantar", when: "19th century", place: "The Grand Bazaar, Istanbul", year: 1800, at: [28.97, 41.01], label: [632, 117] },
+    { href: "/borderlines/", game: "borderlines", when: "500 BC – 1938", place: "Every realm, one a day", year: -500, at: [12.5, 41.9], label: [452, 213] },
+    { href: "/polder/", game: "polder", when: "1200–1953", place: "Friesland, Zeeland, Holland", year: 1200, at: [5.8, 53.1], label: [566, 70] },
+    { href: "/retourvloot/", game: "retourvloot", when: "1602–1799", place: "Amsterdam to Batavia", year: 1602, at: [106.8, -6.2], label: [858, 279],
+      route: [[4.9, 52.37], [2.5, 51.2], [-5, 49], [-16, 33], [-24, 10], [-22, -8], [-6, -26], [18.4, -35.6], [45, -38.5], [80, -32], [100, -16], [105.8, -6.6], [106.8, -6.2]],
+      stops: [{ at: [18.4, -34.4], name: "Cape" }] },
+    { href: "/cupoftea/", game: "cupoftea", when: "1850", place: "London, and a sugar estate by Havana", year: 1850, at: [-0.1, 51.5], label: [290, 86],
+      route: [[-0.1, 51.5], [-6, 49.4], [-20, 42], [-45, 31], [-68, 25.5], [-82.4, 23.1]],
+      stops: [{ at: [-82.4, 23.1], name: "Havana" }] }
+  ];
+  var NS = "http://www.w3.org/2000/svg", KEY = "hl.portal.view", PICK = "hl.portal.pick";
+  var map = document.getElementById("atlasMap"), lines = document.getElementById("atlasLines"), pins = document.getElementById("atlasPins");
+  var brief = document.getElementById("atlasBrief"), era = document.getElementById("atlasEra"), scroller = document.getElementById("atlasScroll");
+  var tabCards = document.getElementById("tabCards"), tabMap = document.getElementById("tabMap");
+  var viewCards = document.getElementById("viewCards"), viewMap = document.getElementById("viewMap");
+  function sget(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function sset(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+  function track(name, props) { try { if (window.posthog && window.posthog.capture) window.posthog.capture(name, props || {}); } catch (e) {} }
+  function xy(p) { return [(p[0] - C.w) * C.k, (C.n - p[1]) * C.k]; }
+  function el(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var a in attrs) e.setAttribute(a, attrs[a]); if (parent) parent.appendChild(e); return e; }
+  function curve(pts) { // Catmull-Rom through the waypoints, as cubic Béziers
+    var p = pts.map(xy), d = "M" + p[0][0].toFixed(1) + "," + p[0][1].toFixed(1);
+    for (var i = 0; i < p.length - 1; i++) {
+      var a = p[i - 1] || p[i], b = p[i], c = p[i + 1], e = p[i + 2] || c;
+      d += "C" + [b[0] + (c[0] - a[0]) / 6, b[1] + (c[1] - a[1]) / 6, c[0] - (e[0] - b[0]) / 6, c[1] - (e[1] - b[1]) / 6, c[0], c[1]].map(function (v) { return v.toFixed(1); }).join(",");
+    }
+    return d;
+  }
+  function card(g) { var a = viewCards.querySelector(".plate[href='" + g.href + "']"); return a && a.closest(".game"); }
+  var items = ATLAS.map(function (g) { return { g: g, card: card(g) }; }).filter(function (x) { return x.card; });
+
+  items.forEach(function (it, i) {
+    var g = it.g, p = xy(g.at), L = g.label, name = it.card.querySelector("h3").textContent;
+    it.name = name;
+    if (g.route) it.route = el("path", { "class": "route", d: curve(g.route) }, lines);
+    (g.stops || []).forEach(function (s) {
+      var q = xy(s.at);
+      el("circle", { "class": "stop", cx: q[0], cy: q[1], r: 3 }, pins);
+      var t = el("text", { "class": "stoplab", x: q[0] + (q[0] < 200 ? 7 : 6), y: q[1] + (q[0] < 200 ? -6 : 13) }, pins); t.textContent = s.name;
+    });
+    it.leader = el("line", { "class": "leader", x1: p[0], y1: p[1], x2: L[0], y2: L[1] }, lines);
+    it.halo = el("circle", { "class": "halo", cx: p[0], cy: p[1], r: 4 }, pins);
+    it.pin = el("circle", { "class": "pin", cx: p[0], cy: p[1], r: 4.5 }, pins);
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "atlas-pick"; b.setAttribute("aria-pressed", "false");
+    b.style.left = (L[0] / C.W * 100) + "%"; b.style.top = (L[1] / C.H * 100) + "%";
+    b.innerHTML = (g.isNew ? "<i class='new'>New</i>" : "") + "<b></b><span></span>";
+    b.querySelector("b").textContent = name; b.querySelector("span").textContent = g.when;
+    b.setAttribute("aria-label", name + ", " + g.when + ", " + g.place);
+    b.addEventListener("click", function () { select(i, true); });
+    b.addEventListener("dblclick", function () { var go = brief.querySelector(".btn"); if (go) go.click(); });
+    map.appendChild(b); it.pick = b;
+  });
+  // the date strip: the same games, oldest setting first
+  items.slice().sort(function (a, b) { return a.g.year - b.g.year; }).forEach(function (it) {
+    var b = document.createElement("button");
+    b.type = "button"; b.setAttribute("aria-pressed", "false");
+    b.innerHTML = "<b></b>"; b.querySelector("b").textContent = it.g.when; b.appendChild(document.createTextNode(it.name));
+    b.addEventListener("click", function () { select(items.indexOf(it), true); });
+    era.appendChild(b); it.chip = b;
+  });
+
+  var cur = -1;
+  function select(i, byUser) {
+    if (i < 0 || i >= items.length) i = 0;
+    cur = i;
+    items.forEach(function (it, j) {
+      var on = j === i;
+      it.pick.setAttribute("aria-pressed", on ? "true" : "false"); it.chip.setAttribute("aria-pressed", on ? "true" : "false");
+      it.pin.classList.toggle("on", on); it.halo.classList.toggle("on", on); it.leader.classList.toggle("on", on);
+      if (it.route) it.route.classList.toggle("on", on);
+    });
+    var it = items[i], c = it.card, g = it.g;
+    // the selected pin draws above the others
+    pins.appendChild(it.halo); pins.appendChild(it.pin);
+    var go = c.querySelector(".row .btn"), plate = c.querySelector(".plate");
+    var pic = plate.querySelector("img:not(.shot), svg");
+    var tags = c.querySelector(".tags"), note = c.querySelector(".desknote"), cn = c.querySelector(".cardnote");
+    brief.innerHTML = "<a class='bplate plate'></a><div class='btext'><span class='bwhen'></span><h3></h3><p class='bdesc'></p><div class='row'><a class='btn'>Play</a><span class='hint'></span></div></div>";
+    var bp = brief.querySelector(".bplate"); bp.href = go.getAttribute("href"); bp.setAttribute("aria-label", "Play " + it.name); bp.setAttribute("tabindex", "-1");
+    if (pic) bp.appendChild(pic.cloneNode(true));
+    brief.querySelector(".bwhen").textContent = g.when + " · " + g.place;
+    brief.querySelector("h3").textContent = it.name;
+    brief.querySelector(".bdesc").textContent = c.querySelector(".body > p").textContent;
+    if (tags) brief.querySelector(".btext").insertBefore(tags.cloneNode(true), brief.querySelector(".row"));
+    if (note) brief.querySelector(".btext").insertBefore(note.cloneNode(true), brief.querySelector(".row"));
+    var b = brief.querySelector(".btn"); b.href = go.getAttribute("href"); b.textContent = "Play " + it.name;
+    brief.querySelector(".hint").textContent = cn && cn.textContent ? cn.textContent : "";
+    [b, bp].forEach(function (a) { a.addEventListener("click", function () { track("portal_play", { game: g.game, from: "map" }); }); });
+    if (byUser) { sset(PICK, g.href); track("portal_map_pick", { game: g.game }); }
+  }
+
+  function show(view, byUser) {
+    var m = view === "map";
+    viewMap.hidden = !m; viewCards.hidden = m;
+    tabMap.setAttribute("aria-selected", m ? "true" : "false"); tabCards.setAttribute("aria-selected", m ? "false" : "true");
+    tabMap.tabIndex = m ? 0 : -1; tabCards.tabIndex = m ? -1 : 0;
+    if (m && cur < 0) {
+      var last = sget(PICK), k = 0;
+      items.forEach(function (it, j) { if (it.g.href === last) k = j; });
+      select(k, false);
+    }
+    if (m && scroller.scrollWidth > scroller.clientWidth) { // phones: start over Europe, where most games are
+      var p = xy(items[cur].g.at)[0] / C.W * scroller.scrollWidth;
+      scroller.scrollLeft = Math.max(0, p - scroller.clientWidth / 2);
+    }
+    if (byUser) {
+      sset(KEY, view); track("portal_view", { view: view });
+      if (history.replaceState) history.replaceState(null, "", m ? "#map" : location.pathname + location.search);
+    }
+  }
+  tabCards.addEventListener("click", function () { show("cards", true); });
+  tabMap.addEventListener("click", function () { show("map", true); });
+  [tabCards, tabMap].forEach(function (t) {
+    t.addEventListener("keydown", function (e) {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      e.preventDefault(); var to = t === tabCards ? tabMap : tabCards; to.focus(); to.click();
+    });
+  });
+  show(location.hash === "#map" || sget(KEY) === "map" ? "map" : "cards", false);
 })();
 </script>
 <script src="/feedback.js" defer data-game="portal"></script>

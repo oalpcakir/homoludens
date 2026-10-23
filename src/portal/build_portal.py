@@ -20,6 +20,10 @@ def build():
     svg = json.load(open(os.path.join(H, "portal_svg.json"), encoding="utf-8"))
     ph = analytics_head("portal")
     vals = {"POSTHOG": ph, "SITE": SITE, "W": svg["W"], "H": svg["H"], "LAND": svg["land"], "REALM": svg["realm"]}
+    # the "World map" tab: land, graticule and projection numbers ({{WORLD}} {{WGRAT}} {{WW}} {{WH}} {{MAPCFG}})
+    sys.path.insert(0, H)
+    import world_map  # noqa: E402
+    vals.update(world_map.build())
     out = re.sub(r"\{\{([A-Z]+)\}\}", lambda m: str(vals[m.group(1)]), tpl)
     left = re.findall(r"\{\{[A-Z]+\}\}", out)
     if left:

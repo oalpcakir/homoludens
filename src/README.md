@@ -19,6 +19,7 @@ Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` o
 
 ## portal/
 - `portal.html` — portal template ({{POSTHOG}}, {{SITE}}, {{LAND}}, {{REALM}}, {{W}}, {{H}} placeholders for the analytics snippet, OG URLs and the map plate from `portal_svg.json`).
+- `world_map.py` — the "World map" tab: projects Natural Earth land (Borderlines' `base.json`) into the {{WORLD}} {{WGRAT}} {{WW}} {{WH}} {{MAPCFG}} placeholders. Each game's pin, dates and label position are one line in the `ATLAS` list in `portal.html`; title, text, picture and link come from its card, so a new game needs only that line.
 - `build_portal.py` — writes `public/index.html`, `public/sitemap.xml` and `public/robots.txt` (templates here). Edit the templates, never the files in `public/` (the next build overwrites them).
 
 
