@@ -67,3 +67,55 @@ test('the Master beats a random player almost always', () => {
   for (let g = 0; g < 30; g++) if (run(`randomGame(${g % 2},'narh',false,1)`).r.w === 1) won++;
   assert.ok(won >= 25, `Master won ${won}/30`);
 });
+
+// The page runs the search in a Web Worker built from the engine's own text (from the "engine:" marker to the sound
+// section). Run that exact text as a worker would (no window; self.onmessage / postMessage) and check it answers
+// every job exactly as the page's own copy does, on many random positions (same seed -> same move).
+const workerSrc = script.slice(script.indexOf('/* ================= engine:'), script.indexOf('/* ================= sound'));
+function fakeWorker() {
+  const out = [];
+  const w = { console, Math, JSON, Object, Array, Set, Error, String, postMessage: m => out.push(JSON.parse(JSON.stringify(m))) };
+  w.self = w; vm.createContext(w); vm.runInContext(workerSrc, w);
+  return { ask: m => { w.self.onmessage({ data: JSON.parse(JSON.stringify(m)) }); return out.pop(); } };
+}
+test('worker source is complete and answers like the page (AI moves and teacher analysis, many random positions)', () => {
+  assert.ok(workerSrc.length > 2000 && !/document\.|window\./.test(workerSrc.replace(/typeof window/g, '')), 'engine section touches the DOM');
+  const W = fakeWorker();
+  let n = 0;
+  for (let g = 0; g < 24; g++) {
+    const states = run(`(()=>{let s=newGame(${g % 2},'${g % 3 ? 'narh' : 'classic'}',${g % 4 === 0}),out=[];
+      while(s.phase!=='end'){out.push(s);const k=children(s);s=k[Math.random()*k.length|0][1]}return out})()`);
+    for (const s of states) {
+      for (const diff of ['usta', 'cirak']) {
+        const seed = (n * 2654435761) >>> 0;
+        const want = run(`runJob(${JSON.stringify({ type: 'ai', s, diff, seed })})`);
+        const got = W.ask({ id: ++n, type: 'ai', s, diff, seed });
+        assert.equal(got.ok, true, got.err); assert.equal(got.id, n); assert.deepEqual(got.res, want);
+      }
+      const owner = s.phase === 'choose' ? 1 - s.splitter : s.splitter;
+      if (owner === 0) {
+        const want = run(`runJob(${JSON.stringify({ type: 'teach', s })})`);
+        const got = W.ask({ id: ++n, type: 'teach', s });
+        assert.equal(got.ok, true, got.err); assert.deepEqual(got.res, want);
+        assert.ok(got.res.reasons.every(r => Array.isArray(r) && typeof r[0] === 'string'), 'reasons are data');
+      }
+    }
+  }
+  assert.ok(n > 400, `only ${n} jobs`);
+  assert.equal(W.ask({ id: 1, type: 'nope' }).ok, false);
+});
+
+test('seeded AI: same position and seed give the same move; the move is always legal', () => {
+  const r = run(`(()=>{let bad=0,diffSeeds=0;for(let g=0;g<20;g++){let s=newGame(g%2,'narh',false);
+    while(s.phase!=='end'){const a=JSON.stringify(aiAct(s,'cirak',g*7+s.turn)[0]),b=JSON.stringify(aiAct(s,'cirak',g*7+s.turn)[0]);if(a!==b)bad++;
+      if(!children(s).some(k=>JSON.stringify(k[0])===a))bad++;const k=children(s);s=k[Math.random()*k.length|0][1]}}return bad})()`);
+  assert.equal(r, 0);
+});
+
+test('Narh ties: the Saffron leader wins; no Saffron leader is a draw', () => {
+  const r = run(`(()=>{const s=newGame(0,'narh',false);s.phase='end';s.tab=[{S:0,I:1,K:0,B:0},{S:0,I:0,K:0,B:1}];const a=score(s);
+    s.tab=[{S:1,I:0,K:0,B:0},{S:0,I:1,K:0,B:2}];const b=score(s);return [a.p,a.w,b.p,b.w]})()`);
+  // a: Silk 4 vs Copper 2 + coin 2, Saffron level -> draw; b: Saffron 5 + light load 3 vs Silk 4 + Copper 2 + coin 2 -> 8-8, Saffron leader wins
+  assert.deepEqual(r.slice(0, 2), [[4, 4], -1]);
+  assert.equal(r[2][0], r[2][1]); assert.equal(r[3], 0);
+});

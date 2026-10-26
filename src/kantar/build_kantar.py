@@ -59,7 +59,12 @@ ART_VARS = {  # css variable -> art file
 }
 OPTIONAL = {"end-win-cirak", "end-lose-cirak", "end-draw-cirak", "end-win-usta", "end-lose-usta", "end-draw-usta", "tray", "caravan", "advisor"}
 ART_VARS = {v: f for v, f in ART_VARS.items() if v not in OPTIONAL or os.path.exists(os.path.join(H, "art", f + ".webp"))}
-_art = (":root{" + ";".join(f"--ka-{v}:url(data:image/webp;base64,{_b64(f + '.webp')})" for v, f in ART_VARS.items()) + "}\n"
+# Art shown only at some moments (the end-of-match pictures, the tall phone background) is not inlined: it is copied
+# to img/ and referenced from the CSS variable, so the browser fetches it only when an element actually uses it.
+LAZY = {"end-win-cirak", "end-lose-cirak", "end-draw-cirak", "end-win-usta", "end-lose-usta", "end-draw-usta", "bg-tall"}
+def _url(v, f):
+    return f"url(img/{f}.webp)" if v in LAZY else f"url(data:image/webp;base64,{_b64(f + '.webp')})"
+_art = (":root{" + ";".join(f"--ka-{v}:{_url(v, f)}" for v, f in ART_VARS.items()) + "}\n"
         + open(os.path.join(H, "art.css"), encoding="utf-8").read())
 assert src.count("/*KANTAR_ART*/") == 1
 src = src.replace("/*KANTAR_ART*/", _art, 1)
@@ -69,6 +74,9 @@ head = re.sub(r'<link rel="icon"[^>]*>', lambda m: icon, head, count=1)
 anchor = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
 assert anchor in src
 os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
+for v, f in ART_VARS.items():
+    if v in LAZY:
+        shutil.copy(os.path.join(H, "art", f + ".webp"), os.path.join(OUT, "img", f + ".webp"))
 with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8", newline="\n") as fh:
     fh.write(src.replace(anchor, anchor + "\n" + head, 1))
 shutil.copy(os.path.join(H, f"plate-{ART}.jpg"), os.path.join(OUT, "img", "portal-plate.jpg"))

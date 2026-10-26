@@ -11,7 +11,7 @@ import { serve } from '../smoke/server.mjs';
 const ROOT = new URL('../..', import.meta.url).pathname;
 const DIST = ROOT + 'dist/platforms/';
 const MOCK = readFileSync(new URL('./mock-crazygames-sdk.js', import.meta.url));
-const GAMES = ['borderlines', 'retourvloot', 'cupoftea', 'polder', 'kantar'];
+const GAMES = ['borderlines', 'retourvloot', 'cupoftea', 'polder', 'kantar', 'tulip7'];
 let browser;
 const servers = {};
 before(async () => {
@@ -73,6 +73,7 @@ const START = {
   polder: async p => { await p.getByRole('button', { name: 'Begin' }).click(); await p.waitForTimeout(300); },
   borderlines: async p => { await p.click('#btnDaily'); await p.waitForTimeout(800); },
   retourvloot: async p => { await p.getByRole('button', { name: 'Take your seat' }).click(); await p.waitForTimeout(300); await p.evaluate(() => { S.speed = 1; }); },
+  tulip7: async p => { await p.click('#mbox #go'); await p.waitForFunction(() => typeof G !== 'undefined' && G && !MENU); await p.waitForTimeout(300); },
   cupoftea: async p => { for (let i = 0; i < 4 && !(await p.evaluate(() => document.getElementById('intro').classList.contains('off'))); i++) { await p.locator('#intro button').last().click(); await p.waitForTimeout(250); } },
 };
 
@@ -122,6 +123,21 @@ for (const game of GAMES) {
     }
   });
 }
+
+test('crazygames · tulip7: the winter is saved through SDK data, loads its art from the package, and reload offers to continue', async () => {
+  const t = await open('crazygames', 'tulip7');
+  await START.tulip7(t.page);
+  await waitLog(t.page, "l => l.includes('data.set:tulip7.save.v1')");
+  assert.ok((await cgLog(t.page)).includes('data.set:tulip7.save.v1'), 'winter not saved through SDK data');
+  const bg = await t.page.evaluate(() => getComputedStyle(document.body).getPropertyValue('--bg'));
+  assert.match(bg, /img\/bg_tavern\.webp/);
+  const ok = await t.page.evaluate(() => new Promise(r => { const i = new Image(); i.onload = () => r(true); i.onerror = () => r(false); i.src = 'img/ach_book.webp'; }));
+  assert.ok(ok, 'achievement art missing from the package');
+  await t.page.reload(); await t.page.waitForFunction(() => !!(window.HLP && window.HLP.ready)); await t.page.waitForTimeout(600);
+  assert.ok(await t.page.locator('#mbox #cont').count(), 'no "Continue your winter" after a reload');
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
 
 test('crazygames · kantar: progress goes to SDK data and survives a reload (resume offered)', async () => {
   const t = await open('crazygames', 'kantar');

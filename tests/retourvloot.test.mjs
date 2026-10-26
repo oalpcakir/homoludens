@@ -59,3 +59,75 @@ test('every event has at least one choice and a body', () => {
     for (const c of e.choices) assert.equal(typeof c.label, 'string', id + ' choice without label');
   }
 });
+
+// ---- regressions from QA, October 2026
+const V = name => vm.runInContext(name, ctx);
+const at = (y, m = 1, d = 1) => V('tOf')(y, m, d);
+
+test('#1 an event stays in the queue (and in saves) until it is answered', () => {
+  const S = V('newState')(); const step = V('step'), resolveEvent = V('resolveEvent');
+  let guard = 0;
+  while (S.queue[0] !== 'banda' && guard++ < 100000) { step(S); while (S.queue.length && S.queue[0] !== 'banda') resolveEvent(S, S.queue[0], 0); }
+  assert.equal(S.queue[0], 'banda');
+  assert.ok(S.done.banda, 'dated event is marked done when queued');
+  const saved = JSON.parse(JSON.stringify(S)); // the autosave taken while the card is open
+  assert.equal(saved.queue[0], 'banda', 'a save taken while the card is open still holds the event');
+  resolveEvent(saved, 'banda', 0);
+  assert.equal(saved.flags.banda, 'conquest');
+  assert.ok(!saved.queue.includes('banda'));
+  // an old save, where the card was already shifted off before the reload, keeps playing
+  const old = JSON.parse(JSON.stringify(S)); old.queue.shift();
+  assert.doesNotThrow(() => { for (let i = 0; i < 400; i++) { step(old); while (old.queue.length) resolveEvent(old, old.queue[0], 0); } });
+  assert.equal(resolveEvent(S, 'not-an-event', 0), '');
+});
+
+test('#2 a lost or closed post is never founded from an old letter or a pending order', () => {
+  const deliverLetter = V('deliverLetter'), asiaMonth = V('asiaMonth');
+  const letter = (found, issued) => ({ focus: 'balanced', wages: 'low', expansion: 'restrain', found, issued });
+  let S = V('newState')(); S.t = at(1662, 6); S.flags.lost = { formosa: true }; S.asia.capital = 1e6;
+  deliverLetter(S, letter('formosa', at(1661, 10)));
+  assert.ok(!S.asia.posts.formosa, 'Formosa re-taken after 1662');
+  S = V('newState')(); S.t = at(1795, 6); S.flags.lost = { ceylon: true, cape: true }; S.asia.capital = 2e6;
+  deliverLetter(S, letter('ceylon', at(1794, 10)));
+  assert.ok(!S.asia.posts.ceylon, 'Ceylon re-taken after 1795');
+  S = V('newState')(); S.t = at(1663); S.flags.lost = { formosa: true }; S.asia.pendingFound = 'formosa'; S.asia.capital = 5e5;
+  asiaMonth(S, 1663);
+  assert.ok(!S.asia.posts.formosa && !S.asia.pendingFound, 'pending order for a lost post is dropped');
+  S = V('newState')(); S.t = at(1625, 6); S.asia.capital = 1e6;
+  deliverLetter(S, letter('formosa', at(1625, 1)));
+  assert.ok(S.asia.posts.formosa, 'an open post can still be ordered');
+});
+
+test('#8 one-off costs borrow instead of leaving the treasury negative', () => {
+  const S = V('newState')(); S.cash = 1000;
+  V('EVENT_BY_ID').corruption.choices[0].fx(S);
+  assert.ok(S.cash >= 0, 'cash ' + S.cash);
+  assert.equal(S.debt, 149000);
+  S.cash = 10000; V('audit')(S);
+  assert.ok(S.cash >= 0 && S.debt === 199000, `cash ${S.cash} debt ${S.debt}`);
+});
+
+test('#9 the debt card shows the rate actually charged; #10 growing debt is explained', () => {
+  const debtLine = V('debtLine');
+  const S = V('newState')(); S.debt = 10e6;
+  S.t = at(1700); assert.match(debtLine(S), /ƒ400k a year \(4%\)/);
+  S.t = at(1775); S.flags.credit1773 = true; assert.match(debtLine(S), /ƒ550k a year \(5\.5%\)/);
+  S.t = at(1779); assert.match(debtLine(S), /\(4%\)/);
+  S.debt = 0; assert.equal(debtLine(S), '4% a year');
+  assert.equal(V('debtText')(S), '', 'no note without history');
+  S.bookHist = [{ y: 1700, res: 0, div: 0, interest: 0, debt: 20e6 }, { y: 1701, res: -2e6, div: 640000, interest: 800000, debt: 24e6 }];
+  const t = V('debtText')(S);
+  assert.match(t, /Debt rose from ƒ20.0M to ƒ24.0M in 1701/);
+  assert.match(t, /Interest cost ƒ800k, dividends ƒ640k, and trading lost ƒ2.00M/);
+  S.bookHist[1].debt = 20.1e6; assert.equal(V('debtText')(S), '', 'small rises stay quiet');
+  // a full run records the year-end debt
+  const { S: R } = play({ n: 2, silver: 200000, div: 15 }, () => 0);
+  assert.ok(R.bookHist.every(b => typeof b.debt === 'number'));
+});
+
+test('#7 the emergency silver ship is not offered after the board is dismissed', () => {
+  const S = V('newState')(); S.flags.nationalised = true;
+  const e = V('EVENT_BY_ID').silverplea;
+  assert.ok(!V('visibleChoices')(S, e).some(({ i }) => i === 0));
+  assert.match(e.choices[0].fx(S), /No emergency ship/);
+});

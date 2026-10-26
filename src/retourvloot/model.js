@@ -203,6 +203,11 @@ let _S = null; // current state for cost modifiers
 function shipCost(y) { let c = baseShipCost(y); if (_S && _S.flags.provisions) c += 10000; if (_S && _S.flags.sailorPay) c += 5000; if (_S && _S.flags.convoys) c *= 1.15; return Math.round(c); }
 function shipCap(y) { return y < 1650 ? 450 : y < 1700 ? 600 : 800; }
 function maxSilver(y) { return y < 1700 ? 400000 : 500000; }
+// Pay a one-off cost from the treasury, borrowing on short-term notes whatever it lacks.
+function payOther(S, amt) {
+  if (S.cash < amt) { const b = amt - Math.max(0, S.cash); S.debt += b; S.cash += b; S.books.borrowed += b; }
+  S.cash -= amt; S.books.other += amt;
+}
 function equipShip(S, silver, borrow) {
   const y = yearOf(S.t);
   if (S.flags.nationalised) return false;
@@ -345,7 +350,7 @@ function deliverLetter(S, L) {
     else A.focus = L.focus;
   }
   A.wages = L.wages; A.expansion = L.expansion;
-  if (L.found && !A.posts[L.found] && POSTS[L.found]) {
+  if (L.found && foundablePosts(S, y).includes(L.found)) { // never a post that is lost or out of its period
     const P = POSTS[L.found];
     if (A.capital >= P.cost * 0.6) foundPost(S, L.found, false);
     else { A.pendingFound = L.found; act(S, `Ordered to take up ${P.name}, but Batavia lacks the funds (${money(P.cost)}). Waiting for silver.`); }
@@ -388,9 +393,29 @@ function asiaMonth(S, y) {
   for (const sh of S.ships) if (sh.state === 'asia') { const k = Math.round(sh.crew * mr); sh.crew -= k; shipD += k; }
   S.humans.diedAsia += dd + shipD;
   Object.assign(A.yr, { intra: A.yr.intra + intra, leak: A.yr.leak + leak, upkeep: A.yr.upkeep + upkeep, land: A.yr.land + land, buy: A.yr.buy + buy, deaths: A.yr.deaths + dd + shipD });
+  if (A.pendingFound && !foundablePosts(S, y).includes(A.pendingFound)) A.pendingFound = null;
   if (A.pendingFound && A.capital >= POSTS[A.pendingFound].cost) { const id = A.pendingFound; A.pendingFound = null; if (!A.posts[id]) foundPost(S, id, false); }
 }
 function interestRate(S, y) { return S.flags.credit1773 && y >= 1773 && y < 1778 ? 0.055 : 0.04; }
+// Debt card line: the rate actually charged this year.
+function debtLine(S) {
+  const ir = interestRate(S, yearOf(S.t));
+  const pct = +(ir * 100).toFixed(1) + '%';
+  return S.debt > 0 ? `interest ${money(S.debt * ir)} a year (${pct})` : pct + ' a year';
+}
+// Why debt grew over the last full year, or null. Uses the year-end debt kept in bookHist.
+function debtGrowth(S) {
+  const h = S.bookHist, a = h[h.length - 2], b = h[h.length - 1];
+  if (!a || !b || a.debt == null || b.debt == null) return null;
+  const rise = b.debt - a.debt;
+  if (rise < 250000 || rise < a.debt * 0.03) return null;
+  return { year: b.y, from: a.debt, to: b.debt, interest: b.interest || 0, div: b.div, res: b.res };
+}
+function debtText(S) {
+  const g = debtGrowth(S); if (!g) return '';
+  const trade = g.res >= 0 ? `trading earned ${money(g.res)} after interest, not enough to cover the rest` : `trading lost ${money(-g.res)} after interest`;
+  return `Debt rose from ${money(g.from)} to ${money(g.to)} in ${g.year}. Interest cost ${money(g.interest)}, dividends ${money(g.div)}, and ${trade}. Whatever the treasury lacks is borrowed${S.auto.borrow ? ', including the silver and hulls for your standing orders' : ''}, and next year's interest grows with it.`;
+}
 function monthly(S) {
   const y = yearOf(S.t);
   const ir = interestRate(S, y); S.cash -= S.debt * ir / 12; S.books.interest += S.debt * ir / 12;
@@ -453,7 +478,7 @@ function yearly(S) {
     if (c.length) foundPost(S, c[Math.floor(rnd() * c.length)], true);
   }
   A.lastYr = { ...A.yr, year: y - 1 }; A.yr = blankYr();
-  S.booksLast = S.books; S.bookHist.push({ y: S.books.y, res: tradeResult(S.books), div: S.books.div, sales: salesTotal(S.books), shipsIn: S.books.shipsIn, shipsOut: S.books.shipsOut, cost: S.books.hulls + S.books.silver });
+  S.booksLast = S.books; S.bookHist.push({ y: S.books.y, res: tradeResult(S.books), div: S.books.div, sales: salesTotal(S.books), shipsIn: S.books.shipsIn, shipsOut: S.books.shipsOut, cost: S.books.hulls + S.books.silver, interest: S.books.interest, debt: S.debt });
   if (S.bookHist.length > 40) S.bookHist.shift();
   S.books = blankBooks(y);
 }
@@ -497,7 +522,7 @@ function autoEquip(S) {
 }
 function audit(S) {
   const y = yearOf(S.t);
-  S.auditLast = S.t; S.cash -= 60000; S.books.other += 60000;
+  S.auditLast = S.t; payOther(S, 60000);
   let whv = 0; for (const g of GOOD_KEYS) whv += S.wh[g] * (S.lastPrice[g] || market(S, g, y).p0 * 0.8);
   const R = S.report; let asv = 0;
   if (R) { asv = R.capital; for (const g of GOOD_KEYS) asv += R.stock[g] * GOODS[g].cost; }

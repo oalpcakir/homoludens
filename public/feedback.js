@@ -17,7 +17,7 @@
 .hlfb-game.hlfb-dc{left:56px}\
 .hlfb-game:hover,.hlfb-game:focus-visible{opacity:1}\
 .hlfb-game svg{width:17px;height:17px;fill:currentColor}\
-.hlfb-game.hlfb-away{transform:translateY(70px);opacity:0;pointer-events:none}\
+.hlfb-away,.hlfb-game.hlfb-away{transform:translateY(70px);opacity:0;pointer-events:none}\
 @media (max-width:699px){.hlfb-game.hlfb-dc{display:none!important}.hlfb-game.hlfb-btn{left:0;bottom:auto;top:58%;width:26px;height:44px;border-radius:0 10px 10px 0;border-left:0;opacity:.5}.hlfb-game.hlfb-btn svg{width:14px;height:14px}.hlfb-game.hlfb-away{transform:translateX(-30px)}}\
 .hlfb-dc svg{width:16px;height:16px;fill:currentColor}\
 .hlfb-btn:focus-visible,.hlfb-box :focus-visible{outline:2px solid #b07a1e;outline-offset:2px}\
@@ -69,20 +69,21 @@
     dc.addEventListener('click', function () { try { if (window.posthog && window.posthog.capture) window.posthog.capture('discord_click', { game: GAME, page: location.pathname }); } catch (e) {} });
     document.body.appendChild(dc); document.body.appendChild(btn); document.body.appendChild(ov);
     // In a game, the two pills shrink to small round icons in the bottom-left corner, so they never cover the game's own controls
-    // (Borderlines' zoom buttons, Kantar's market, the tea receipt). On a phone they slide away while scrolling down.
+    // (Borderlines' zoom buttons, Kantar's market, the tea receipt).
     if (GAME !== 'portal') {
       btn.classList.add('hlfb-game'); dc.classList.add('hlfb-game');
       btn.setAttribute('aria-label', 'Send feedback'); btn.title = 'Send feedback'; dc.title = 'Homo Ludens Discord';
       btn.innerHTML = '<span style="font-size:0">Feedback</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 6v2h10V9H7zm0 4v1.8h7V13H7z"/></svg>';
-      var lastY = window.scrollY;
-      window.addEventListener('scroll', function () {
-        if (window.innerWidth >= 700) return;
-        var y = window.scrollY, atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 40;
-        var away = y > lastY + 4 && y > 80 && !atEnd;
-        if (y < lastY - 4 || atEnd || y < 80) away = false;
-        if (Math.abs(y - lastY) > 4) { btn.classList.toggle('hlfb-away', away); dc.classList.toggle('hlfb-away', away); lastY = y; }
-      }, { passive: true });
     }
+    // on a phone, both pills slide away while scrolling down (portal and games), so they never sit on top of text
+    var lastY = window.scrollY;
+    window.addEventListener('scroll', function () {
+      if (window.innerWidth >= 700) return;
+      var y = window.scrollY, atEnd = y + window.innerHeight >= document.documentElement.scrollHeight - 40;
+      var away = y > lastY + 4 && y > 80 && !atEnd;
+      if (y < lastY - 4 || atEnd || y < 80) away = false;
+      if (Math.abs(y - lastY) > 4) { btn.classList.toggle('hlfb-away', away); dc.classList.toggle('hlfb-away', away); lastY = y; }
+    }, { passive: true });
     // on a phone, step aside while one of the game's own dialogs (aria-modal) is open, so they never cover its buttons
     setInterval(function () {
       var small = window.innerWidth < 700, open = false;

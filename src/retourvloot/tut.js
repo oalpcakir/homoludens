@@ -72,12 +72,12 @@ function tutCheck() {
   }
 }
 function showCredits() {
-  pauseForModal();
+  const was = S.speed; pauseForModal();
   const rows = Object.entries(EVENT_IMAGES).map(([id, im]) => `<li><a href="${im.page}" target="_blank" rel="noopener">${esc(im.title)}</a>, ${esc(im.maker)}, ${esc(im.date)}. Rijksmuseum ${esc(im.obj)}.</li>`).join('');
   showSheet(`<h3 id="m-title">Sources</h3><div class="body">
     <p>Retourvloot is a game, not a textbook. Prices, costs and quantities are simplified so the economy can be played. Dates, people, events and the human costs in the other ledger follow the historical record.</p>
     <p>Main works behind it: Femme Gaastra, <i>The Dutch East India Company</i>; J. R. Bruijn, F. S. Gaastra and I. Schöffer, <i>Dutch-Asiatic Shipping</i>; Jan de Vries and Ad van der Woude, <i>The First Modern Economy</i>; Om Prakash on the Asian trade; Markus Vink on slavery in the Indian Ocean; Chris Nierstrasz on the Company's decline.</p>
     <p>All images come from the Rijksmuseum, Amsterdam, and are in the public domain (CC0):</p><ul class="credits">${rows}</ul></div>
     <div class="actions"><button type="button" class="btn" id="m-go">Close</button></div>`);
-  $('m-go').addEventListener('click', () => { closeSheet(); S.speed = resumeSpeed; render(); });
+  $('m-go').addEventListener('click', () => { closeSheet(); S.speed = was; render(); });
 }

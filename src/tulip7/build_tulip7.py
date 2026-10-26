@@ -35,7 +35,20 @@ head = f'''<meta name="description" content="{desc}">
 <script src="/feedback.js" defer data-game="tulip"></script>
 <script src="/next.js" defer data-game="tulip"></script>'''
 src = page()
-anchor = '<meta name="viewport" content="width=device-width,initial-scale=1">'
+# Achievement tiles (only seen in the Achievements sheet and the unlock toast) and the three big backgrounds are
+# written to img/ instead of being inlined: the tiles load only when shown, and the backgrounds load in parallel
+# while the page itself (now ~1 MB lighter) is already running. The carpet fallback is not needed when ui_table exists.
+import re
+os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
+def _lazy(m):
+    open(os.path.join(OUT, "img", m.group(1) + ".webp"), "wb").write(base64.b64decode(m.group(2)))
+    return f'"{m.group(1)}": "img/{m.group(1)}.webp"'
+src, n = re.subn(r'"(ach_[a-z0-9_]+|bg_cover|bg_tavern|ui_table)":\s*"data:image/webp;base64,([A-Za-z0-9+/=]+)"', _lazy, src)
+assert n >= 13, n
+if '"ui_table": "img/' in src:
+    src, k = re.subn(r'const CARPET="[^"]*";', 'const CARPET="";', src)
+    assert k == 1, k
+anchor = '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
 assert src.count(anchor) == 1
 os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8", newline="\n") as fh:

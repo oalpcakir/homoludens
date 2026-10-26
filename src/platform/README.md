@@ -54,7 +54,8 @@ the result text when it has no site to link to; Polder exposes two test hooks in
 | Retourvloot | clock running (speed > 0) and no modal | "Start a new company" after an ending | none | never during play: a run is one long session, the only natural break is the end |
 | A Cup of Tea | desk open (intro and end door closed) | "next scene" link at the end of scene 1 and 2 | none | three pages in one package (`index.html`, `2/index.html`, `3/index.html`), progress `cupoftea.v1` shared |
 | Polder | its own (`PF.start/stop`, modal-aware) | between regions (its own) | one extra finger per region, given only on `adFinished` | first visit starts Friesland directly |
-| Kantar | match in progress with no sheet open | "Play again" after a match | none | onboarding, EN/TR, teacher, AI, resume and stats unchanged; first visit follows a Turkish platform locale |
+| Kantar | match in progress with no sheet open | "Play again" after a match | none | onboarding, EN/TR, teacher, AI, resume and stats unchanged; first visit follows a Turkish platform locale; end-of-match art and the phone background ship in `img/` |
+| Tulip 7 | a game on and no menu sheet open (the in-evening questions count as play) | "Play again" or "Sit down at the table" | none | backgrounds and achievement tiles ship in `img/`; next-game id `tulip` |
 
 ## itch.io settings (Edit game → Uploads / Embed options)
 
@@ -67,6 +68,7 @@ Kind of project: **HTML**. Upload the ZIP, tick **This file will be played in th
 | A Cup of Tea | Click to launch in fullscreen | (none) | yes | **yes** | no |
 | Polder | Embed in page | 1280 × 720 | yes | no | no (mouse game) |
 | Kantar | Embed in page | 1280 × 800 | yes | **yes** (taller than 720) | yes |
+| Tulip 7 | Embed in page | 1280 × 720 | yes | no | yes (portrait and landscape) |
 
 "Click to play" can stay on (sound starts on that click anyway). Limits checked by the builder: < 1000 files,
 relative paths only, `index.html` at the root.
@@ -74,13 +76,13 @@ relative paths only, `index.html` at the root.
 ## Store screenshots
 
 `src/platform/screenshots/<game>-1280x720.jpg`: one real gameplay screenshot per game for the itch.io page and the
-CrazyGames submission (the portal's smaller copies are in `src/portal/shots/`). Covers and preview videos still need making.
+CrazyGames submission (the portal's smaller copies are in `src/portal/shots/`). Covers for itch.io (630 × 500) are in `covers/`; store page text for every game is in `STORES.md`. CrazyGames preview videos still need making.
 
 ## CrazyGames submission (Developer Portal)
 
-- Upload: HTML5, the `-crazygames.zip`. Orientation: landscape (all five).
-- Mobile: Kantar and Borderlines yes; Retourvloot, A Cup of Tea, Polder desktop only.
-- "Does your game save progress?": **yes** for all five (saves go through the Data module).
+- Upload: HTML5, the `-crazygames.zip`. Orientation: landscape (Tulip 7 also plays in portrait).
+- Mobile: Tulip 7, Kantar and Borderlines yes; Retourvloot, A Cup of Tea, Polder desktop only.
+- "Does your game save progress?": **yes** for all six (saves go through the Data module).
 - Fullscreen: CrazyGames provides it; no game has its own fullscreen button.
 - Test in the portal's QA tool before submitting: gameplay start/stop in the event log, a midgame at the break,
   Polder's rewarded flow, saves after a reload, mute from the CrazyGames menu.

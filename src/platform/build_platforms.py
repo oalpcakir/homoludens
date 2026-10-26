@@ -72,7 +72,7 @@ GAMES = {
     },
     "kantar": {
         "pages": {"index.html": "kantar/index.html"},
-        "assets": [],
+        "assets": [("kantar/img", "img")],  # end-of-match art and the phone background, loaded when shown
         "playing": """function () { var $ = function (i) { return document.getElementById(i); };
             return typeof G !== 'undefined' && G && started && G.phase !== 'end' && $('rules').classList.contains('hide') && $('endM').classList.contains('hide') && $('statsM').classList.contains('hide'); }""",
         # first visit on CrazyGames: follow the platform's language when it is Turkish
@@ -80,6 +80,16 @@ GAMES = {
         "adBefore": ["#again"],
         "hide": {"crazygames": ["#endShare", ".hl-back"], "itch": []},
         "keys": ["kantar-set", "kantar-lang", "kantar-game-v04", "kantar.stats.v1", "kantar.record.v1"],
+    },
+    "tulip7": {
+        "next_id": "tulip",  # its id in games.json and next.js
+        "pages": {"index.html": "tulip7/index.html"},
+        "assets": [("tulip7/img", "img")],  # backgrounds and achievement tiles
+        # a game is on and no menu sheet (start, rules, achievements, log) is open; the in-evening questions count as play
+        "playing": "function () { return typeof G !== 'undefined' && G && !G.over && typeof MENU !== 'undefined' && !MENU; }",
+        "adBefore": ['#mbox [data-v="again"]', '#mbox #go'],
+        "hide": {"crazygames": [".foot", "#brand a.hl"], "itch": []},
+        "keys": ["tulip7.save.v1", "tulip7.set", "tulip7.tips", "tulip7.ach", "tulip7.record.v1"],
     },
 }
 
@@ -138,7 +148,7 @@ def page_for(game, platform, cfg, rel_out, src_rel):
     nxt = re.search(r'<script src="/next\.js"[^>]*></script>', html)
     if nxt:
         html = html.replace(nxt.group(0), "" if platform == "crazygames" else
-                            f'<script src="{up}next.js" defer data-game="{game}" data-base="{SITE}"></script>')
+                            f'<script src="{up}next.js" defer data-game="{cfg.get("next_id", game)}" data-base="{SITE}"></script>')
     if platform == "crazygames":
         html = POSTHOG_RE.sub("", html)
     else:

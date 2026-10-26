@@ -28,7 +28,7 @@
     } catch (e) {}
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     // Every page is tagged with its game and version (filled in by the builders from games.json).
-    var GAME = "retourvloot", VERSION = "2026.10.16";
+    var GAME = "retourvloot", VERSION = "2026.10.26";
     // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
     // the matching standard event is sent once next to it, with legacy_event naming the original.
     var STD = {
@@ -138,7 +138,7 @@ i{font-style:italic}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .between{justify-content:space-between}
 label{font-size:13.5px;color:var(--ink-2)}
-input[type=range]{accent-color:var(--delft);width:100%;min-width:0}
+input[type=range]{accent-color:var(--delft);width:100%;min-width:0;margin-inline:0}
 select{background:var(--card);border:1px solid var(--rule);border-radius:3px;padding:4px 6px;max-width:100%}
 .btn{background:var(--delft);color:var(--paper);border:0;border-radius:3px;padding:8px 14px;cursor:pointer;font-weight:500;font-size:14px}
 .btn:hover{filter:brightness(1.1)}
@@ -679,6 +679,11 @@ let _S = null; // current state for cost modifiers
 function shipCost(y) { let c = baseShipCost(y); if (_S && _S.flags.provisions) c += 10000; if (_S && _S.flags.sailorPay) c += 5000; if (_S && _S.flags.convoys) c *= 1.15; return Math.round(c); }
 function shipCap(y) { return y < 1650 ? 450 : y < 1700 ? 600 : 800; }
 function maxSilver(y) { return y < 1700 ? 400000 : 500000; }
+// Pay a one-off cost from the treasury, borrowing on short-term notes whatever it lacks.
+function payOther(S, amt) {
+  if (S.cash < amt) { const b = amt - Math.max(0, S.cash); S.debt += b; S.cash += b; S.books.borrowed += b; }
+  S.cash -= amt; S.books.other += amt;
+}
 function equipShip(S, silver, borrow) {
   const y = yearOf(S.t);
   if (S.flags.nationalised) return false;
@@ -821,7 +826,7 @@ function deliverLetter(S, L) {
     else A.focus = L.focus;
   }
   A.wages = L.wages; A.expansion = L.expansion;
-  if (L.found && !A.posts[L.found] && POSTS[L.found]) {
+  if (L.found && foundablePosts(S, y).includes(L.found)) { // never a post that is lost or out of its period
     const P = POSTS[L.found];
     if (A.capital >= P.cost * 0.6) foundPost(S, L.found, false);
     else { A.pendingFound = L.found; act(S, `Ordered to take up ${P.name}, but Batavia lacks the funds (${money(P.cost)}). Waiting for silver.`); }
@@ -864,9 +869,29 @@ function asiaMonth(S, y) {
   for (const sh of S.ships) if (sh.state === 'asia') { const k = Math.round(sh.crew * mr); sh.crew -= k; shipD += k; }
   S.humans.diedAsia += dd + shipD;
   Object.assign(A.yr, { intra: A.yr.intra + intra, leak: A.yr.leak + leak, upkeep: A.yr.upkeep + upkeep, land: A.yr.land + land, buy: A.yr.buy + buy, deaths: A.yr.deaths + dd + shipD });
+  if (A.pendingFound && !foundablePosts(S, y).includes(A.pendingFound)) A.pendingFound = null;
   if (A.pendingFound && A.capital >= POSTS[A.pendingFound].cost) { const id = A.pendingFound; A.pendingFound = null; if (!A.posts[id]) foundPost(S, id, false); }
 }
 function interestRate(S, y) { return S.flags.credit1773 && y >= 1773 && y < 1778 ? 0.055 : 0.04; }
+// Debt card line: the rate actually charged this year.
+function debtLine(S) {
+  const ir = interestRate(S, yearOf(S.t));
+  const pct = +(ir * 100).toFixed(1) + '%';
+  return S.debt > 0 ? `interest ${money(S.debt * ir)} a year (${pct})` : pct + ' a year';
+}
+// Why debt grew over the last full year, or null. Uses the year-end debt kept in bookHist.
+function debtGrowth(S) {
+  const h = S.bookHist, a = h[h.length - 2], b = h[h.length - 1];
+  if (!a || !b || a.debt == null || b.debt == null) return null;
+  const rise = b.debt - a.debt;
+  if (rise < 250000 || rise < a.debt * 0.03) return null;
+  return { year: b.y, from: a.debt, to: b.debt, interest: b.interest || 0, div: b.div, res: b.res };
+}
+function debtText(S) {
+  const g = debtGrowth(S); if (!g) return '';
+  const trade = g.res >= 0 ? `trading earned ${money(g.res)} after interest, not enough to cover the rest` : `trading lost ${money(-g.res)} after interest`;
+  return `Debt rose from ${money(g.from)} to ${money(g.to)} in ${g.year}. Interest cost ${money(g.interest)}, dividends ${money(g.div)}, and ${trade}. Whatever the treasury lacks is borrowed${S.auto.borrow ? ', including the silver and hulls for your standing orders' : ''}, and next year's interest grows with it.`;
+}
 function monthly(S) {
   const y = yearOf(S.t);
   const ir = interestRate(S, y); S.cash -= S.debt * ir / 12; S.books.interest += S.debt * ir / 12;
@@ -929,7 +954,7 @@ function yearly(S) {
     if (c.length) foundPost(S, c[Math.floor(rnd() * c.length)], true);
   }
   A.lastYr = { ...A.yr, year: y - 1 }; A.yr = blankYr();
-  S.booksLast = S.books; S.bookHist.push({ y: S.books.y, res: tradeResult(S.books), div: S.books.div, sales: salesTotal(S.books), shipsIn: S.books.shipsIn, shipsOut: S.books.shipsOut, cost: S.books.hulls + S.books.silver });
+  S.booksLast = S.books; S.bookHist.push({ y: S.books.y, res: tradeResult(S.books), div: S.books.div, sales: salesTotal(S.books), shipsIn: S.books.shipsIn, shipsOut: S.books.shipsOut, cost: S.books.hulls + S.books.silver, interest: S.books.interest, debt: S.debt });
   if (S.bookHist.length > 40) S.bookHist.shift();
   S.books = blankBooks(y);
 }
@@ -973,7 +998,7 @@ function autoEquip(S) {
 }
 function audit(S) {
   const y = yearOf(S.t);
-  S.auditLast = S.t; S.cash -= 60000; S.books.other += 60000;
+  S.auditLast = S.t; payOther(S, 60000);
   let whv = 0; for (const g of GOOD_KEYS) whv += S.wh[g] * (S.lastPrice[g] || market(S, g, y).p0 * 0.8);
   const R = S.report; let asv = 0;
   if (R) { asv = R.capital; for (const g of GOOD_KEYS) asv += R.stock[g] * GOODS[g].cost; }
@@ -1292,7 +1317,7 @@ const EVENTS = [
     title: 'Batavia begs for silver',
     body: S => `<p>The Governor-General writes that Batavia had only <b>${money(S.report.capital)}</b> left. He cannot pay the garrisons, and the cloth merchants of Coromandel will not sell on credit. Without silver, he warns, the posts will produce nothing and the ships will come home half empty.</p>`,
     choices: [
-      { label: 'Equip an emergency silver ship', hint: `A ship with the most silver allowed, ready for the next sailing. Borrowed if need be.`, fx: S => { equipShip(S, maxSilver(yearOf(S.t)), true); return 'A ship is loaded with silver at Texel.'; } },
+      { label: 'Equip an emergency silver ship', hint: `A ship with the most silver allowed, ready for the next sailing. Borrowed if need be.`, show: S => !S.flags.nationalised, fx: S => { if (!equipShip(S, maxSilver(yearOf(S.t)), true)) return 'The committee equips the ships now. No emergency ship can be sent.'; return 'A ship is loaded with silver at Texel.'; } },
       { label: 'Let Batavia borrow from Chinese merchants', hint: 'ƒ1M in Batavia now; ƒ80k a year in interest for 15 years.', fx: S => { S.asia.capital += 1e6; S.asia.loanUntil = yearOf(S.t) + 15; return 'Batavia may borrow locally.'; } },
       { label: 'Order him to economise', hint: 'Upkeep −15% for five years, but posts produce 15% less.', fx: S => { S.asia.economyUntil = yearOf(S.t) + 5; return 'Orders to economise sail east.'; } },
     ],
@@ -1313,7 +1338,7 @@ const EVENTS = [
     title: 'Fortunes in Batavia',
     body: S => `<p>Company servants on modest salaries are returning from Asia rich. The fiscal in Batavia estimates that about <b>${Math.round(S.report.leak * 100)}%</b> of what the Company spends in Asia is lost to private trade, smuggling and false accounts.</p>`,
     choices: [
-      { label: 'Send a commissioner-general to investigate', hint: 'ƒ150k. Losses fall by 40% for ten years.', fx: S => { S.cash -= 150000; S.books.other += 150000; S.asia.commissionUntil = yearOf(S.t) + 10; return 'A commissioner sails with full powers.'; } },
+      { label: 'Send a commissioner-general to investigate', hint: 'ƒ150k. Losses fall by 40% for ten years.', fx: S => { payOther(S, 150000); S.asia.commissionUntil = yearOf(S.t) + 10; return 'A commissioner sails with full powers.'; } },
       { label: 'Let servants trade privately, as the English do', hint: 'Losses halve for good, but more spices are smuggled to rivals.', fx: S => { S.flags.privateTrade = true; return 'Private trade is allowed, within limits.'; } },
       { label: 'Ignore it', fx: () => 'Nothing is done.' },
     ],
@@ -1427,6 +1452,15 @@ const EVENTS = [
   },
 ];
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map(e => [e.id, e]));
+// Choices a player can see now (a choice may carry show(S)). Index i stays the index into e.choices.
+function visibleChoices(S, e) { return e.choices.map((c, i) => ({ c, i })).filter(({ c }) => !c.show || c.show(S)); }
+// Resolve the event at the head of the queue. The UI only peeks at S.queue[0] while the card is open,
+// so a save taken meanwhile still holds the event; it leaves the queue only here, when the player answers.
+function resolveEvent(S, id, i) {
+  const k = S.queue.indexOf(id); if (k >= 0) S.queue.splice(k, 1);
+  const e = EVENT_BY_ID[id], c = e && e.choices[i];
+  return c && c.fx ? (c.fx(S) || '') : '';
+}
 
 function conquerBanda(S) {
   S.flags.banda = 'conquest';
@@ -1839,14 +1873,14 @@ function tutCheck() {
   }
 }
 function showCredits() {
-  pauseForModal();
+  const was = S.speed; pauseForModal();
   const rows = Object.entries(EVENT_IMAGES).map(([id, im]) => `<li><a href="${im.page}" target="_blank" rel="noopener">${esc(im.title)}</a>, ${esc(im.maker)}, ${esc(im.date)}. Rijksmuseum ${esc(im.obj)}.</li>`).join('');
   showSheet(`<h3 id="m-title">Sources</h3><div class="body">
     <p>Retourvloot is a game, not a textbook. Prices, costs and quantities are simplified so the economy can be played. Dates, people, events and the human costs in the other ledger follow the historical record.</p>
     <p>Main works behind it: Femme Gaastra, <i>The Dutch East India Company</i>; J. R. Bruijn, F. S. Gaastra and I. Schöffer, <i>Dutch-Asiatic Shipping</i>; Jan de Vries and Ad van der Woude, <i>The First Modern Economy</i>; Om Prakash on the Asian trade; Markus Vink on slavery in the Indian Ocean; Chris Nierstrasz on the Company's decline.</p>
     <p>All images come from the Rijksmuseum, Amsterdam, and are in the public domain (CC0):</p><ul class="credits">${rows}</ul></div>
     <div class="actions"><button type="button" class="btn" id="m-go">Close</button></div>`);
-  $('m-go').addEventListener('click', () => { closeSheet(); S.speed = resumeSpeed; render(); });
+  $('m-go').addEventListener('click', () => { closeSheet(); S.speed = was; render(); });
 }
 
 // ================= Retourvloot — interface =================
@@ -1882,7 +1916,10 @@ function buildStatic() {
   seg($('f-exp'), 'expansion', EXPANSION);
   $('f-found').addEventListener('change', e => { S.letter = { ...S.letter, found: e.target.value, issued: S.t }; S.letterSealed = false; render(); tutHook('letter'); });
 
-  document.querySelectorAll('.speed button').forEach(b => b.addEventListener('click', () => { if (modalOpen || S.ended) return; if (coachStep && !coachStep.wait && !tutActive()) endCtx(); S.speed = +b.dataset.speed; if (S.speed) resumeSpeed = S.speed; render(); if (S.speed) tutHook('speed'); }));
+  document.querySelectorAll('.speed button').forEach(b => b.addEventListener('click', () => { if (modalOpen || S.ended) return; if (coachStep && !coachStep.wait && !tutActive()) endCtx(); S.speed = +b.dataset.speed; if (S.speed) resumeSpeed = S.speed;
+    // Starting time before the guide asks for it ends the guide: its steps describe a paused desk.
+    if (S.speed && tutActive() && coachStep && coachStep.wait !== 'speed') { track('tutorial_skip', { step: coachStep.id, by: 'speed' }); S.tut.i = TUT.length - 1; tutNext(); }
+    render(); if (S.speed) tutHook('speed'); }));
   $('silver').addEventListener('input', e => { S.silver = +e.target.value; render(); });
   $('equip').addEventListener('click', () => { if (equipShip(S, S.silver, false)) { log(S, `The ${S.ships[S.ships.length - 1].name} is equipped with ${money(S.silver)} in silver.`, 'ship'); if (S.shipSeq === 1) track('first_ship'); tutHook('equip'); } render(); });
   $('auto').addEventListener('change', e => { S.auto.n = +e.target.value; render(); tutHook('auto'); });
@@ -1925,7 +1962,7 @@ function render() {
   const res = tradeResult(S.books);
   $('s-cash2').innerHTML = `trading this year: <span class="${res < 0 ? 'neg' : 'pos'}">${res < 0 ? '' : '+'}${money(res)}</span>`;
   $('s-debt').textContent = money(S.debt); $('s-debt').className = S.debt > 0 ? 'neg' : '';
-  $('s-debt2').textContent = S.debt > 0 ? `interest ${money(S.debt * 0.04)} a year` : '4% a year';
+  $('s-debt2').textContent = debtLine(S);
   $('s-share').textContent = Math.round(S.share) + '%';
   $('s-share2').textContent = `market value ${money(NOMINAL * S.share / 100)}`;
   $('s-exp').textContent = y >= 1610 ? Math.round(expectation(S)) + '%' : '—';
@@ -2054,6 +2091,8 @@ function renderLetter(y) {
     $('f-found').innerHTML = opts.join('');
     $('f-found').value = f.includes(S.letter.found) ? S.letter.found : '';
   }
+  // a post that was lost or closed while it sat in the letter must not sail with the next ship
+  if (S.letter.found && !foundablePosts(S, y).includes(S.letter.found)) S.letter = { ...S.letter, found: '' };
   const P = POSTS[S.letter.found];
   $('found-desc').innerHTML = P ? `${P.desc} Costs Batavia <b>${money(P.cost)}</b> once, then <b>${money(P.upkeep)}</b> a year and <b>${num(P.garrison)}</b> men.${P.good ? ` Supplies up to ${num(P.cap)} t of ${GOODS[P.good].name.toLowerCase()} a year.` : P.intra ? ' Makes trade within Asia more profitable.' : P.silver ? ' Sends Japanese silver to Batavia every year.' : ''}` : f.length ? `${f.length} place${f.length > 1 ? 's' : ''} open to you: ${f.map(id => POSTS[id].name).join(', ')}.` : 'Nothing new is open to you in this period.';
   for (const [n, v] of [['focus', S.letter.focus], ['wages', S.letter.wages], ['expansion', S.letter.expansion]]) { const r = $(n + '-' + v); if (r && !r.checked) r.checked = true; }
@@ -2163,6 +2202,7 @@ function renderNotes(y) {
   const open = foundablePosts(S, y).filter(id => !(R && R.posts.includes(id)));
   const nextAim = AIMS.find(a => !S.mono[a.id] && ((a.id === 'cinnamon' && open.includes('ceylon')) || (a.id === 'strait' && open.includes('malacca')) || (a.id === 'japan' && open.includes('japan'))));
   if (nextAim) n.push(['good', `Within reach: ${nextAim.name} (${nextAim.where}). ${nextAim.how}`]);
+  const dt = debtText(S); if (dt) n.unshift(['warn', dt]);
   if (!n.length) n.push(['good', 'Nothing needs your attention. Let the fleets sail.']);
   $('notes').innerHTML = n.slice(0, 4).map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join('');
 }
@@ -2342,7 +2382,8 @@ function openQueued() {
   if (modalOpen) return;
   if (S.ended) { showEnd(); return; }
   if (!S.queue.length) return;
-  const id = S.queue.shift(); const e = EVENT_BY_ID[id]; if (!e) return;
+  // peek, don't shift: the event leaves the queue in resolveEvent(), so a save while the card is open keeps it
+  const id = S.queue[0]; const e = EVENT_BY_ID[id]; if (!e) { S.queue.shift(); openQueued(); return; }
   const wasRunning = S.speed > 0 || id !== 'founding';
   pauseForModal();
   const info = e.choices.length === 1 && !e.choices[0].fx;
@@ -2351,19 +2392,20 @@ function openQueued() {
   const fig = im ? `<figure class="plate"><img src="${im.src}" alt="${esc(im.title)}" onerror="this.closest('figure').remove()"><figcaption><i>${esc(im.title)}</i>, ${esc(im.maker)}, ${esc(im.date)}. <a href="${im.page}" target="_blank" rel="noopener">Rijksmuseum ${esc(im.obj)}</a></figcaption></figure>` : '';
   showSheet(`${fig}<div class="when">${when}</div><h3 id="m-title">${e.title}</h3><div class="body">${e.body(S)}</div>
     ${info ? `<div class="hist"><b>Historical note</b>${e.history}</div><div class="actions"><button type="button" class="btn" data-c="0">${e.choices[0].label}</button></div>`
-      : `<div class="choices">${e.choices.map((c, i) => `<button type="button" class="choice" data-c="${i}"><b>${c.label}</b>${c.hint ? `<span>${c.hint}</span>` : ''}</button>`).join('')}</div>`}`);
+      : `<div class="choices">${visibleChoices(S, e).map(({ c, i }) => `<button type="button" class="choice" data-c="${i}"><b>${c.label}</b>${c.hint ? `<span>${c.hint}</span>` : ''}</button>`).join('')}</div>`}`);
   $('sheet').querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => {
     const c = e.choices[+b.dataset.c];
-    if (info) { closeSheet(); S.speed = wasRunning ? resumeSpeed : 5; if (id === 'founding' && tutActive()) { S.speed = 0; render(); tutStart(); return; } render(); openQueued(); return; }
+    if (S.queue[0] !== id) return; // already answered (double click)
+    if (info) { resolveEvent(S, id, 0); closeSheet(); S.speed = wasRunning ? resumeSpeed : 5; if (id === 'founding' && tutActive()) { S.speed = 0; save(); render(); tutStart(); return; } save(); render(); openQueued(); return; }
     track('event_choice', { event: id, choice: +b.dataset.c, label: c.label });
-    const out = c.fx ? c.fx(S) : '';
+    const out = resolveEvent(S, id, +b.dataset.c); save();
     $('sheet').querySelector('.choices').outerHTML = `${out ? `<p class="outcome">${out}</p>` : ''}<div class="hist"><b>What actually happened</b>${e.history}</div><div class="actions"><button type="button" class="btn" id="m-go">Continue</button></div>`;
     $('m-go').focus();
     $('m-go').addEventListener('click', () => { closeSheet(); S.speed = resumeSpeed; render(); openQueued(); });
   }));
 }
 function showAudit(a) {
-  pauseForModal();
+  const was = S.speed; pauseForModal();
   const ratio = a.equity / a.mcap;
   showSheet(`<div class="when">${fmtDate(S.t)}</div><h3 id="m-title">An audit of the Company</h3>
     <div class="body"><p>The Company has never drawn up a single balance sheet. Amsterdam keeps its own books; Batavia keeps others, and they reach Holland a year late. Your clerks have tried to add them up.</p>
@@ -2373,14 +2415,14 @@ function showAudit(a) {
     <p style="margin-top:10px">${ratio < 0.6 ? 'The shares trade far above anything the books can show. The figures leak out, and the price slips.' : 'The books roughly support the share price. Shareholders are reassured.'}</p></div>
     <div class="hist"><b>Historical note</b>The VOC never produced consolidated accounts. In the 1720s its shares traded around six times face value, while profit as a share of turnover was falling from about 18% toward 2–3%.</div>
     <div class="actions"><button type="button" class="btn" id="m-go">Close</button></div>`);
-  $('m-go').addEventListener('click', () => { closeSheet(); S.speed = resumeSpeed; render(); });
+  $('m-go').addEventListener('click', () => { closeSheet(); S.speed = was; render(); });
 }
 function showEnd() {
   S.speed = 0; hideCoach();
   if (!S.endTracked) {
     try { const runs = JSON.parse(localStorage.getItem('retourvloot.runs') || '[]'); runs.push({ endYear: yearOf(S.t), reason: S.endReason || 'charter', avgDiv: +(S.stats.divPaid / NOMINAL * 100 / Math.max(1, S.stats.divYears)).toFixed(1), debt: Math.round(S.debt), monopolies: AIMS.filter(a => S.mono[a.id] > 0).length, voyages: S.stats.voyages, at: Date.now() }); localStorage.setItem('retourvloot.runs', JSON.stringify(runs.slice(-20))); } catch (e) {}
   }
-  if (!S.endTracked) { S.endTracked = true; track('game_end', { reason: S.endReason || 'charter', debt: Math.round(S.debt), cash: Math.round(S.cash), dividends: Math.round(S.stats.divPaid), monopolies: AIMS.filter(a => S.mono[a.id] > 0).length, voyages: S.stats.voyages }); }
+  if (!S.endTracked) { S.endTracked = true; save(); track('game_end', { reason: S.endReason || 'charter', debt: Math.round(S.debt), cash: Math.round(S.cash), dividends: Math.round(S.stats.divPaid), monopolies: AIMS.filter(a => S.mono[a.id] > 0).length, voyages: S.stats.voyages }); }
   const yrs = Math.max(1, S.stats.divYears);
   const bankrupt = S.endReason === 'bankrupt';
   showSheet(`<div class="when">${fmtDate(S.t)}</div><div class="cart"><img src="img/rv_cartouche.webp" alt="" onerror="this.parentNode.classList.add('noimg')"><h3 id="m-title">${bankrupt ? 'The States take over' : 'The charter expires'}</h3></div>
@@ -2399,6 +2441,36 @@ function showEnd() {
     <div data-hl-next></div>
     <div class="actions"><button type="button" class="btn" id="m-new">Start a new company</button></div>`);
   $('m-new').addEventListener('click', () => { S = newState(); save(); closeSheet(); syncInputs(); render(); track('game_start', { restart: true }); openQueued(); });
+}
+
+// ---------- keyboard ----------
+// Esc closes a card that has a single way out (never picks a choice for you); Tab stays inside an open card;
+// Space pauses and resumes when focus is not on a control.
+function onKey(e) {
+  if (modalOpen) {
+    const sheet = $('sheet');
+    if (e.key === 'Escape') {
+      const out = sheet.querySelector('#m-go') || (sheet.querySelectorAll('[data-c]').length === 1 && !sheet.querySelector('.choices') ? sheet.querySelector('[data-c]') : null);
+      if (out) { e.preventDefault(); out.click(); }
+      return;
+    }
+    if (e.key === 'Tab') {
+      const f = [...sheet.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter(el => !el.disabled && el.offsetParent !== null);
+      if (!f.length) { e.preventDefault(); return; }
+      const first = f[0], last = f[f.length - 1], a = document.activeElement;
+      if (!sheet.contains(a)) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
+    }
+    return;
+  }
+  if (e.key === ' ' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const t = e.target, tag = t && t.tagName;
+    if (t && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA|BUTTON|A|SUMMARY|OPTION)$/.test(tag) || t.closest('.hlfb-ov, .small-screen:not([hidden])'))) return;
+    if (!$('small-screen').hidden) return;
+    const b = document.querySelector(`.speed button[data-speed="${S.speed ? 0 : resumeSpeed}"]`);
+    if (b) { e.preventDefault(); b.click(); }
+  }
 }
 
 // ---------- main loop ----------
@@ -2433,6 +2505,7 @@ function start(data) {
   if (tutActive() && !S.queue.length && !modalOpen) tutStart();
   window.addEventListener('scroll', positionCoach, { passive: true }); window.addEventListener('resize', positionCoach);
   $('credits').addEventListener('click', showCredits);
+  document.addEventListener('keydown', onKey);
   const sn = $('small-screen'); let dismissed = false; try { dismissed = sessionStorage.getItem('rv-small') === '1'; } catch (e) {}
   if (window.innerWidth < 900 && !dismissed) { sn.hidden = false; $('small-go').addEventListener('click', () => { sn.hidden = true; try { sessionStorage.setItem('rv-small', '1'); } catch (e) {} }); }
   requestAnimationFrame(frame);

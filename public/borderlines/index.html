@@ -36,7 +36,7 @@
     } catch (e) {}
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     // Every page is tagged with its game and version (filled in by the builders from games.json).
-    var GAME = "borderlines", VERSION = "2026.10.16";
+    var GAME = "borderlines", VERSION = "2026.10.26";
     // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
     // the matching standard event is sent once next to it, with legacy_event naming the original.
     var STD = {
@@ -238,6 +238,13 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
 @media (max-width: 1100px) { .zoomctl { bottom: auto; top: 45%; } }
 @media (min-width: 641px) and (max-width: 1100px) { .zoomctl { right: auto; left: 16px; } }
 @media (max-width: 420px) { .modes { grid-template-columns: 1fr; } }
+/* on a phone the result card fills the lower half: the zoom buttons would sit on top of the score */
+@media (max-width: 640px) { body.showing-result .zoomctl { display: none; } }
+/* the site's feedback / Discord icons sit in the bottom-left corner (from 700px): keep the toolbar clear of them */
+@media (min-width: 700px) { #tools { max-width: calc(100% - 220px); } }
+/* touch screens: no keyboard shortcuts to advertise */
+.hint .touch { display: none; }
+@media (hover: none) { kbd, .hint .keys { display: none; } .hint .touch { display: inline; } }
 @media (prefers-reduced-motion: no-preference) {
   .truth { animation: draw-in .6s ease-out; }
   @keyframes draw-in { from { stroke-opacity: 0; } }
@@ -259,7 +266,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     <div class="eyebrow"><span id="roundLabel">Round 1 / 5</span><span id="tierLabel"></span></div>
     <div class="year" id="qYear">1530</div>
     <div class="state"><span class="swatch"></span><span id="qState">Ottoman Empire</span></div>
-    <div class="hint">Paint the land it ruled. Outline an area and use Fill to flood it.<br>Space + drag to move · scroll to zoom</div>
+    <div class="hint">Paint the land it ruled. Outline an area and use Fill to flood it.<br><span class="keys">Space + drag to move · scroll to zoom</span><span class="touch">Two fingers to move and zoom</span></div>
     <div class="penalty" id="qPenalty" hidden></div>
   </div>
 
@@ -282,6 +289,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
       <button id="hCapital" type="button">Capital<span class="cost">−15</span></button>
     </div>
     <button id="btnSubmit" type="button" class="primary">Submit<kbd>↵</kbd></button>
+    <button id="btnQuit" type="button" title="Back to the menu. Your finished rounds are kept.">Menu</button>
   </div>
 
   <div id="result" class="card" hidden>
@@ -296,7 +304,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     <div class="fact" id="rFact"></div>
     <div class="note">Borders are approximate. Data: historical-basemaps, Natural Earth.</div>
     <div class="actions"><button id="btnNext" type="button" class="primary">Next round<kbd>↵</kbd></button></div>
-    <div class="result-links"><button id="btnReport" type="button" class="linkbtn">Report a problem with this realm</button></div>
+    <div class="result-links links"><button id="btnReport" type="button" class="linkbtn">Report a problem with this realm</button><button id="btnResMenu" type="button" class="linkbtn">Menu</button></div>
   </div>
 
   <div id="coach" class="card" hidden>
@@ -427,19 +435,27 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
       .catch((e) => { delete dayCache[i]; throw e; });
     return dayCache[i];
   }
-  const pastDays = () => Math.max(0, Math.min(todayIdx(), NDAYS));
-  // Practice candidates: the pool itself plus a light reference to every realm of every past daily.
-  function practicePool() {
-    const refs = DATA.pool.map((q) => ({ id: q.id, tier: q.tier, q }));
-    const tiers = DATA.days || DATA.daily.map((d) => d.map((q) => q.tier));
-    for (let d = 0; d < pastDays(); d++) tiers[d].forEach((t, j) => refs.push({ id: `d${d + 1}-${j + 1}`, tier: t, day: d, j }));
-    return refs;
-  }
   const store = {
     get(k) { try { return JSON.parse(localStorage.getItem("borderlines:" + k)); } catch (_) { return null; } },
     set(k, v) { try { localStorage.setItem("borderlines:" + k, JSON.stringify(v)); } catch (_) {} },
+    del(k) { try { localStorage.removeItem("borderlines:" + k); } catch (_) {} },
   };
   const dayRec = (i) => store.get("day:" + i);
+  // A daily in progress: the rounds already submitted (their scores are final) and the hints taken in the current one.
+  const runRec = (i) => { const r = store.get("run:" + i); return r && Array.isArray(r.scores) && r.scores.length < 5 ? r : null; };
+  // Practice candidates: the pool itself plus every realm of the dailies this player has already finished,
+  // so practice never shows the answers of a daily that is still open in the archive.
+  function practiceDays() {
+    const out = [], last = Math.min(todayIdx(), NDAYS - 1);
+    for (let d = 0; d <= last; d++) if (dayRec(d)) out.push(d);
+    return out;
+  }
+  function practicePool() {
+    const refs = DATA.pool.map((q) => ({ id: q.id, tier: q.tier, q }));
+    const tiers = DATA.days || DATA.daily.map((d) => d.map((q) => q.tier));
+    for (const d of practiceDays()) tiers[d].forEach((t, j) => refs.push({ id: `d${d + 1}-${j + 1}`, tier: t, day: d, j }));
+    return refs;
+  }
   function streak() {
     let i = todayIdx(), n = 0;
     const onTime = (r) => r && !r.late;
@@ -798,7 +814,15 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     h[kind] = true;
     kind === "region" ? showRegion() : showCapital();
     track("hint_used", { kind, qid: Q[state.round].id, mode: state.mode });
+    saveRun();
     updateButtons();
+  }
+  // Dailies (and archive games) are saved after every submit and hint, so a reload or the Menu button
+  // resumes at the next unplayed round; finished rounds keep their score and can't be replayed.
+  const isDailyMode = () => state.mode === "daily" || state.mode === "archive";
+  function saveRun() {
+    if (!isDailyMode()) return;
+    store.set("run:" + state.day, { scores: state.scores.slice(0, state.phase === "play" ? state.round : state.round + 1), raw: state.raw, hints: state.hints, late: state.mode === "archive" });
   }
 
   // ---------- rounds ----------
@@ -817,8 +841,14 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     ["cartouche", "tools"].forEach((id) => ($(id).hidden = false));
     ["result", "intro", "end", "archive", "stats", "report", "tutDone"].forEach((id) => ($(id).hidden = true));
     stage.classList.remove("idle");
+    document.body.classList.remove("showing-result");
+    $("btnQuit").hidden = state.mode === "tutorial";
     topG.selectAll("*").remove();
     resetZoom(); setTool("brush"); render(); updateButtons();
+    // a resumed round shows the hints already paid for
+    const h = state.hints[state.round] || {};
+    if (h.capital) showCapital();
+    if (h.region) showRegion();
   }
 
   function paintBounds() {
@@ -889,6 +919,8 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     track("round_submit", { mode: state.mode, day: state.day, round: state.round, qid: q.id, tier: q.tier, score: final, raw: r.score, coverage: +r.coverage.toFixed(3), precision: +r.precision.toFixed(3), hintPenalty: pen, ms: Date.now() - state.roundStart, strokes: actions.filter((a) => a.type === "stroke").length, fills: actions.filter((a) => a.type === "fill").length });
     if (state.mode === "tutorial") coach(-1);
     state.phase = "result";
+    saveRun();
+    document.body.classList.add("showing-result");
     $("brush").hidden = true;
     topG.insert("path", ".cap").attr("class", "truth").attr("d", path(q.geometry));
     if (!(state.hints[state.round] || {}).capital) showCapital();
@@ -905,7 +937,7 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     requestAnimationFrame(() => requestAnimationFrame(() => { $("rCovBar").style.width = pct(r.coverage); $("rPrecBar").style.width = pct(r.precision); }));
     $("rFact").textContent = q.fact;
     $("btnNext").innerHTML = (state.mode === "tutorial" ? "Finish tutorial" : state.round === Q.length - 1 ? "See final score" : "Next round") + "<kbd>↵</kbd>";
-    $("btnReport").hidden = state.mode === "tutorial";
+    $("btnReport").hidden = $("btnResMenu").hidden = state.mode === "tutorial";
     $("result").hidden = false; $("tools").hidden = true;
     stage.classList.add("pan"); stage.classList.remove("fill");
     updateButtons();
@@ -915,6 +947,7 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
   function hideGame() {
     ["cartouche", "tools", "result"].forEach((id) => ($(id).hidden = true));
     topG.selectAll("*").remove(); actions = []; diff = null; render();
+    document.body.classList.remove("showing-result");
     stage.classList.add("idle"); stage.classList.remove("pan", "fill");
     resetZoom();
   }
@@ -927,6 +960,7 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     if (isDaily && !saved) {
       const prev = dayRec(state.day);
       if (!prev) store.set("day:" + state.day, { scores: state.scores, late: state.mode === "archive" });
+      store.del("run:" + state.day);
     }
     $("eKind").textContent = state.mode === "practice" ? "Practice" : `Daily #${state.day + 1} · ${fmtDate(dayDate(state.day))}`;
     $("eTotal").textContent = `${total} / ${max}`;
@@ -940,8 +974,12 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     const cfgSite = (window.BORDERLINES_CONFIG || {}).siteUrl;
     const site = cfgSite === "" ? "" : cfgSite || "https://homoludens.oalpcakir.workers.dev/borderlines/";
     $("eShare").textContent = `Borderlines ${isDaily ? "#" + (state.day + 1) : "Practice"} · ${total}/${max}\n${Q.map((q, i) => emoji(state.scores[i] ?? 0)).join("")}${site ? `\n${site}s/${total}${isDaily ? "?d=" + (state.day + 1) : ""}` : ""}`;
-    const st = streak();
-    $("eNext").textContent = state.mode === "daily" ? `Streak: ${st} ${st === 1 ? "day" : "days"} · Next challenge in ${untilMidnight()}` : "";
+    const st = streak(), ti = todayIdx(), streakTxt = `Streak: ${st} ${st === 1 ? "day" : "days"}`;
+    // the countdown only makes sense for today's daily; for any other day, point at today's if it is still open
+    if (!isDaily) $("eNext").textContent = "";
+    else if (state.day === ti) $("eNext").textContent = `${streakTxt} · Next challenge in ${untilMidnight()}`;
+    else if (ti >= 0 && ti < NDAYS && !dayRec(ti)) $("eNext").textContent = `${streakTxt} · Today's challenge (#${ti + 1}) is ready`;
+    else $("eNext").textContent = streakTxt;
     $("btnAgain").textContent = state.mode === "practice" ? "Play again" : "Practice";
     $("end").hidden = false;
   }
@@ -956,13 +994,22 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
   }
   async function play(mode, day) {
     if (mode !== "tutorial" && !store.get("tutorialDone")) { state.afterTutorial = [mode, day]; return startTutorial(); }
+    if (mode !== "practice" && dayRec(day)) return showSaved(day);
     const qs = await loadRealms(() => (mode === "practice" ? practiceSet() : getDay(day)));
     if (!qs) return;
     state.mode = mode; state.round = 0; state.scores = []; state.raw = []; state.hints = []; state.firstPaint = false;
-    track("game_start", { mode, day: mode === "practice" ? null : day });
+    const run = mode !== "practice" && runRec(day);
+    if (run) {
+      // resume: finished rounds keep their scores; a daily resumed after its own day counts as an archive game
+      state.scores = run.scores.slice(); state.raw = (run.raw || []).slice(0, 5); state.hints = Array.isArray(run.hints) ? run.hints : [];
+      state.round = state.scores.length;
+      if (run.late || day !== todayIdx()) state.mode = "archive";
+    }
+    track(run ? "game_resume" : "game_start", { mode: state.mode, day: mode === "practice" ? null : day, round: state.round });
     setSize(1);
     if (mode !== "practice") state.day = day;
     Q = qs;
+    if (state.round >= Q.length) return showEnd();
     startRound();
   }
   async function showSaved(day) {
@@ -980,8 +1027,9 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     $("streak").textContent = st ? `Streak ${st}` : "";
     if (!has) { $("dailyTitle").textContent = "Daily Challenge"; $("dailySub").textContent = "New realms coming soon"; $("btnDaily").disabled = true; }
     else if (rec) { $("dailyTitle").textContent = `Daily #${i + 1} · ${sum(rec.scores)}/500`; $("dailySub").textContent = `Done · next in ${untilMidnight()}`; $("btnDaily").disabled = false; }
+    else if (runRec(i)) { const r = runRec(i); $("dailyTitle").textContent = `Continue Daily #${i + 1}`; $("dailySub").textContent = `Round ${r.scores.length + 1} of 5 · ${sum(r.scores)} points so far`; $("btnDaily").disabled = false; }
     else { $("dailyTitle").textContent = `Daily #${i + 1}`; $("dailySub").textContent = `5 new realms · ${fmtDate(today())}`; $("btnDaily").disabled = false; }
-    $("practiceSub").textContent = `5 random realms from ${DATA.pool.length + 5 * pastDays()}`;
+    $("practiceSub").textContent = `5 random realms from ${DATA.pool.length + 5 * practiceDays().length}`;
     if (has && !rec) getDay(i).catch(() => {}); // warm up today's realms
     $("intro").hidden = false;
   }
@@ -992,7 +1040,8 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     const rows = [];
     for (let d = last; d >= 0; d--) {
       const rec = dayRec(d);
-      rows.push(`<div><span class="y">#${d + 1}</span><span>${fmtDate(dayDate(d))}</span>${rec ? `<button type="button" data-view="${d}">${sum(rec.scores)}/500</button>` : `<button type="button" class="primary" data-play="${d}">Play</button>`}</div>`);
+      const run = !rec && runRec(d);
+      rows.push(`<div><span class="y">#${d + 1}</span><span>${fmtDate(dayDate(d))}</span>${rec ? `<button type="button" data-view="${d}">${sum(rec.scores)}/500</button>` : `<button type="button" class="primary" data-play="${d}">${run ? `Resume ${run.scores.length + 1}/5` : "Play"}</button>`}</div>`);
     }
     $("aList").innerHTML = rows.length ? rows.join("") : `<div class="empty">No past challenges yet. Today's is the first.</div>`;
     $("archive").hidden = false;
@@ -1035,6 +1084,8 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     if (i < 0 || state.mode !== "tutorial") { $("coach").hidden = true; return; }
     $("coach").hidden = false;
     $("coachText").textContent = COACH;
+    // sit just above the toolbar, however many rows it wraps to (phones place it near the top in CSS)
+    $("coach").style.bottom = W > 640 ? `calc(${Math.round($("tools").offsetHeight) + 28}px + env(safe-area-inset-bottom, 0px))` : "";
   }
   function startTutorial() {
     const aus = DATA.pool.find((q) => q.label === "Australia") || DATA.pool[0];
@@ -1157,10 +1208,26 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
     catch (_) { toast("Select the text to copy it"); }
   };
 
+  $("btnQuit").onclick = renderHome; // the run is already saved after each submit
+  $("btnResMenu").onclick = renderHome;
+
+  const feedbackOpen = () => { const o = document.querySelector(".hlfb-ov"); return !!(o && !o.hidden); };
   document.addEventListener("keydown", (e) => {
-    if (e.target.closest && e.target.closest("input, textarea, select")) return; // let forms (the report note) type normally
+    const tgt = e.target.closest ? e.target : document.body;
+    if (tgt.closest("input, textarea, select")) return; // let forms (the report note) type normally
+    if (feedbackOpen()) return; // the site's feedback dialog handles its own keys (Escape closes it)
+    if (e.key === "Escape") {
+      $("shareMenu").hidden = true;
+      if (!$("report").hidden) { $("report").hidden = true; return; }
+      if (!$("stats").hidden || !$("archive").hidden) { renderHome(); return; }
+      return;
+    }
     if (!$("report").hidden) return;
-    if (e.code === "Space") { if (!spaceDown) { spaceDown = true; stage.classList.add("pan"); $("brush").hidden = true; } e.preventDefault(); return; }
+    // Enter and Space on a focused button or link outside the toolbar activate it, as usual
+    const ctl = tgt.closest("button, a[href], [role=button]");
+    if (ctl && !ctl.closest("#tools") && (e.key === "Enter" || e.code === "Space")) return;
+    if (e.code === "Space") {
+      if (state.phase !== "play" && state.phase !== "result") return; if (!spaceDown) { spaceDown = true; stage.classList.add("pan"); $("brush").hidden = true; } e.preventDefault(); return; }
     if (state.phase === "play") {
       const k = e.key.toLowerCase();
       if (e.key === "Enter") { e.preventDefault(); submit(); }
@@ -1179,7 +1246,13 @@ window.GAME_DATA = {"dailyStart":"2026-09-27","pool":[{"id":"b1","year":-500,"ye
   window.addEventListener("resize", () => {
     // Paint lives in map coordinates of the old size; rescale it to the new map.
     const oldW = worldPx[2] - worldPx[0], ox = worldPx[0], oy = worldPx[1];
+    // keep the place the player was looking at in the middle of the screen (a rotated phone, a resized window)
+    const centre = projection.invert(zoomT.invert([W / 2, H / 2])), k0 = zoomT.k;
     setup();
+    if (state.phase === "play" || state.phase === "result") {
+      const c = projection(centre);
+      d3.select(stage).interrupt().call(zoom.transform, d3.zoomIdentity.translate(W / 2 - c[0] * k0, H / 2 - c[1] * k0).scale(k0));
+    } else resetZoom();
     const f = (worldPx[2] - worldPx[0]) / oldW;
     if (Math.abs(f - 1) > 1e-6 || Math.abs(worldPx[0] - ox) > 1e-6 || Math.abs(worldPx[1] - oy) > 1e-6) {
       const m = (p) => [worldPx[0] + (p[0] - ox) * f, worldPx[1] + (p[1] - oy) * f];

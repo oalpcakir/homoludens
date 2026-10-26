@@ -62,7 +62,8 @@ Python 3.10+ and Node 18+. The site itself has no npm packages; `package.json` o
 - Rules, balance, save keys, analytics events and history notes: `tulip7/STATUS.md` and `tulip7/TASARIM.md`.
 
 ## platform/ (itch.io and CrazyGames)
-- `build_platforms.py` makes all ten upload ZIPs from `public/` (`dist/platforms/<platform>/<game>-<platform>.zip`); `platform.js` is the adapter they share (SDK, saves, sound, gameplay events, ads, links). `npm run platforms` tests the packages with a mocked CrazyGames SDK. Settings for both stores and what is still open: `platform/README.md`.
+- `optimize_images.py` shrinks new game art (WebP re-encode, portal plates resized) after an art pack is merged; run it by hand, then rebuild. It never touches the full-size masters, and `optimized-images.json` stops it from re-encoding an image twice.
+- `build_platforms.py` makes all twelve upload ZIPs (six games × itch.io and CrazyGames) from `public/` (`dist/platforms/<platform>/<game>-<platform>.zip`); `platform.js` is the adapter they share (SDK, saves, sound, gameplay events, ads, links). `npm run platforms` tests the packages with a mocked CrazyGames SDK. Settings for both stores and what is still open: `platform/README.md`; store page text, covers and screenshots: `platform/STORES.md`.
 - `public/next.js` — the "next game" card at the end of every game (`<div data-hl-next>`); in itch packages it links to the site.
 
 ## Deploy & feedback

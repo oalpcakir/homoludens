@@ -55,8 +55,9 @@ class Game {
     this.seed = o.seed ?? (Math.random() * 2**32 >>> 0);
     this.r = rng(this.seed);
     this.emit = o.emit || (() => {});
-    this.players = o.players.map((p, i) => ({i, name:p.name, short:p.short || p.name, style:p.style, human:!!p.human, agent:p.agent,
-      total:0, purse:0, units:0, settled:0, atCrash:0, cards:[], nums:[], mods:[], x2:false, second:null,
+    // persona comes from the seat's definition (never from a save), so saves made before personas existed still resume
+    this.players = o.players.map((p, i) => ({i, name:p.name, short:p.short || p.name, style:p.style, persona:PERSONAS[p.persona] ? p.persona : null, human:!!p.human, agent:p.agent,
+      total:0, purse:0, units:0, cost:0, soldE:-1, settled:0, atCrash:0, cards:[], nums:[], mods:[], x2:false, second:null,
       status:'idle', dest:null, frozen:false, last:0, lastG:0, lastDest:null, busts:0, books:0, sold:0}));
     this.draw = shuffle(makeDeck(), this.r); this.discard = [];
     this.dealer = Math.floor(this.r() * this.players.length);
@@ -68,7 +69,7 @@ class Game {
   }
   /* Saves happen at the start of an evening (after the crash roll) and before Alkmaar / each classic round. */
   snapshot(){
-    const K = ['total','purse','units','settled','atCrash','busts','books','sold','fear'];
+    const K = ['total','purse','units','cost','soldE','settled','atCrash','busts','books','sold','fear'];
     return {v:1, mode:this.mode, seed:this.seed, rs:this.r.s, dealer:this.dealer, evening:this.evening, crashed:this.crashed,
       crashAfter:this.crashAfter ?? null, alkmaar:this.alkmaar, round:this.round, history:this.history,
       draw:this.draw.map(c => c.uid), discard:this.discard.map(c => c.uid),
@@ -79,7 +80,12 @@ class Game {
     this.r.s = s.rs; this.dealer = s.dealer; this.evening = s.evening; this.crashed = s.crashed; this.crashAfter = s.crashAfter ?? undefined;
     this.alkmaar = s.alkmaar; this.round = s.round; this.history = s.history || [];
     this.draw = s.draw.map(u => byUid[u]); this.discard = s.discard.map(u => byUid[u]);
-    s.players.forEach((q, i) => Object.assign(this.players[i], q));
+    s.players.forEach((q, i) => {
+      const p = Object.assign(this.players[i], q);
+      // saves from before personas: no cost basis or last sale recorded; treat the paper as bought tonight
+      if (q.cost === undefined) p.cost = (p.units || 0) * (this.mode === 'winter' && !this.crashed ? IDX[this.evening] : 1);
+      if (q.soldE === undefined) p.soldE = -1;
+    });
     this.resumed = true;
   }
   save(){ if (this.onSave) this.onSave(this.snapshot()); }
@@ -118,7 +124,7 @@ class Game {
         for (const p of P){
           if (p.units > 0 && await p.agent.sell(this, p)){
             const v = p.units * IDX[e], fee = Math.round(v * FEE);
-            p.purse += Math.round(v) - fee; p.sold += Math.round(v) - fee; p.units = 0;
+            p.purse += Math.round(v) - fee; p.sold += Math.round(v) - fee; p.units = 0; p.cost = 0; p.soldE = e;
             await this.emit('sold', {p, v:Math.round(v), fee});
           } else if (p.units > 0) await this.emit('held', {p});
         }
@@ -216,7 +222,7 @@ class Game {
       if (this.mode === 'classic'){ p.total += s; continue; }
       const g = s * GPP;
       if (this.alkmaar){ p.purse += 2 * g; p.lastG = 2 * g; p.lastDest = 'purse'; continue; }
-      p.units += g / this.idx; p.lastG = g; p.lastDest = 'paper';
+      p.units += g / this.idx; p.cost += g; p.lastG = g; p.lastDest = 'paper';
     }
     this.history.push(this.players.map(p => ({s:p.last, st:p.status, d:p.lastDest})));
     await this.emit('roundEnd', {});
@@ -225,56 +231,131 @@ class Game {
   }
 }
 
-/* ---------- AI ---------- */
+/* ---------- AI ----------
+   Every trader sees exactly what the human sees (the cards on the table, the pile count, the board, who cashed in) and
+   plays by the same rules. 'style' is the plain expected-value player (used for the human proxy in the simulator and as
+   the fallback); a 'persona' gives each of the three archive traders his own habits. */
 const STYLES = {
   cautious:{riskW:1.45, margin:.14, fear:1.3, label:'Cautious'},
   balanced:{riskW:1.0,  margin:.05, fear:1.0, label:'Steady'},
   greedy:  {riskW:.68,  margin:-.03, fear:.5, label:'Greedy'}
+};
+/* The three traders from the archives (Goldgar 2007; Garber 1989). Where the record is thin the habit comes from the
+   documented role: Van Cuyck the buyer who backed out over a guarantor, De Busscher the seller and tulip connoisseur,
+   Van Meeckeren one of the 37 who spent over 400 guilders.
+   - table: how he decides between another paper and standing up in an evening
+   - winter: when he cashes in his paper */
+const PERSONAS = {
+  cuyck:{style:'cautious', label:'Wants a guarantor',
+    table:"Stands up as soon as the chance of a duplicate reaches about one in five, unless he holds a Rouwkoop: that is his guarantor, and then he goes on.",
+    specials:"Seals his own evening with Wijnkoop when he has something to lose; sends the Seghsman to whoever has most to lose.",
+    winter:"Sells everything as soon as the board shows a crash risk above one in ten, and sooner if anyone else at the table has just cashed in.",
+    risk:.21, guarded:.40, warn:.10},
+  busscher:{style:'balanced', label:'Collects the book',
+    table:"Counts sorts, not odds: he wants five different tulips, and with six he chances the seventh for the book.",
+    specials:"Uses Wijnkoop to stop whoever is closest to a full book; calls the Seghsman on himself while his book is thin.",
+    winter:"A seller: he takes his profit once his paper is worth two and a half times what he wrote, and always before a 20% crash risk.",
+    sorts:5, bookOdds:.36, maxOdds:.30, profit:2.5, riskOut:.20},
+  meeckeren:{style:'greedy', label:'Big spender',
+    table:"Plays to a sum, not to the odds: he takes papers until his evening is worth about 30, and only a very bad pile stops him sooner.",
+    specials:"Calls the Seghsman on himself when the pile looks safe; never wastes wine money on his own evening.",
+    winter:"Rides the index: holds his paper deep into the winter and cashes in only when the crash risk looks too steep to him.",
+    target:30, maxOdds:.45, ride:.20}
 };
 function holdEV(g, fear = 1){ // what one guilder of paper is expected to be worth at the next evening, as this trader reads the risk
   const e = g.evening; if (e + 1 >= IDX.length) return SETTLE;
   const r = Math.min(1, RISK[e + 1] * fear); return (1 - r) * IDX[e + 1] / IDX[e] + r * SETTLE;
 }
 function lead(g, p){ return Math.max(...g.players.filter(q => q !== p).map(q => g.standing(q))); }
+function behind(g, p){ return g.mode === 'classic' ? lead(g, p) - p.total > 60 : lead(g, p) - g.standing(p) > 1500; }
+const sum = a => a.reduce((x, y) => x + y, 0);
+/* expected-value rule: the default for the human proxy and any seat without a persona */
+function evHit(g, p, w){
+  const S = g.roundScore(p), pl = g.pile();
+  let dup = 0, gain = 0, newNum = 0;
+  for (const c of pl){
+    if (c.k === 'num'){ if (p.nums.includes(c.v)) dup++; else { gain += c.v * (p.x2 ? 2 : 1); newNum++; } }
+    else if (c.k === 'mod') gain += c.v; else if (c.k === 'x2') gain += p.x2 ? 0 : sum(p.nums);
+    else gain += 3;
+  }
+  const pb = dup / pl.length; if (pb === 0) return 'hit';
+  let up = gain / pl.length; if (p.nums.length === 6) up += BONUS * newNum / pl.length;
+  const down = p.second ? 3 : S;
+  return up > pb * down * w ? 'hit' : 'stay';
+}
+const TABLE = {
+  cuyck(g, p, P){
+    const od = g.bustOdds(p), S = g.roundScore(p);
+    let thr = p.second ? P.guarded : P.risk;
+    if (behind(g, p)) thr += .05;
+    if (S < 8) thr += .08; // not worth standing up for nothing
+    return od < thr ? 'hit' : 'stay';
+  },
+  busscher(g, p, P){
+    const od = p.second ? 0 : g.bustOdds(p), n = p.nums.length;
+    if (n >= 6) return od <= P.bookOdds ? 'hit' : 'stay';
+    if (od >= P.maxOdds) return 'stay';
+    return n < P.sorts || od < .12 ? 'hit' : 'stay';
+  },
+  meeckeren(g, p, P){
+    const od = p.second ? 0 : g.bustOdds(p), S = g.roundScore(p);
+    let target = P.target + (behind(g, p) ? 8 : 0);
+    if (S >= target) return od < .06 ? 'hit' : 'stay';
+    return od < P.maxOdds ? 'hit' : 'stay';
+  }
+};
+const CASH = { // true = cash it all in now
+  cuyck(g, p, P){
+    const rn = g.riskNext(), e = g.evening;
+    if (rn >= P.warn) return true;
+    // someone else just cashed in (this evening, or last evening): if they sell, he sells
+    if (rn > 0 && g.players.some(q => q !== p && q.soldE >= e - 1 && q.soldE >= 0)) return true;
+    return false;
+  },
+  busscher(g, p, P){
+    const v = p.units * IDX[g.evening];
+    return g.riskNext() * p.fear >= P.riskOut || (p.cost > 0 && v >= p.cost * P.profit);
+  },
+  meeckeren(g, p, P){ return g.riskNext() * p.fear >= P.ride; }
+};
 const AI = {
   hitOrStay(g, p){
-    const st = STYLES[p.style], S = g.roundScore(p), pl = g.pile();
-    let dup = 0, gain = 0, newNum = 0;
-    for (const c of pl){
-      if (c.k === 'num'){ if (p.nums.includes(c.v)) dup++; else { gain += c.v * (p.x2 ? 2 : 1); newNum++; } }
-      else if (c.k === 'mod') gain += c.v; else if (c.k === 'x2') gain += p.x2 ? 0 : p.nums.reduce((a,b)=>a+b,0);
-      else gain += 3;
-    }
-    const pb = dup / pl.length; if (pb === 0) return 'hit';
-    let up = gain / pl.length; if (p.nums.length === 6) up += BONUS * newNum / pl.length;
-    const down = p.second ? 3 : S;
+    const S = g.roundScore(p);
+    if (g.pile().length && g.bustOdds(p) === 0) return 'hit';
     if (g.mode === 'classic' && p.total + S >= TARGET) return 'stay';
-    let w = st.riskW;
-    if (g.mode === 'classic'){ const gap = lead(g, p) - p.total; if (gap > 60) w *= .8; }
-    else { const gap = lead(g, p) - g.standing(p); if (gap > 1500) w *= .8; }
-    return up > pb * down * w ? 'hit' : 'stay';
+    if (p.persona) return TABLE[p.persona](g, p, PERSONAS[p.persona]);
+    const st = STYLES[p.style]; let w = st.riskW; if (behind(g, p)) w *= .8;
+    return evHit(g, p, w);
   },
   dest(g, p){ return holdEV(g, p.fear) > 1 + STYLES[p.style].margin ? 'paper' : 'purse'; },
-  sell(g, p){ return holdEV(g, p.fear) < 1 + STYLES[p.style].margin + FEE; },
+  sell(g, p){
+    if (g.evening + 1 >= IDX.length) return true; // after evening VIII the crash is certain
+    if (p.persona) return CASH[p.persona](g, p, PERSONAS[p.persona]);
+    return holdEV(g, p.fear) < 1 + STYLES[p.style].margin + FEE;
+  },
   target(g, p, c, cands){
-    const opp = cands.filter(q => q !== p), norm = g.mode === 'classic' ? 10 : 150;
+    const opp = cands.filter(q => q !== p), norm = g.mode === 'classic' ? 10 : 150, me = cands.includes(p), pe = p.persona;
+    const atRisk = q => g.roundScore(q) * g.bustOdds(q);
+    const pick = f => { let best = null, bv = -1e9; for (const q of opp){ const v = f(q); if (v > bv){ bv = v; best = q; } } return best || p; };
     if (c.k === 'freeze'){
-      if (cands.includes(p) && g.roundScore(p) * g.bustOdds(p) > 7) return p;
-      let best = null, bv = -1e9;
-      for (const q of opp){
+      if (pe === 'cuyck' && me && g.roundScore(p) >= 15 && g.bustOdds(p) >= .08) return p;
+      if (pe === 'busscher') { const q = pick(q => q.nums.length * 10 + g.roundScore(q) / 4); if (q.nums.length >= 5) return q; }
+      if (pe !== 'meeckeren' && me && atRisk(p) > 7) return p;
+      return pick(q => {
         let v = g.standing(q) / norm + Math.max(0, 22 - g.roundScore(q));
         if (g.mode === 'winter' && !g.alkmaar && holdEV(g) < 1) v += g.roundScore(q) * (1 - holdEV(g)) * 2;
-        if (v > bv){ bv = v; best = q; }
-      }
-      return best || p;
+        return v;
+      });
     }
-    let best = null, bv = -1e9;
-    for (const q of opp){ const v = g.roundScore(q) * g.bustOdds(q) + g.standing(q) / (norm * 2); if (v > bv){ bv = v; best = q; } }
-    return best || p;
+    // Seghsman: three more papers
+    if (me && pe === 'meeckeren' && g.bustOdds(p) < .15 && p.nums.length <= 4) return p;
+    if (me && pe === 'busscher' && p.nums.length <= 2 && g.bustOdds(p) < .1) return p;
+    if (pe === 'cuyck') return pick(q => atRisk(q) * 2 + g.standing(q) / (norm * 4));
+    return pick(q => atRisk(q) + g.standing(q) / (norm * 2));
   },
   giveSecond(g, p, cands){ return cands.reduce((a, b) => g.standing(a) <= g.standing(b) ? a : b); }
 };
 
-return {VARIETIES, SPECIAL, IDX, RISK, EVENINGS, SETTLE, FEE, BONUS, GPP, TARGET, ROMAN, STYLES, Game, AI, holdEV, makeDeck};
+return {VARIETIES, SPECIAL, IDX, RISK, EVENINGS, SETTLE, FEE, BONUS, GPP, TARGET, ROMAN, STYLES, PERSONAS, Game, AI, holdEV, makeDeck};
 })();
 if (typeof module !== 'undefined') module.exports = T7;

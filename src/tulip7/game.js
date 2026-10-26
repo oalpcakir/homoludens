@@ -1,4 +1,4 @@
-const {VARIETIES:V, SPECIAL:SP, IDX, RISK, EVENINGS:EV, ROMAN, STYLES, GPP, FEE, SETTLE, TARGET} = T7;
+const {VARIETIES:V, SPECIAL:SP, IDX, RISK, EVENINGS:EV, ROMAN, STYLES, PERSONAS, GPP, FEE, SETTLE, TARGET} = T7;
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fmt = g => 'f' + Math.round(g).toLocaleString('en-US');
@@ -29,7 +29,50 @@ $('#bSound').onclick = () => { SET.sound = !SET.sound; saveSet(); syncBtns(); am
 $('#bRules').onclick = () => showRules();
 $('#bAch').onclick = () => showAchievements();
 $('#bNew').onclick = () => showStart();
+$('#bLog').onclick = () => showLog();
 syncBtns();
+/* ---------- touch, the phone menu, keyboard ---------- */
+const TOUCH = matchMedia('(hover:none) and (pointer:coarse)').matches;
+const COMPACT = matchMedia('(max-width:700px), (max-height:520px) and (orientation:landscape)');
+const LAND = {matches:true}; // the first-game tip always sits in the control panel, above the buttons, so it never covers your hand
+/* On short desktop screens the evening's news moves from above the table into the side column. */
+const SHORT = matchMedia('(min-width:1051px) and (max-height:960px)');
+function placeStrip(){ const st = $('#strip'); if (SHORT.matches) $('.side').insertBefore(st, $('#log')); else $('.main').before(st); }
+placeStrip(); SHORT.addEventListener && SHORT.addEventListener('change', placeStrip);
+document.documentElement.classList.toggle('touch', TOUCH);
+function closeTools(){ $('#tools').classList.remove('open'); $('#bMenu').setAttribute('aria-expanded', 'false'); }
+$('#bMenu').onclick = e => { e.stopPropagation(); const o = !$('#tools').classList.contains('open'); $('#tools').classList.toggle('open', o); $('#bMenu').setAttribute('aria-expanded', String(o)); };
+$('#tools').addEventListener('click', e => { if (e.target.closest('button')) setTimeout(closeTools, 120); });
+document.addEventListener('click', e => { if (!e.target.closest('#tools,#bMenu')) closeTools(); });
+function showLog(){
+  modal(`<div class="kick">The Menniste Bruyloft</div><h2>Tonight at the table</h2><div class="loglist">${ui.log.length ? ui.log.map(x => `<p>${x}</p>`).join('') : '<p>Nothing yet.</p>'}</div><div class="row"><button class="btn primary" data-v="x">Back to the table</button></div>`, '', true);
+  $('#mbox [data-v]').onclick = closeModal;
+}
+/* Tap (or click) a card, a cell of the board or a danger chip to read what its tooltip says: nothing is hover-only. */
+function cardTip(el){
+  const t = el.getAttribute('title') || el.dataset.tip; if (!t) return;
+  const box = $('#cardTip'); box.textContent = t; box.hidden = false; clearTimeout(cardTip.h); cardTip.h = setTimeout(() => box.hidden = true, 4200);
+}
+document.addEventListener('click', e => {
+  if ($('#cardTip').contains(e.target)){ $('#cardTip').hidden = true; return; }
+  const el = e.target.closest('#table .card[title], #board .cell[title], #ctrl .dchip[title], #table .book[title]');
+  if (!el || (ui.pick && el.closest('[data-seat]'))) { if (!e.target.closest('#cardTip')) $('#cardTip').hidden = true; return; }
+  cardTip(el);
+});
+/* Keyboard: T take, S stand, H hold, C cash in, 1-4 choose a player, Enter/Space/Escape skip an announcement, Escape closes a menu. */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toLowerCase(), click = sel => { const b = document.querySelector(sel); if (b){ e.preventDefault(); b.click(); return true; } return false; };
+  if (!$('#ann').hidden){ if (['enter', ' ', 'escape'].includes(k)){ e.preventDefault(); $('#ann').click(); } return; }
+  if (!$('#modal').hidden){ if (k === 'escape' && MENU && G) click('#mbox [data-v="x"], #mbox #back'); return; }
+  if (/^(input|textarea|select)$/i.test(e.target.tagName)) return;
+  if (k === 't') click('#ctrl [data-act="hit"]'); else if (k === 's') click('#ctrl [data-act="stay"]');
+  else if (k === 'h') click('#ctrl [data-cash="hold"]'); else if (k === 'c') click('#ctrl [data-cash="sell"]');
+  else if (/^[1-4]$/.test(k)) click(`#ctrl [data-pick]:nth-child(${k})`);
+  else if (k === 'escape') closeTools();
+});
+/* The control panel is a dock at the bottom of a phone or tablet; the page keeps room for it. */
+if (window.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty('--dockh', $('#ctrl').offsetHeight + 'px')).observe($('#ctrl'));
 const pace = (k = 1) => sleep((SET.fast ? 260 : 680) * k);
 /* Analytics (the site adds PostHog; standalone this does nothing). Event names map to the shared ones in posthog_head.html. */
 function track(ev, props){ try { if (window.posthog && posthog.capture) posthog.capture(ev, Object.assign({mode:G ? G.mode : SET.mode}, props || {})); } catch(e){} }
@@ -89,30 +132,43 @@ function ambience(){
     else if (r < .65) tone(b, 2900 + Math.random() * 500, .5, .012, 'sine'); }, 7000);
   AMB = {src, g, t};
 }
-document.addEventListener('pointerdown', () => ambience(), {once:true});
+/* Browsers (iOS above all) only let sound start inside a tap, click or key press: unlock on each such gesture until it runs. */
+function unlockAudio(){
+  if (!SET.sound) return; const a = ac(); if (!a) return;
+  if (!unlockAudio.done){ try { const b = a.createBuffer(1, 1, 22050), s = a.createBufferSource(); s.buffer = b; s.connect(a.destination); s.start(0); } catch(e){} }
+  if (a.state === 'running'){ unlockAudio.done = true; ambience(); ['pointerup', 'touchend', 'click', 'keydown'].forEach(t => document.removeEventListener(t, unlockAudio, true)); }
+  else a.resume().then(() => { if (a.state === 'running'){ unlockAudio.done = true; ambience(); } }).catch(() => {});
+}
+['pointerup', 'touchend', 'click', 'keydown'].forEach(t => document.addEventListener(t, unlockAudio, true));
+document.addEventListener('visibilitychange', () => { if (!AC) return; try { document.hidden ? AC.suspend() : (SET.sound && AC.resume()); } catch(e){} });
 
 /* ---------- state ---------- */
 let G = null, ui = freshUI();
 function freshUI(){ return {pick:null, turn:null, cash:null, log:[], blown:new Set(), pending:null, bubbles:{}, tip:null, after:false, lastOdds:0, anim:new Set(), flip:null, kinds:new Set(), st:{hold:0, soldAt:-1}}; }
 const RIVALS = [
-  {name:'Joost van Cuyck', short:'Van Cuyck', style:'cautious', img:'c_cuyck',
-   info:`<p>Twenty-nine, from Amsterdam. On 6 February 1637, in this very tavern, he bought a pound of Switsers from Andries de Busscher for 1,100 guilders, about the price of a reasonably nice house, on condition that De Busscher found a guarantor. He paid the <i>wijnkoop</i> for the room's drinks and two shillings for the poor.</p><p>The next morning he backed out: "I am not content with the guarantor. I want to find a guarantor of my own liking." On the 11th a witness told a notary that the two men had shaken hands.</p><p><b>At this table:</b> cautious. Stands up early and reads the risk of a crash high.</p>`},
-  {name:'Andries de Busscher', short:'De Busscher', style:'balanced', img:'c_busscher',
-   info:`<p>Thirty-one, a cooper from Haarlem, from a family of art collectors and himself a connoisseur of tulips: at least one tulip, purple and white striped, was named after him.</p><p>He was the seller in the Switsers deal. His brother-in-law Alister van de Cruijs promised 1,200 guilders as security, and still Van Cuyck walked away.</p><p><b>At this table:</b> steady. Weighs every paper.</p>`},
-  {name:'Abraham van Meeckeren', short:'Van Meeckeren', style:'greedy', img:'c_meeckeren',
-   info:`<p>A brewer from Haarlem. The historian Anne Goldgar found only 37 people in the archives who spent more than 400 guilders on tulips; he is one of them.</p><p><b>At this table:</b> greedy. Takes one more paper than he should and under-reads the risk of a crash.</p>`}
+  {name:'Joost van Cuyck', short:'Van Cuyck', style:'cautious', persona:'cuyck', img:'c_cuyck',
+   info:`<p>Twenty-nine, from Amsterdam. On 6 February 1637, in this very tavern, he bought a pound of Switsers from Andries de Busscher for 1,100 guilders, about the price of a reasonably nice house, on condition that De Busscher found a guarantor. He paid the <i>wijnkoop</i> for the room's drinks and two shillings for the poor.</p><p>The next morning he backed out: "I am not content with the guarantor. I want to find a guarantor of my own liking." On the 11th a witness told a notary that the two men had shaken hands.</p>`},
+  {name:'Andries de Busscher', short:'De Busscher', style:'balanced', persona:'busscher', img:'c_busscher',
+   info:`<p>Thirty-one, a cooper from Haarlem, from a family of art collectors and himself a connoisseur of tulips: at least one tulip, purple and white striped, was named after him.</p><p>He was the seller in the Switsers deal. His brother-in-law Alister van de Cruijs promised 1,200 guilders as security, and still Van Cuyck walked away.</p>`},
+  {name:'Abraham van Meeckeren', short:'Van Meeckeren', style:'greedy', persona:'meeckeren', img:'c_meeckeren',
+   info:`<p>A brewer from Haarlem. The historian Anne Goldgar found only 37 people in the archives who spent more than 400 guilders on tulips; he is one of them.</p>`}
 ];
+/* How each trader plays: written from the engine's own persona notes, so the text and the play cannot drift apart. */
+const playsHTML = r => { const P = PERSONAS[r.persona]; return `<p><b>At this table: ${esc(P.label.toLowerCase())}.</b> ${esc(P.table)} ${esc(P.specials)} In the winter: ${esc(P.winter.charAt(0).toLowerCase() + P.winter.slice(1))}</p>`; };
 const HOST_INFO = `<p>Jan Theunisz kept the Menniste Bruyloft ("the Mennonite Wedding"), a tavern and music house in the Oude Brugsteeg, a tiny alley in Amsterdam near the port and the exchange. It was often the scene of tulip deals. When John Evelyn visited in 1641 he heard water-driven "artificial Musique, noises of Beasts and Chirping of Birds".</p><p>Theunisz was a religious liberal, a printer and a scholar of Latin, Greek, Arabic and Hebrew. He probably died between 1635 and 1640, so his pouring the wine in the winter of 1636 is a small liberty.</p>`;
+/* Host lines. {p} / {q} is a player's name ("You" / "you" for the human, by place in the sentence), {p's} the
+   possessive (Van Cuyck's / your), {p:escapes|escape} the verb for a third person | for you, {,p} a vocative
+   (", Van Cuyck") that is left out when the line is about you, {v} a tulip. fill() does the grammar. */
 const LINES = {
-  bust:["Up in smoke, {p}.","Windhandel! {p}'s papers go up in flames.","Two {v}s in one evening, {p}? Into the fire.","That is what they call trading in wind, {p}."],
-  book:["A full tulip book! {p} closes the evening.","Seven tulips, seven pages. Well played, {p}.","{p} has the whole book. Everyone stops."],
-  freeze:["{p} pays the wine money for {q}. Sealed.","{q}'s evening is sealed with {p}'s wine.","Drink up, {q}. {p} has closed your deal."],
-  freezeSelf:["{p} pays the wine money and stands up.","{p} seals the evening with a glass."],
-  flip3:["The seghsman chalks three more for {q}.","{p} calls the broker: three papers for {q}!","Three strokes on the slate for {q}."],
-  saved:["{p} pays rouwkoop and walks away from the second {v}.","Regret money! {p} escapes the duplicate.","{p} buys their way out. Honour saved."],
-  stay:["{p} stands up.","{p} has had enough for tonight.","{p} calls for wine and stands up."],
+  bust:["Up in smoke{,p}.","Windhandel! {p's} papers go up in flames.","Two {v}s in one evening{,p}? Into the fire.","That is what they call trading in wind{,p}."],
+  book:["A full tulip book! {p} {p:closes|close} the evening.","Seven tulips, seven pages. Well played{,p}.","{p} {p:has|have} the whole book. Everyone stops."],
+  freeze:["{p} {p:pays|pay} the wine money for {q}. Sealed.","{q's} evening is sealed with {p's} wine.","Drink up{,q}. {p} {p:has|have} closed the deal."],
+  freezeSelf:["{p} {p:pays|pay} the wine money and {p:stands|stand} up.","{p} {p:seals|seal} the evening with a glass."],
+  flip3:["The seghsman chalks three more for {q}.","{p} {p:calls|call} the broker: three papers for {q}!","Three strokes on the slate for {q}."],
+  saved:["{p} {p:pays|pay} rouwkoop and {p:walks|walk} away from the second {v}.","Regret money! {p} {p:escapes|escape} the duplicate.","{p} {p:buys|buy} {p:his|your} way out. Honour saved."],
+  stay:["{p} {p:stands|stand} up.","{p} {p:has|have} had enough for tonight.","{p} {p:calls|call} for wine and {p:stands|stand} up."],
   turnYou:["Your turn. Another paper?","Well? The seghsman is waiting.","Another, or a glass of wine?"],
-  give:["{p} hands a spare rouwkoop to {q}."]
+  give:["{p} {p:hands|hand} a spare rouwkoop to {q}."]
 };
 const BUB = {
   hit:["Another!","Keep them coming.","One more paper.","Easy money."],
@@ -122,10 +178,79 @@ const BUB = {
   phew:["Phew!","Ha! Lucky.","Close one!"],
   book:["A full book!","Seven!"],
   sold:["Cashing in.","Coins, please.","I'll take the money."],
-  held:["I'll hold.","It can only go up.","Paper suits me."]
+  held:["I'll hold.","It can only go up.","Paper suits me."],
+  sealed:["Sealed, then.","So be it."],
+  seghsman:["Three more? Very well."],
+  saved:["Regret money, well spent."]
 };
+/* Each trader talks in character (short, period-flavoured). Missing keys fall back to BUB. */
+const TALK = {
+  cuyck:{
+    hit:["One more, if it is sound.","Show me the paper first.","Carefully, now.","One. Only one."],
+    hitRisky:["I have my rouwkoop. Go on.","My guarantor is in my pocket.","Against my better judgement…"],
+    stay:["I am not content. I stand.","Enough. I want a guarantor.","I'll sleep on it.","That will do for a careful man."],
+    bust:["I knew it. I knew it!","This is why one wants a guarantor.","Against my own advice!"],
+    phew:["Too close for an Amsterdammer.","My heart, Jan."],
+    book:["Seven, and every one sound."],
+    sold:["Coin in hand, before the morning.","Paper makes me nervous.","I'll take the money, thank you."],
+    panic:["If he sells, I sell.","He knows something. Coin, please!","I'm out. All of it."],
+    held:["One more evening. Only one.","I'll hold… for now."],
+    sealed:["Sealed? I was standing anyway.","Fine. Wine, and home."],
+    seghsman:["Three? I never agreed to three!","This is not what I signed."],
+    saved:["Regret money. Worth every stuiver.","I walk away. Honour intact."],
+    playFreeze:["I seal it myself, thank you.","Wine money, and I stand."],
+    playSeghsman:["Let the broker chalk three for you."]
+  },
+  busscher:{
+    hit:["A new sort for the book.","Let me see the colours.","Another variety, please.","One more page."],
+    hitRisky:["For the book, I'll chance it.","Six pages. Now the seventh!","A collector cannot stop at six."],
+    stay:["Five sorts. A fine evening.","I close the album here.","A cooper's measure. Enough."],
+    bust:["Two of the same? A collector's shame.","Bah, a duplicate.","Cracked like a bad barrel."],
+    phew:["Nearly sprang a stave."],
+    book:["The whole book! Fetch a painter.","Seven sorts, one album."],
+    sold:["A seller sells. Coins, please.","Sold, and the wine is on the buyer.","Profit taken. Write it down."],
+    held:["Not yet. The price is still climbing.","Paper is fine until it doubles."],
+    sealed:["Sealed. My brother-in-law will vouch for it."],
+    seghsman:["Three more sorts? Gladly."],
+    saved:["Rouwkoop. I keep my good name."],
+    playFreeze:["Wine money: your album is closed.","Sealed, before you finish that book."],
+    playSeghsman:["Broker! Three more for me."]
+  },
+  meeckeren:{
+    hit:["Another! I'm buying.","Pour another, Jan.","Put it on my slate.","More!"],
+    hitRisky:["A brewer doesn't stop at one.","Fortune favours Haarlem!","Bigger barrels, bigger beer."],
+    stay:["Now that's an evening. I stand.","Worth a brewhouse. Enough.","Fill my tankard instead."],
+    bust:["Ach! Put it on my slate.","Smoke! Pour another anyway.","There goes a month of beer."],
+    phew:["Ha! Haarlem luck!"],
+    book:["A full book, and a full tankard!"],
+    sold:["Fine, fine. Coin it.","Even a brewer counts his barrels."],
+    held:["Hold! It can only go up.","I'll ride the index.","Sell? In January?"],
+    taunt:["Coward's coin!","Selling already? Ha!"],
+    sealed:["Sealed? I was just getting started!"],
+    seghsman:["Three more? Bring them!"],
+    saved:["Regret money? I'll drink to that."],
+    playSeghsman:["Three more for me, broker!","I'm buying. Chalk three."],
+    playFreeze:["Wine for the leader. Drink up."]
+  }
+};
+const line = (p, k) => pickA((TALK[p.persona] || {})[k] || BUB[k] || ['…']);
 const pickA = a => a[Math.floor(Math.random() * a.length)];
-const pickLine = (k, d) => pickA(LINES[k]).replace(/\{(\w)\}/g, (_, x) => x === 'p' ? d.p : x === 'q' ? d.q : d.v);
+/* Fill a template for players p and q (objects) and a tulip name v. Used for every line that names a player. */
+function fill(t, d = {}){
+  let out = '';
+  const re = /\{(,)?([pq])('s)?(?::([^|}]*)\|([^}]*))?\}|\{v\}/g; let last = 0, m;
+  while ((m = re.exec(t))){
+    out += t.slice(last, m.index); last = re.lastIndex;
+    if (m[0] === '{v}'){ out += d.v; continue; }
+    const pl = d[m[2]], you = !!(pl && pl.human), start = !out.trim() || /[.!?:]\s*$/.test(out);
+    if (m[4] !== undefined) out += you ? m[5] : m[4];            // verb / pronoun form
+    else if (m[1]) out += you ? '' : ', ' + pl.short;             // vocative
+    else if (m[3]) out += you ? (start ? 'Your' : 'your') : pl.short + "'s";
+    else out += you ? (start ? 'You' : 'you') : pl.short;
+  }
+  return out + t.slice(last);
+}
+const pickLine = (k, d) => fill(pickA(LINES[k]), d);
 function say(t){ $('#say').textContent = t; }
 function log(h){ ui.log.unshift(h); ui.log = ui.log.slice(0, 40); $('#log').innerHTML = ui.log.map(x => `<p>${x}</p>`).join(''); }
 function toast(html, ms = 1100){ const t = $('#toast'); t.innerHTML = html; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), SET.fast ? ms * .6 : ms); }
@@ -144,6 +269,7 @@ function floatAt(p, text, color){
   f.className = 'float'; f.textContent = text; if (color) f.style.color = color;
   f.style.left = (r.left + Math.min(r.width, 240) / 2 - 30) + 'px'; f.style.top = (r.top + 10) + 'px';
   document.body.appendChild(f); setTimeout(() => f.remove(), 1400);
+  const over = f.getBoundingClientRect().right - (innerWidth - 6); if (over > 0) f.style.left = Math.max(6, parseFloat(f.style.left) - over) + 'px';
 }
 
 /* ---------- first-game tips ---------- */
@@ -156,6 +282,7 @@ const TIPS = {
 };
 let TIPSEEN = (() => { try { return JSON.parse(localStorage.getItem('tulip7.tips')) || {}; } catch(e){ return {}; } })();
 function tip(k){ if (!SET.help || TIPSEEN[k] || ui.tip) return; ui.tip = {k, t:TIPS[k]}; render(); }
+const tipHTML = () => `<div class="tip"><span>${esc(ui.tip.t)}</span><button data-tip="1">Got it</button></div>`;
 function dismissTip(){ if (!ui.tip) return; TIPSEEN[ui.tip.k] = 1; try { localStorage.setItem('tulip7.tips', JSON.stringify(TIPSEEN)); } catch(e){} ui.tip = null; render(); }
 
 /* ---------- achievements: each one is a real event of 1624-1638 ---------- */
@@ -197,7 +324,7 @@ function showAchievements(){
   const n = ACH.filter(a => ACHS[a.id]).length;
   modal(`<div class="kick">The winter of 1636–37</div><h2>Achievements</h2><p style="color:var(--muted);margin:4px 0 0">${n} of ${ACH.length}. Each one is something that really happened.</p>
     <div class="achs">${ACH.map(a => `<div class="ach ${ACHS[a.id] ? '' : 'locked'}">${sealHTML(a, !ACHS[a.id])}<b>${esc(a.t)}</b><small>${esc(a.c)}</small>${ACHS[a.id] ? `<div class="h">${esc(a.h)}</div><div class="d">Unlocked ${ACHS[a.id]}</div>` : ''}</div>`).join('')}</div>
-    <div class="row"><button class="btn primary" data-v="x">Close</button></div>`, 'wide');
+    <div class="row"><button class="btn primary" data-v="x">Close</button></div>`, 'wide', true);
   $('#mbox [data-v]').onclick = () => { closeModal(); if (!G) showStart(); };
 }
 
@@ -236,18 +363,22 @@ function bookHTML(p, big){
   return `<div class="book ${big ? '' : 'sm'}" title="Tulip book: ${p.nums.length} of 7 different tulips">${h}${big ? `<small>tulip book ${p.nums.length}/7${p.nums.length >= 5 ? ' · +15 at seven' : ''}</small>` : ''}</div>`;
 }
 function statusChip(p){
-  if (G.turn === p && p.status === 'active') return `<span class="chip turn">${p.human ? 'Your turn' : 'Thinking…'}</span>`;
+  if (G.turn === p && p.status === 'active') return p.human ? `<span class="chip turn">Your turn</span>` : `<span class="chip turn"><span class="lbl">Thinking…</span><b class="val">${p.cards.length ? 'On table ' + tableValue(p) : 'Thinking…'}</b></span>`;
   if (ui.after && p.status !== 'idle'){
     if (p.status === 'bust') return `<span class="chip bust">Up in smoke</span>`;
     return `<span class="chip ${p.status === 'book' ? 'book' : 'stayed'}">${G.mode === 'classic' ? '+' + p.last : '+' + fmt(p.lastG)}${p.status === 'book' ? ' · book' : ''}</span>`;
   }
   const m = {active:['', 'At the table'], stayed:['stayed', p.frozen ? 'Sealed' : 'Stood up'], bust:['bust', 'Up in smoke'], book:['book', 'Tulip book!']};
-  const x = m[p.status]; return x ? `<span class="chip ${x[0]}">${x[1]}</span>` : '';
+  const x = m[p.status]; if (!x) return '';
+  // on a phone the chip also carries what a rival has on the table (the separate tag is hidden there)
+  const has = !p.human && p.status !== 'bust' && p.nums.length + p.mods.length + (p.x2 ? 1 : 0);
+  if (p.status === 'active') return `<span class="chip"><span class="lbl">${x[1]}</span>${has ? `<b class="val">On table ${tableValue(p)}</b>` : `<span class="val">At the table</span>`}</span>`;
+  return `<span class="chip ${x[0]}">${x[1]}${has ? ` <b class="val">${tableValue(p)}</b>` : ''}</span>`;
 }
 function moneyHTML(p){
-  if (G.mode === 'classic') return `<span class="tot">Total <b>${p.total}</b> / ${TARGET}</span>`;
+  if (G.mode === 'classic') return `<span class="tot"><span class="lbl">Total </span><b>${p.total}</b> / ${TARGET}</span>`;
   const paper = G.crashed ? `<span>Settled <b>${fmt(p.settled)}</b></span>` : `<span>Paper <b>${fmt(G.paperValue(p))}</b></span>`;
-  return `<span>Purse <b>${fmt(p.purse)}</b></span>${paper}<span class="tot">Worth <b>${fmt(G.standing(p))}</b></span>`;
+  return `<span>Purse <b>${fmt(p.purse)}</b></span>${paper}<span class="tot"><span class="lbl">Worth </span><b>${fmt(G.standing(p))}</b></span>`;
 }
 const tableValue = p => { const s = G.roundScore(p); return G.mode === 'classic' ? s + ' pts' : fmt(s * GPP * (G.alkmaar ? 2 : 1)); };
 function plateHTML(p){
@@ -258,7 +389,7 @@ function plateHTML(p){
 function belowHTML(p){
   const show = p.nums.length || p.status === 'active';
   const s = ['active', 'stayed', 'book'].includes(p.status) ? G.roundScore(p) : 0;
-  return (show ? bookHTML(p, p.human) : '') + (!p.human && s && !ui.after ? `<span class="tag">on the table <b>${tableValue(p)}</b></span>` : '');
+  return (show ? bookHTML(p, p.human) : '') + (!p.human && s && !ui.after ? `<span class="tag"><span class="lbl">on the table </span><b>${tableValue(p)}</b></span>` : '');
 }
 function buildSeats(){
   const mk = (p, cls) => `<div class="${cls}" data-seat="${p.i}"><div data-part="bub"></div><div class="plate" data-part="plate"></div><div class="hand ${p.human ? '' : 'mini'}" data-part="hand"></div><div class="below" data-part="below"></div></div>`;
@@ -277,11 +408,12 @@ function renderBoard(){
   let h = '';
   for (let e = 0; e < IDX.length; e++){
     const dead = G.crashed && e > G.crashAfter, now = !G.crashed && e === G.evening && !G.alkmaar, past = e < G.evening || (G.crashed && e <= G.crashAfter);
-    const rk = RISK[e] ? `crash ${pct(RISK[e])}` : 'no risk';
-    h += `<div class="cell ${now ? 'now' : ''} ${past && !now ? 'past' : ''} ${dead ? 'dead' : ''}" title="Index ×${IDX[e]} on this evening. Chance the crash comes before this evening: ${pct(RISK[e])}"><b>${ROMAN[e]}</b>${EV[e].short}<div class="ix">×${IDX[e]}</div><div class="rk ${RISK[e] >= .2 ? 'hot' : ''}">${rk}</div></div>`;
+    // .w is the wide text (desktop), .n the narrow one (a phone's one-row board)
+    const rk = RISK[e] ? `<span class="w">crash </span>${pct(RISK[e])}` : `<span class="w">no risk</span><span class="n">–</span>`;
+    h += `<div class="cell ${now ? 'now' : ''} ${past && !now ? 'past' : ''} ${dead ? 'dead' : ''}" title="Evening ${ROMAN[e]}, ${EV[e].date}: index ×${IDX[e]}. Chance the crash comes before this evening: ${pct(RISK[e])}."><b>${ROMAN[e]}</b>${EV[e].short}<div class="ix">×${IDX[e]}</div><div class="rk ${RISK[e] >= .2 ? 'hot' : ''}">${rk}</div></div>`;
   }
-  h += `<div class="cell crash ${G.crashed ? 'hit' : ''}" title="After evening VIII the crash is certain"><b>3 Feb</b>Haarlem<div class="ix" style="color:inherit">crash</div><div class="rk" style="color:inherit">paper → 3½%</div></div>`;
-  h += `<div class="cell alk ${G.alkmaar && !G.over ? 'now' : ''}" title="A cash auction: winnings go to the purse, doubled"><b>5 Feb</b>Alkmaar<div class="ix" style="color:inherit">cash ×2</div><div class="rk" style="color:inherit">final</div></div>`;
+  h += `<div class="cell crash ${G.crashed ? 'hit' : ''}" title="3 February 1637, Haarlem: the crash. It is certain after evening VIII; all paper then settles at 3½%."><b>3 Feb</b>Haarlem<div class="ix" style="color:inherit">crash</div><div class="rk" style="color:inherit"><span class="w">paper → </span>3½%</div></div>`;
+  h += `<div class="cell alk ${G.alkmaar && !G.over ? 'now' : ''}" title="5 February 1637, Alkmaar: the final evening, a cash auction. Winnings go to the purse, doubled."><b>5 Feb</b>Alkmaar<div class="ix" style="color:inherit"><span class="w">cash </span>×2</div><div class="rk" style="color:inherit"><span class="w">final</span><span class="n">cash</span></div></div>`;
   setPart(b, h);
   setPart(st, G.alkmaar ? `<b>Alkmaar · 5 February 1637</b><span>Cash auction for Wouter Winckel's orphans. What you win tonight goes into your purse, twice over.</span>`
     : G.crashed ? `<b>3 February 1637</b><span>The crash. All paper has settled at 3½ per cent.</span>`
@@ -296,13 +428,18 @@ function render(){
     seat.classList.toggle('turn', G.turn === p);
     seat.classList.toggle('pick', !!(ui.pick && ui.pick.cands.includes(p)));
     setPart(seat.querySelector('[data-part="bub"]'), ui.bubbles[p.i] ? `<div class="bubble">${esc(ui.bubbles[p.i])}</div>` : '');
+    // the bubble hangs just under the name plate, so it never covers the status chip
+    if (ui.bubbles[p.i]){ const pl = seat.querySelector('[data-part="plate"]'), bb = seat.querySelector('.bubble'); if (pl && bb) bb.style.setProperty('--bubtop', (pl.offsetTop + pl.offsetHeight + 8) + 'px'); }
     setPart(seat.querySelector('[data-part="plate"]'), plateHTML(p));
     setPart(seat.querySelector('[data-part="hand"]'), handHTML(p));
     setPart(seat.querySelector('[data-part="below"]'), belowHTML(p));
   }
-  setPart($('#tipBox'), ui.tip ? `<div class="tip"><span>${esc(ui.tip.t)}</span><button data-tip="1">Got it</button></div>` : '');
-  const tb = $('#tipBox [data-tip]'); if (tb) tb.onclick = dismissTip;
-  setPart($('#ctrl'), ctrlHTML()); wireCtrl();
+  // phones and tablets show the tip inside the dock (see ctrlHTML), everything else above your hand
+  setPart($('#tipBox'), ui.tip && !LAND.matches ? tipHTML() : '');
+  document.documentElement.classList.toggle('tipping', !!ui.tip && LAND.matches);
+  setPart($('#ctrl'), (ui.tip && LAND.matches ? tipHTML() : '') + ctrlHTML()); wireCtrl();
+  document.querySelectorAll('[data-tip]').forEach(b => b.onclick = dismissTip);
+  document.documentElement.classList.toggle('deciding', !!(ui.turn || ui.cash || ui.pick));
   setPart($('#deckPile'), backHTML() + backHTML() + (G.draw.length ? backHTML() : ''));
   $('#deckN').textContent = G.draw.length; $('#discN').textContent = G.discard.length;
   const ev = G.alkmaar ? 'Alkmaar, 5 February 1637' : G.mode === 'winter' ? `Evening ${ROMAN[G.evening]} · ${EV[G.evening].date}` : `Round ${G.round} · first to ${TARGET}`;
@@ -332,24 +469,24 @@ function cashHTML(){
   const me = G.players[0], e = G.evening, v = me.units * IDX[e], fee = Math.round(v * FEE), rn = G.riskNext(), last = e + 1 >= IDX.length;
   const next = last ? `After this evening <b class="hot">the crash is certain</b>.`
     : `Evening ${ROMAN[e + 1]}: index ×${IDX[e]} → ×${IDX[e + 1]} (+${Math.round((IDX[e + 1] / IDX[e] - 1) * 100)}%), but <b class="${rn >= .2 ? 'hot' : ''}">${pct(rn)}</b> chance the crash comes first.`;
-  return `<div class="cash"><div class="t">End of evening ${ROMAN[e]}. Your paper: ${fmt(v)}</div><div class="odds">${next}</div>
-    <button class="btn paper" data-cash="hold"><img src="${ART.i_paper}" alt="">Hold it<small>${last ? 'it will settle at 3½%' : 'worth ' + fmt(me.units * IDX[e + 1]) + ' next evening, if no crash'}</small></button>
-    <button class="btn purse" data-cash="sell"><img src="${ART.i_purse}" alt="">Cash it all in: ${fmt(v - fee)}<small>safe in your purse · wine money ${fmt(fee)}</small></button></div>`;
+  return `<div class="info cash"><div class="t">End of evening ${ROMAN[e]}. Your paper: ${fmt(v)}</div><div class="odds">${next}</div></div>
+    <div class="acts"><button class="btn paper" data-cash="hold"><img src="${ART.i_paper}" alt=""><span>Hold it<small>${last ? 'it will settle at 3½%' : 'worth ' + fmt(me.units * IDX[e + 1]) + ' next evening, if no crash'}</small></span><kbd>H</kbd></button>
+    <button class="btn purse" data-cash="sell"><img src="${ART.i_purse}" alt=""><span>Cash in ${fmt(v - fee)}<small>safe in your purse · wine money ${fmt(fee)}</small></span><kbd>C</kbd></button></div>`;
 }
 function ctrlHTML(){
   const me = G.players[0];
   if (ui.pick){
     const lbl = ui.pick.kind === 'give' ? 'Give your spare Rouwkoop to:' : `Who gets ${SP[ui.pick.card.k].name}?`;
-    return `<div class="picker"><div class="t">${lbl}</div><small class="odds">${esc(SPEC[ui.pick.kind === 'give' ? 'second' : ui.pick.card.k].long)}</small>${ui.pick.cands.map(q => `<button class="btn" data-pick="${q.i}">${q.human ? 'Yourself' : esc(q.name)}${q.status === 'active' ? `<small>on the table ${tableValue(q)} · ${q.nums.length} tulips</small>` : ''}</button>`).join('')}</div>`;
+    return `<div class="info picker"><div class="t">${lbl}</div><small class="odds">${esc(SPEC[ui.pick.kind === 'give' ? 'second' : ui.pick.card.k].long)}</small></div><div class="acts pick">${ui.pick.cands.map((q, k) => `<button class="btn" data-pick="${q.i}"><span class="kb">${k + 1}</span>${q.human ? 'Yourself' : `<span class="fn">${esc(q.name)}</span><span class="sn">${esc(q.short)}</span>`}${q.status === 'active' ? `<small>on the table ${tableValue(q)} · ${q.nums.length} tulip${q.nums.length === 1 ? '' : 's'}</small>` : ''}</button>`).join('')}</div>`;
   }
   if (ui.cash) return cashHTML();
-  if (!ui.turn) return stakeHTML(me) + (SET.help ? dangerHTML(me) : '') + `<div class="wait">${G.over ? '' : me.status === 'active' ? 'Wait for your turn…' : 'Watching the others…'}</div>`;
+  if (!ui.turn) return `<div class="info">${stakeHTML(me)}${SET.help ? dangerHTML(me) : ''}</div><div class="wait">${G.over ? '' : me.status === 'active' ? 'Wait for your turn…' : 'Watching the others…'}</div>`;
   const s = G.roundScore(me);
   let stay;
-  if (G.mode === 'classic') stay = `<button class="btn purse" data-act="stay"><img src="${ART.i_purse}" alt="">Stand up · bank ${s}<small>total would be ${me.total + s}</small></button>`;
-  else if (G.alkmaar) stay = `<button class="btn alk" data-act="stay"><img src="${ART.i_purse}" alt="">Stand up · cash ${fmt(s * GPP * 2)}<small>Alkmaar pays double, in cash</small></button>`;
-  else stay = `<button class="btn paper" data-act="stay"><img src="${ART.i_paper}" alt="">Stand up · ${fmt(s * GPP)} on paper<small>you can cash it in at the end of the evening</small></button>`;
-  return stakeHTML(me) + (SET.help ? dangerHTML(me) : '') + `<button class="btn hit" data-act="hit">Take another paper<small>one more tulip from the pile</small></button>${stay}`;
+  if (G.mode === 'classic') stay = `<button class="btn purse stay" data-act="stay"><img src="${ART.i_purse}" alt=""><span>Stand up · bank ${s}<small>total would be ${me.total + s}</small></span><kbd>S</kbd></button>`;
+  else if (G.alkmaar) stay = `<button class="btn alk stay" data-act="stay"><img src="${ART.i_purse}" alt=""><span>Stand up · cash ${fmt(s * GPP * 2)}<small>Alkmaar pays double, in cash</small></span><kbd>S</kbd></button>`;
+  else stay = `<button class="btn paper stay" data-act="stay"><img src="${ART.i_paper}" alt=""><span>Stand up · ${fmt(s * GPP)} on paper<small>cash it in at the end of the evening</small></span><kbd>S</kbd></button>`;
+  return `<div class="info">${stakeHTML(me)}${SET.help ? dangerHTML(me) : ''}</div><div class="acts"><button class="btn hit" data-act="hit">Take another paper<small>one more tulip from the pile</small><kbd>T</kbd></button>${stay}</div>`;
 }
 function wireCtrl(){
   document.querySelectorAll('#ctrl [data-act]').forEach(b => b.onclick = () => { const f = ui.turn; ui.turn = null; f && f(b.dataset.act); });
@@ -362,16 +499,25 @@ function announce(p, c){
   const title = c.k === 'mod' ? 'Offsets +' + c.v : SP[c.k].name;
   const eff = c.k === 'mod' ? SPEC.mod.long.replace('N', c.v) : SPEC[c.k].long;
   const box = $('#ann');
-  box.innerHTML = `<div class="abox">${cardHTML({...c, uid:'A' + c.uid})}<div><div class="kick">Special paper</div><h2>${esc(title)}</h2><p class="eff">${esc(eff)}</p><p class="hist">${esc(SP[c.k].note.split('. ')[0])}.</p><div class="who">${p.human ? 'You drew it.' : esc(p.name) + ' drew it.'} <span style="color:var(--muted);font-weight:400">· click to continue</span></div></div></div>`;
+  box.innerHTML = `<div class="abox">${cardHTML({...c, uid:'A' + c.uid})}<div><div class="kick">Special paper</div><h2>${esc(title)}</h2><p class="eff">${esc(eff)}</p><p class="hist">${esc(SP[c.k].note.split('. ')[0])}.</p><div class="who">${p.human ? 'You drew it.' : esc(p.name) + ' drew it.'} <span style="color:var(--muted);font-weight:400">· ${TOUCH ? 'tap' : 'click'} to continue</span></div></div></div>`;
   box.hidden = false;
   return new Promise(res => { let done = false; const end = () => { if (done) return; done = true; box.hidden = true; res(); };
     box.onclick = end; setTimeout(end, c.k === 'mod' || c.k === 'x2' ? (SET.fast ? 1000 : 2000) : (SET.fast ? 1400 : 3000)); });
 }
 
 /* ---------- modal helpers ---------- */
-function modal(html, cls = ''){ const m = $('#modal'), b = $('#mbox'); b.className = 'mbox ' + cls; b.innerHTML = html; m.hidden = false; const f = b.querySelector('button'); f && f.focus(); return b; }
-function closeModal(){ $('#modal').hidden = true; }
-function ask(html, cls){ return new Promise(res => { const b = modal(html, cls); b.querySelectorAll('[data-v]').forEach(x => x.onclick = () => { closeModal(); res(x.dataset.v); }); }); }
+/* One modal at a time. A "menu" modal (start, rules, achievements, log) pauses the game until it closes, so the
+   bots never play on (or open the crash or Alkmaar scene) underneath it. */
+let MENU = false;
+function modal(html, cls = '', menu = false){
+  const m = $('#modal'), b = $('#mbox'); b.className = 'mbox ' + cls; b.innerHTML = html; m.hidden = false; m.scrollTop = 0; MENU = menu;
+  b.setAttribute('role', 'dialog'); b.setAttribute('aria-modal', 'true');
+  const f = b.querySelector('.btn.primary') || b.querySelector('button'); if (f && !TOUCH) f.focus({preventScroll:true});
+  closeTools(); return b;
+}
+function closeModal(){ $('#modal').hidden = true; MENU = false; }
+const unpaused = async () => { while (MENU) await sleep(120); };
+async function ask(html, cls){ await unpaused(); return new Promise(res => { const b = modal(html, cls); b.querySelectorAll('[data-v]').forEach(x => x.onclick = () => { closeModal(); res(x.dataset.v); }); }); }
 
 /* ---------- agents ---------- */
 const Human = {
@@ -393,13 +539,13 @@ function pickFrom(kind, card, cands){
 const Bot = {
   async hitOrStay(g, p){
     const od = g.bustOdds(p) * (p.second ? 0 : 1);
-    await pace(.4 + od * 1.8);
+    await pace(.4 + od * 1.8); await unpaused();
     const d = T7.AI.hitOrStay(g, p);
-    bubble(p, pickA(d === 'hit' ? (od >= .25 ? BUB.hitRisky : BUB.hit) : BUB.stay));
+    bubble(p, line(p, d === 'hit' ? (od >= .25 || (p.second && g.bustOdds(p) >= .2) ? 'hitRisky' : 'hit') : 'stay'));
     await pace(.45); return d;
   },
   sell: (g, p) => T7.AI.sell(g, p),
-  async target(g, p, c, cands){ await pace(.5); return T7.AI.target(g, p, c, cands); },
+  async target(g, p, c, cands){ await pace(.5); await unpaused(); return T7.AI.target(g, p, c, cands); },
   giveSecond: (g, p, c) => T7.AI.giveSecond(g, p, c)
 };
 const leader = p => G.players.every(x => x === p || G.standing(p) >= G.standing(x));
@@ -410,7 +556,7 @@ async function onEvent(t, d){
   switch (t){
     case 'evening':
       ui.after = false; G.players.forEach(x => { x.status = 'idle'; x.nums = []; }); render();
-      track('tulip_evening', {evening:d.e + 1, worth:Math.round(G.standing(G.players[0]))});
+      if (!ui.resumedEv) track('tulip_evening', {evening:d.e + 1, worth:Math.round(G.standing(G.players[0]))}); ui.resumedEv = false;
       toast(`Evening ${ROMAN[d.e]} · ${EV[d.e].date}`, 1600); say(EV[d.e].news); log(`<b>Evening ${ROMAN[d.e]}</b>: index ×${IDX[d.e]}.`);
       await pace(1.6); break;
     case 'roundStart': ui.blown = new Set(); ui.after = false; render(); await pace(.4); break;
@@ -422,7 +568,7 @@ async function onEvent(t, d){
       ui.pending = null; break;
     case 'card':
       SND.flip(); render();
-      if (ui.lastOdds >= .3 && d.c.k === 'num'){ floatAt(p, p.human ? 'Phew!' : pickA(BUB.phew)); SND.phew(); if (!p.human) bubble(p, pickA(BUB.phew)); }
+      if (ui.lastOdds >= .3 && d.c.k === 'num'){ const ph = p.human ? 'Phew!' : line(p, 'phew'); floatAt(p, ph); SND.phew(); if (!p.human) bubble(p, ph); }
       if (p.human){ if (d.c.k === 'num' && d.c.v === 0) unlock('pauw'); if (p.nums.length >= 5) tip('book'); }
       if ((d.c.k === 'mod' || d.c.k === 'x2') && !ui.kinds.has(d.c.k)){ ui.kinds.add(d.c.k); await announce(p, d.c); }
       await pace(.55); break;
@@ -431,19 +577,21 @@ async function onEvent(t, d){
       if (d.c.k === 'flip3') SND.chalk(); if (d.c.k === 'freeze') SND.clink();
       await sleep(SET.fast ? 150 : 320); await announce(p, d.c); render(); break;
     case 'keep': render(); break;
-    case 'give': log(`${nm(p)} gave a spare Rouwkoop to ${nmIn(q)}.`); say(pickLine('give', {p:nm(p), q:nmIn(q)})); render(); await pace(.8); break;
-    case 'waste': log(`${nm(p)}'s spare Rouwkoop is discarded.`); render(); break;
-    case 'saved': SND.coin(); say(pickLine('saved', {p:nm(p), v:V[d.c.v].name})); log(`<b>${nm(p)}</b> paid rouwkoop: the second ${V[d.c.v].name} is gone.`); floatAt(p, 'Rouwkoop!', '#c9f2cf'); if (p.human) unlock('rouwkoop'); render(); await pace(1.1); break;
+    case 'give': log(fill('{p} gave a spare Rouwkoop to {q}.', {p, q})); say(pickLine('give', {p, q})); render(); await pace(.8); break;
+    case 'waste': log(fill("{p's} spare Rouwkoop is discarded.", {p})); render(); break;
+    case 'saved': SND.coin(); bubble(p, line(p, 'saved'), 1800); say(pickLine('saved', {p, v:V[d.c.v].name})); log(`<b>${nm(p)}</b> paid rouwkoop: the second ${V[d.c.v].name} is gone.`); floatAt(p, 'Rouwkoop!', '#c9f2cf'); if (p.human) unlock('rouwkoop'); render(); await pace(1.1); break;
     case 'bust': {
       const lost = G.roundScore(p) * (G.mode === 'classic' ? 10 : GPP * (G.alkmaar ? 2 : 1));
       if (p.human && lost >= 600) unlock('windhandel');
-      await burn(p); bubble(p, pickA(BUB.bust), 1800); floatAt(p, 'Up in smoke', '#ffb38a');
-      say(pickLine('bust', {p:nm(p), v:V[d.c.v].name})); log(`<b>${nm(p)}</b> drew a second ${V[d.c.v].name}. Up in smoke.`);
+      await burn(p); bubble(p, line(p, 'bust'), 1800); floatAt(p, 'Up in smoke', '#ffb38a');
+      say(pickLine('bust', {p, v:V[d.c.v].name})); log(`<b>${nm(p)}</b> drew a second ${V[d.c.v].name}. Up in smoke.`);
       tip('bust'); break; }
-    case 'book': SND.book(); toast(`${nm(p)}: tulip book complete! +15`, 1600); bubble(p, pickA(BUB.book)); say(pickLine('book', {p:nm(p)})); log(`<b>${nm(p)}</b> completed a tulip book (+15). The evening ends.`); if (p.human) unlock('book'); render(); await pace(1.6); break;
-    case 'freeze': say(p === q ? pickLine('freezeSelf', {p:nm(p)}) : pickLine('freeze', {p:nm(p), q:nmIn(q)})); log(`<b>${nm(p)}</b> sealed ${p === q ? 'their own' : nmIn(q) + "'s"} evening with Wijnkoop.`); if (p.human && q !== p && leader(q)) unlock('wijnkoop'); render(); await pace(1); break;
-    case 'flip3': say(pickLine('flip3', {p:nm(p), q:nmIn(q)})); log(p === q ? `<b>${nm(p)}</b> called the seghsman on ${p.human ? 'yourself' : 'themselves'}: three more papers.` : `<b>${nm(p)}</b> sent the seghsman to ${nmIn(q)}: three more papers.`); render(); await pace(.8); break;
-    case 'stay': SND.thud(); say(pickLine('stay', {p:nm(p)})); log(`<b>${nm(p)}</b> stood up with ${tableValue(p)}.`); render(); await pace(.5); break;
+    case 'book': SND.book(); toast(`${nm(p)}: tulip book complete! +15`, 1600); bubble(p, line(p, 'book')); say(pickLine('book', {p})); log(`<b>${nm(p)}</b> completed a tulip book (+15). The evening ends.`); if (p.human) unlock('book'); render(); await pace(1.6); break;
+    case 'freeze': if (!q.human && q !== p) bubble(q, line(q, 'sealed'), 1800); else if (!p.human && p === q) bubble(p, line(p, 'playFreeze'), 1800);
+      say(p === q ? pickLine('freezeSelf', {p}) : pickLine('freeze', {p, q})); log(fill(p === q ? '<b>{p}</b> sealed {p:his|your} own evening with Wijnkoop.' : "<b>{p}</b> sealed {q's} evening with Wijnkoop.", {p, q})); if (p.human && q !== p && leader(q)) unlock('wijnkoop'); render(); await pace(1); break;
+    case 'flip3': if (!q.human) bubble(q, line(q, p === q ? 'playSeghsman' : 'seghsman'), 1800);
+      say(pickLine('flip3', {p, q})); log(fill(p === q ? '<b>{p}</b> called the seghsman on {p:himself|yourself}: three more papers.' : '<b>{p}</b> sent the seghsman to {q}: three more papers.', {p, q})); render(); await pace(.8); break;
+    case 'stay': SND.thud(); say(pickLine('stay', {p})); log(`<b>${nm(p)}</b> stood up with ${tableValue(p)}.`); render(); await pace(.5); break;
     case 'reshuffle': log('The floor is swept: the discards are shuffled into a new pile.'); break;
     case 'roundEnd':
       ui.after = true; render();
@@ -456,11 +604,13 @@ async function onEvent(t, d){
       SND.coin(); await pace(G.mode === 'classic' ? 2.2 : 1.4); break;
     case 'cashout': render(); break;
     case 'sold':
-      if (!p.human){ bubble(p, pickA(BUB.sold), 1800); log(`<b>${nm(p)}</b> cashed in ${fmt(d.v - d.fee)}.`); }
+      if (!p.human){ const panic = p.persona === 'cuyck' && G.riskNext() < PERSONAS.cuyck.warn && G.players.some(x => x !== p && x.soldE >= 0 && x.soldE >= G.evening - 1);
+        bubble(p, line(p, panic ? 'panic' : 'sold'), 1800); log(`<b>${nm(p)}</b> cashed in ${fmt(d.v - d.fee)}.`); }
       else { log(`You cashed in ${fmt(d.v - d.fee)} (wine money ${fmt(d.fee)}).`); ui.st.hold = 0; ui.st.soldAt = G.evening; }
       SND.coin(); render(); await pace(.5); break;
     case 'held':
-      if (!p.human){ bubble(p, pickA(BUB.held), 1800); log(`<b>${nm(p)}</b> holds ${fmt(G.paperValue(p))} of paper.`); }
+      if (!p.human){ const sold = G.players.some(x => x !== p && x.soldE === G.evening);
+        bubble(p, line(p, p.persona === 'meeckeren' && sold ? 'taunt' : 'held'), 1800); log(fill(`<b>{p}</b> {p:holds|hold} ${fmt(G.paperValue(p))} of paper.`, {p})); }
       else { ui.st.hold++; if (ui.st.hold >= 5) unlock('fivetimes'); }
       render(); await pace(.4); break;
     case 'cashoutDone': await pace(1.1); break;
@@ -559,15 +709,19 @@ function showRules(){
   <li>At the end of each evening you choose: <b>hold</b> your paper into the next evening, or <b>cash it all in</b> to your purse (2½% wine money). Money in the purse is safe.</li>
   <li>The board shows the chance that the crash comes before each evening. After evening VIII it is certain. When it comes, all paper settles at <b>3½ per cent</b>.</li>
   <li>The last evening is the Alkmaar auction: cash only, doubled. Richest at the end wins.</li></ul>
+  <h3>The traders at this table</h3><p style="margin:4px 0">Three real men from the archives (Anne Goldgar, <i>Tulipmania</i>, 2007). They see only what you see and play by the same rules, each in his own way:</p><ul>
+  <li><b>Joost van Cuyck</b>, 29, of Amsterdam, bought a pound of Switsers here in February 1637 and backed out the next morning over the guarantor. <i>Plays it safe:</i> stands up at about a one-in-five chance of a duplicate (later if he holds a Rouwkoop), and sells his paper early, or as soon as someone else does.</li>
+  <li><b>Andries de Busscher</b>, 31, a Haarlem cooper and tulip connoisseur, was the seller in that deal. <i>Collects:</i> plays for five different tulips and chances the seventh for the book; takes his profit once his paper has grown well past double.</li>
+  <li><b>Abraham van Meeckeren</b>, a Haarlem brewer, was one of only 37 people Goldgar found who spent over 400 guilders on tulips. <i>Spends:</i> takes papers until his evening is worth about 30, calls the Seghsman on himself, and rides the index deep into the winter.</li></ul>
   <h3>Reading a card</h3><p>The number in the corners is the card's value, and also how many of that tulip are in the deck: a 12 has twelve copies, so it is the likeliest to come twice. The number is how much that variety swelled on paper that winter: cheap bulbs sold by the pound swelled fifty times, the famous rarities hardly moved. Semper Augustus is 0: its owner would not sell.</p>
   ${legendHTML()}
-  <div class="row"><button class="btn primary" data-v="x">Back to the table</button></div></div>`, 'wide');
+  <div class="row"><button class="btn primary" data-v="x">${G ? 'Back to the table' : 'Close'}</button></div></div>`, 'wide', true);
   $('#mbox [data-v]').onclick = () => { closeModal(); if (!G) showStart(); };
 }
 function loadSave(){ try { const s = JSON.parse(localStorage.getItem(SAVE_KEY)); return s && s.v === 1 && s.players && s.players.length === 4 ? s : null; } catch(e){ return null; } }
 function showStart(){
   let mode = SET.mode; const sv = loadSave();
-  const people = [...RIVALS.map(r => ({name:r.name, img:r.img, role:STYLES[r.style].label, info:r.info})), {name:'Jan Theunisz', img:'c_theunisz', role:'The host', info:HOST_INFO}];
+  const people = [...RIVALS.map(r => ({name:r.name, img:r.img, role:PERSONAS[r.persona].label, info:r.info + playsHTML(r)})), {name:'Jan Theunisz', img:'c_theunisz', role:'The host', info:HOST_INFO}];
   const head = ART.ui_logo ? `<img class="logo" src="${ART.ui_logo}" alt="Tulip 7">` : `<h1><small>Homo Ludens</small>Tulip 7</h1>`;
   const sign = ART.ui_sign ? `<img class="sign" src="${ART.ui_sign}" alt="">` : '';
   const b = modal(`<div class="art" style="--cover:url(${ART.bg_cover})">${head}${sign}</div><div class="in">
@@ -577,7 +731,7 @@ function showStart(){
     <p style="font-size:14px;color:var(--muted);margin:12px 0 0">At the table: three traders from the archives, and the host. Click a portrait to read who they were.</p>
     <div class="traders">${people.map((x, k) => `<button class="trader" data-t="${k}"><img src="${ART[x.img]}" alt=""><b>${esc(x.name)}</b>${esc(x.role)}</button>`).join('')}</div>
     <div id="tinfo"></div>
-    <div class="row">${sv ? `<button class="btn primary" id="cont">Continue your ${sv.mode === 'winter' ? 'winter' : 'tavern game'}<small>${sv.mode === 'winter' ? (sv.alkmaar ? 'Alkmaar, the last evening' : 'Evening ' + ROMAN[sv.evening] + ', ' + EV[sv.evening].date) : 'Round ' + (sv.round + 1)}</small></button>` : ''}<button class="btn ${sv ? '' : 'primary'}" id="go">${sv ? 'New game' : 'Sit down at the table'}</button><button class="btn" id="rl">How to play</button><button class="btn" id="ac">Achievements</button></div></div>`, 'cover');
+    <div class="row">${G && !G.over ? `<button class="btn" id="back">Back to the table</button>` : ''}${sv ? `<button class="btn primary" id="cont">Continue your ${sv.mode === 'winter' ? 'winter' : 'tavern game'}<small>${sv.mode === 'winter' ? (sv.alkmaar ? 'Alkmaar, the last evening' : 'Evening ' + ROMAN[sv.evening] + ', ' + EV[sv.evening].date) : 'Round ' + (sv.round + 1)}</small></button>` : ''}<button class="btn ${sv ? '' : 'primary'}" id="go">${sv ? 'New game' : 'Sit down at the table'}</button><button class="btn" id="rl">How to play</button><button class="btn" id="ac">Achievements</button></div></div>`, 'cover', true);
   const sel = () => b.querySelectorAll('.mode').forEach(m => m.classList.toggle('sel', m.dataset.m === mode));
   b.querySelectorAll('.mode').forEach(m => { m.onclick = () => { mode = m.dataset.m; sel(); }; m.onkeydown = e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); mode = m.dataset.m; sel(); } }; });
   b.querySelectorAll('.trader').forEach(t => t.onclick = () => {
@@ -588,6 +742,7 @@ function showStart(){
   });
   sel(); $('#go').onclick = () => { SET.mode = mode; saveSet(); closeModal(); start(mode); }; $('#rl').onclick = showRules; $('#ac').onclick = showAchievements;
   if (sv) $('#cont').onclick = () => { closeModal(); start(sv.mode, sv); };
+  if ($('#back')) $('#back').onclick = () => closeModal();
 }
 let runId = 0;
 const SAVE_KEY = 'tulip7.save.v1';
@@ -595,11 +750,13 @@ async function start(mode, snap){
   const my = ++runId;
   ui = freshUI(); $('#log').innerHTML = '';
   const players = [{name:'You', short:'You', human:true, style:'balanced', agent:Human}, ...RIVALS.map(r => ({...r, agent:Bot}))];
-  G = new T7.Game({mode, players, snap, emit: async (t, d) => { if (my !== runId) throw 'stale'; await onEvent(t, d); if (my !== runId) throw 'stale'; },
-    onSave: s => { if (my === runId) try { localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch(e){} }});
+  G = new T7.Game({mode, players, snap, emit: async (t, d) => { if (my !== runId) throw 'stale'; await unpaused(); if (my !== runId) throw 'stale'; await onEvent(t, d); if (my !== runId) throw 'stale'; },
+    // the achievement streaks ride along in the save (old saves simply have none)
+    onSave: s => { if (my === runId) try { s.ui = {hold:ui.st.hold, soldAt:ui.st.soldAt}; localStorage.setItem(SAVE_KEY, JSON.stringify(s)); } catch(e){} }});
+  if (snap && snap.ui) Object.assign(ui.st, snap.ui);
   window.G = G;
   buildSeats(); render(); say(snap ? 'Welcome back. Your seat is still warm.' : 'Sit down. The wine is poured.');
-  if (snap) log('Game resumed from the start of the evening.');
+  if (snap){ log('Game resumed from the start of the evening.'); ui.resumedEv = true; ui.firstDraw = true; }
   track(snap ? 'tulip_resume' : 'tulip_game_start', {mode});
   try { await G.run(); } catch(e){ if (e !== 'stale') { console.error(e); } }
 }

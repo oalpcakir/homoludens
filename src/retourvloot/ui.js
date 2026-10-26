@@ -31,7 +31,10 @@ function buildStatic() {
   seg($('f-exp'), 'expansion', EXPANSION);
   $('f-found').addEventListener('change', e => { S.letter = { ...S.letter, found: e.target.value, issued: S.t }; S.letterSealed = false; render(); tutHook('letter'); });
 
-  document.querySelectorAll('.speed button').forEach(b => b.addEventListener('click', () => { if (modalOpen || S.ended) return; if (coachStep && !coachStep.wait && !tutActive()) endCtx(); S.speed = +b.dataset.speed; if (S.speed) resumeSpeed = S.speed; render(); if (S.speed) tutHook('speed'); }));
+  document.querySelectorAll('.speed button').forEach(b => b.addEventListener('click', () => { if (modalOpen || S.ended) return; if (coachStep && !coachStep.wait && !tutActive()) endCtx(); S.speed = +b.dataset.speed; if (S.speed) resumeSpeed = S.speed;
+    // Starting time before the guide asks for it ends the guide: its steps describe a paused desk.
+    if (S.speed && tutActive() && coachStep && coachStep.wait !== 'speed') { track('tutorial_skip', { step: coachStep.id, by: 'speed' }); S.tut.i = TUT.length - 1; tutNext(); }
+    render(); if (S.speed) tutHook('speed'); }));
   $('silver').addEventListener('input', e => { S.silver = +e.target.value; render(); });
   $('equip').addEventListener('click', () => { if (equipShip(S, S.silver, false)) { log(S, `The ${S.ships[S.ships.length - 1].name} is equipped with ${money(S.silver)} in silver.`, 'ship'); if (S.shipSeq === 1) track('first_ship'); tutHook('equip'); } render(); });
   $('auto').addEventListener('change', e => { S.auto.n = +e.target.value; render(); tutHook('auto'); });
@@ -74,7 +77,7 @@ function render() {
   const res = tradeResult(S.books);
   $('s-cash2').innerHTML = `trading this year: <span class="${res < 0 ? 'neg' : 'pos'}">${res < 0 ? '' : '+'}${money(res)}</span>`;
   $('s-debt').textContent = money(S.debt); $('s-debt').className = S.debt > 0 ? 'neg' : '';
-  $('s-debt2').textContent = S.debt > 0 ? `interest ${money(S.debt * 0.04)} a year` : '4% a year';
+  $('s-debt2').textContent = debtLine(S);
   $('s-share').textContent = Math.round(S.share) + '%';
   $('s-share2').textContent = `market value ${money(NOMINAL * S.share / 100)}`;
   $('s-exp').textContent = y >= 1610 ? Math.round(expectation(S)) + '%' : '—';
@@ -203,6 +206,8 @@ function renderLetter(y) {
     $('f-found').innerHTML = opts.join('');
     $('f-found').value = f.includes(S.letter.found) ? S.letter.found : '';
   }
+  // a post that was lost or closed while it sat in the letter must not sail with the next ship
+  if (S.letter.found && !foundablePosts(S, y).includes(S.letter.found)) S.letter = { ...S.letter, found: '' };
   const P = POSTS[S.letter.found];
   $('found-desc').innerHTML = P ? `${P.desc} Costs Batavia <b>${money(P.cost)}</b> once, then <b>${money(P.upkeep)}</b> a year and <b>${num(P.garrison)}</b> men.${P.good ? ` Supplies up to ${num(P.cap)} t of ${GOODS[P.good].name.toLowerCase()} a year.` : P.intra ? ' Makes trade within Asia more profitable.' : P.silver ? ' Sends Japanese silver to Batavia every year.' : ''}` : f.length ? `${f.length} place${f.length > 1 ? 's' : ''} open to you: ${f.map(id => POSTS[id].name).join(', ')}.` : 'Nothing new is open to you in this period.';
   for (const [n, v] of [['focus', S.letter.focus], ['wages', S.letter.wages], ['expansion', S.letter.expansion]]) { const r = $(n + '-' + v); if (r && !r.checked) r.checked = true; }
@@ -312,6 +317,7 @@ function renderNotes(y) {
   const open = foundablePosts(S, y).filter(id => !(R && R.posts.includes(id)));
   const nextAim = AIMS.find(a => !S.mono[a.id] && ((a.id === 'cinnamon' && open.includes('ceylon')) || (a.id === 'strait' && open.includes('malacca')) || (a.id === 'japan' && open.includes('japan'))));
   if (nextAim) n.push(['good', `Within reach: ${nextAim.name} (${nextAim.where}). ${nextAim.how}`]);
+  const dt = debtText(S); if (dt) n.unshift(['warn', dt]);
   if (!n.length) n.push(['good', 'Nothing needs your attention. Let the fleets sail.']);
   $('notes').innerHTML = n.slice(0, 4).map(([k, t]) => `<li class="${k}">${esc(t)}</li>`).join('');
 }
@@ -491,7 +497,8 @@ function openQueued() {
   if (modalOpen) return;
   if (S.ended) { showEnd(); return; }
   if (!S.queue.length) return;
-  const id = S.queue.shift(); const e = EVENT_BY_ID[id]; if (!e) return;
+  // peek, don't shift: the event leaves the queue in resolveEvent(), so a save while the card is open keeps it
+  const id = S.queue[0]; const e = EVENT_BY_ID[id]; if (!e) { S.queue.shift(); openQueued(); return; }
   const wasRunning = S.speed > 0 || id !== 'founding';
   pauseForModal();
   const info = e.choices.length === 1 && !e.choices[0].fx;
@@ -500,19 +507,20 @@ function openQueued() {
   const fig = im ? `<figure class="plate"><img src="${im.src}" alt="${esc(im.title)}" onerror="this.closest('figure').remove()"><figcaption><i>${esc(im.title)}</i>, ${esc(im.maker)}, ${esc(im.date)}. <a href="${im.page}" target="_blank" rel="noopener">Rijksmuseum ${esc(im.obj)}</a></figcaption></figure>` : '';
   showSheet(`${fig}<div class="when">${when}</div><h3 id="m-title">${e.title}</h3><div class="body">${e.body(S)}</div>
     ${info ? `<div class="hist"><b>Historical note</b>${e.history}</div><div class="actions"><button type="button" class="btn" data-c="0">${e.choices[0].label}</button></div>`
-      : `<div class="choices">${e.choices.map((c, i) => `<button type="button" class="choice" data-c="${i}"><b>${c.label}</b>${c.hint ? `<span>${c.hint}</span>` : ''}</button>`).join('')}</div>`}`);
+      : `<div class="choices">${visibleChoices(S, e).map(({ c, i }) => `<button type="button" class="choice" data-c="${i}"><b>${c.label}</b>${c.hint ? `<span>${c.hint}</span>` : ''}</button>`).join('')}</div>`}`);
   $('sheet').querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => {
     const c = e.choices[+b.dataset.c];
-    if (info) { closeSheet(); S.speed = wasRunning ? resumeSpeed : 5; if (id === 'founding' && tutActive()) { S.speed = 0; render(); tutStart(); return; } render(); openQueued(); return; }
+    if (S.queue[0] !== id) return; // already answered (double click)
+    if (info) { resolveEvent(S, id, 0); closeSheet(); S.speed = wasRunning ? resumeSpeed : 5; if (id === 'founding' && tutActive()) { S.speed = 0; save(); render(); tutStart(); return; } save(); render(); openQueued(); return; }
     track('event_choice', { event: id, choice: +b.dataset.c, label: c.label });
-    const out = c.fx ? c.fx(S) : '';
+    const out = resolveEvent(S, id, +b.dataset.c); save();
     $('sheet').querySelector('.choices').outerHTML = `${out ? `<p class="outcome">${out}</p>` : ''}<div class="hist"><b>What actually happened</b>${e.history}</div><div class="actions"><button type="button" class="btn" id="m-go">Continue</button></div>`;
     $('m-go').focus();
     $('m-go').addEventListener('click', () => { closeSheet(); S.speed = resumeSpeed; render(); openQueued(); });
   }));
 }
 function showAudit(a) {
-  pauseForModal();
+  const was = S.speed; pauseForModal();
   const ratio = a.equity / a.mcap;
   showSheet(`<div class="when">${fmtDate(S.t)}</div><h3 id="m-title">An audit of the Company</h3>
     <div class="body"><p>The Company has never drawn up a single balance sheet. Amsterdam keeps its own books; Batavia keeps others, and they reach Holland a year late. Your clerks have tried to add them up.</p>
@@ -522,14 +530,14 @@ function showAudit(a) {
     <p style="margin-top:10px">${ratio < 0.6 ? 'The shares trade far above anything the books can show. The figures leak out, and the price slips.' : 'The books roughly support the share price. Shareholders are reassured.'}</p></div>
     <div class="hist"><b>Historical note</b>The VOC never produced consolidated accounts. In the 1720s its shares traded around six times face value, while profit as a share of turnover was falling from about 18% toward 2–3%.</div>
     <div class="actions"><button type="button" class="btn" id="m-go">Close</button></div>`);
-  $('m-go').addEventListener('click', () => { closeSheet(); S.speed = resumeSpeed; render(); });
+  $('m-go').addEventListener('click', () => { closeSheet(); S.speed = was; render(); });
 }
 function showEnd() {
   S.speed = 0; hideCoach();
   if (!S.endTracked) {
     try { const runs = JSON.parse(localStorage.getItem('retourvloot.runs') || '[]'); runs.push({ endYear: yearOf(S.t), reason: S.endReason || 'charter', avgDiv: +(S.stats.divPaid / NOMINAL * 100 / Math.max(1, S.stats.divYears)).toFixed(1), debt: Math.round(S.debt), monopolies: AIMS.filter(a => S.mono[a.id] > 0).length, voyages: S.stats.voyages, at: Date.now() }); localStorage.setItem('retourvloot.runs', JSON.stringify(runs.slice(-20))); } catch (e) {}
   }
-  if (!S.endTracked) { S.endTracked = true; track('game_end', { reason: S.endReason || 'charter', debt: Math.round(S.debt), cash: Math.round(S.cash), dividends: Math.round(S.stats.divPaid), monopolies: AIMS.filter(a => S.mono[a.id] > 0).length, voyages: S.stats.voyages }); }
+  if (!S.endTracked) { S.endTracked = true; save(); track('game_end', { reason: S.endReason || 'charter', debt: Math.round(S.debt), cash: Math.round(S.cash), dividends: Math.round(S.stats.divPaid), monopolies: AIMS.filter(a => S.mono[a.id] > 0).length, voyages: S.stats.voyages }); }
   const yrs = Math.max(1, S.stats.divYears);
   const bankrupt = S.endReason === 'bankrupt';
   showSheet(`<div class="when">${fmtDate(S.t)}</div><div class="cart"><img src="img/rv_cartouche.webp" alt="" onerror="this.parentNode.classList.add('noimg')"><h3 id="m-title">${bankrupt ? 'The States take over' : 'The charter expires'}</h3></div>
@@ -548,6 +556,36 @@ function showEnd() {
     <div data-hl-next></div>
     <div class="actions"><button type="button" class="btn" id="m-new">Start a new company</button></div>`);
   $('m-new').addEventListener('click', () => { S = newState(); save(); closeSheet(); syncInputs(); render(); track('game_start', { restart: true }); openQueued(); });
+}
+
+// ---------- keyboard ----------
+// Esc closes a card that has a single way out (never picks a choice for you); Tab stays inside an open card;
+// Space pauses and resumes when focus is not on a control.
+function onKey(e) {
+  if (modalOpen) {
+    const sheet = $('sheet');
+    if (e.key === 'Escape') {
+      const out = sheet.querySelector('#m-go') || (sheet.querySelectorAll('[data-c]').length === 1 && !sheet.querySelector('.choices') ? sheet.querySelector('[data-c]') : null);
+      if (out) { e.preventDefault(); out.click(); }
+      return;
+    }
+    if (e.key === 'Tab') {
+      const f = [...sheet.querySelectorAll('button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])')].filter(el => !el.disabled && el.offsetParent !== null);
+      if (!f.length) { e.preventDefault(); return; }
+      const first = f[0], last = f[f.length - 1], a = document.activeElement;
+      if (!sheet.contains(a)) { e.preventDefault(); first.focus(); }
+      else if (e.shiftKey && a === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus(); }
+    }
+    return;
+  }
+  if (e.key === ' ' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const t = e.target, tag = t && t.tagName;
+    if (t && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA|BUTTON|A|SUMMARY|OPTION)$/.test(tag) || t.closest('.hlfb-ov, .small-screen:not([hidden])'))) return;
+    if (!$('small-screen').hidden) return;
+    const b = document.querySelector(`.speed button[data-speed="${S.speed ? 0 : resumeSpeed}"]`);
+    if (b) { e.preventDefault(); b.click(); }
+  }
 }
 
 // ---------- main loop ----------
@@ -582,6 +620,7 @@ function start(data) {
   if (tutActive() && !S.queue.length && !modalOpen) tutStart();
   window.addEventListener('scroll', positionCoach, { passive: true }); window.addEventListener('resize', positionCoach);
   $('credits').addEventListener('click', showCredits);
+  document.addEventListener('keydown', onKey);
   const sn = $('small-screen'); let dismissed = false; try { dismissed = sessionStorage.getItem('rv-small') === '1'; } catch (e) {}
   if (window.innerWidth < 900 && !dismissed) { sn.hidden = false; $('small-go').addEventListener('click', () => { sn.hidden = true; try { sessionStorage.setItem('rv-small', '1'); } catch (e) {} }); }
   requestAnimationFrame(frame);

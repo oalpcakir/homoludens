@@ -28,7 +28,7 @@ jobs:
   # Browser tests: the site pages (smoke) and the itch.io / CrazyGames packages (mocked SDK). Still no deploy.
   browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30  # six games of browser tests on a 2-core runner
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

@@ -267,7 +267,7 @@ const EVENTS = [
     title: 'Batavia begs for silver',
     body: S => `<p>The Governor-General writes that Batavia had only <b>${money(S.report.capital)}</b> left. He cannot pay the garrisons, and the cloth merchants of Coromandel will not sell on credit. Without silver, he warns, the posts will produce nothing and the ships will come home half empty.</p>`,
     choices: [
-      { label: 'Equip an emergency silver ship', hint: `A ship with the most silver allowed, ready for the next sailing. Borrowed if need be.`, fx: S => { equipShip(S, maxSilver(yearOf(S.t)), true); return 'A ship is loaded with silver at Texel.'; } },
+      { label: 'Equip an emergency silver ship', hint: `A ship with the most silver allowed, ready for the next sailing. Borrowed if need be.`, show: S => !S.flags.nationalised, fx: S => { if (!equipShip(S, maxSilver(yearOf(S.t)), true)) return 'The committee equips the ships now. No emergency ship can be sent.'; return 'A ship is loaded with silver at Texel.'; } },
       { label: 'Let Batavia borrow from Chinese merchants', hint: 'ƒ1M in Batavia now; ƒ80k a year in interest for 15 years.', fx: S => { S.asia.capital += 1e6; S.asia.loanUntil = yearOf(S.t) + 15; return 'Batavia may borrow locally.'; } },
       { label: 'Order him to economise', hint: 'Upkeep −15% for five years, but posts produce 15% less.', fx: S => { S.asia.economyUntil = yearOf(S.t) + 5; return 'Orders to economise sail east.'; } },
     ],
@@ -288,7 +288,7 @@ const EVENTS = [
     title: 'Fortunes in Batavia',
     body: S => `<p>Company servants on modest salaries are returning from Asia rich. The fiscal in Batavia estimates that about <b>${Math.round(S.report.leak * 100)}%</b> of what the Company spends in Asia is lost to private trade, smuggling and false accounts.</p>`,
     choices: [
-      { label: 'Send a commissioner-general to investigate', hint: 'ƒ150k. Losses fall by 40% for ten years.', fx: S => { S.cash -= 150000; S.books.other += 150000; S.asia.commissionUntil = yearOf(S.t) + 10; return 'A commissioner sails with full powers.'; } },
+      { label: 'Send a commissioner-general to investigate', hint: 'ƒ150k. Losses fall by 40% for ten years.', fx: S => { payOther(S, 150000); S.asia.commissionUntil = yearOf(S.t) + 10; return 'A commissioner sails with full powers.'; } },
       { label: 'Let servants trade privately, as the English do', hint: 'Losses halve for good, but more spices are smuggled to rivals.', fx: S => { S.flags.privateTrade = true; return 'Private trade is allowed, within limits.'; } },
       { label: 'Ignore it', fx: () => 'Nothing is done.' },
     ],
@@ -402,6 +402,15 @@ const EVENTS = [
   },
 ];
 const EVENT_BY_ID = Object.fromEntries(EVENTS.map(e => [e.id, e]));
+// Choices a player can see now (a choice may carry show(S)). Index i stays the index into e.choices.
+function visibleChoices(S, e) { return e.choices.map((c, i) => ({ c, i })).filter(({ c }) => !c.show || c.show(S)); }
+// Resolve the event at the head of the queue. The UI only peeks at S.queue[0] while the card is open,
+// so a save taken meanwhile still holds the event; it leaves the queue only here, when the player answers.
+function resolveEvent(S, id, i) {
+  const k = S.queue.indexOf(id); if (k >= 0) S.queue.splice(k, 1);
+  const e = EVENT_BY_ID[id], c = e && e.choices[i];
+  return c && c.fx ? (c.fx(S) || '') : '';
+}
 
 function conquerBanda(S) {
   S.flags.banda = 'conquest';

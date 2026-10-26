@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Tulip 7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -55,6 +55,7 @@ button{font:inherit;cursor:pointer}
 .cell.alk{background:#fff2c9;border-color:#e9c96a}
 .cell.alk.now{background:var(--gold2);color:#fff}
 .cell .rk.hot{color:var(--bad);font-weight:700}
+.cell .n{display:none}
 .strip{padding:7px 14px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;font-family:"EB Garamond",serif;font-size:17px;line-height:1.3}
 .strip b{font:700 12.5px "Source Sans 3",sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--delft);white-space:nowrap}
 
@@ -83,6 +84,7 @@ button{font:inherit;cursor:pointer}
 .chip.bust{background:#fbe1dc;color:var(--bad)}
 .chip.book{background:#efe2fb;color:#6a2ca0}
 .chip.turn{background:var(--delft);color:#fff}
+.chip .val{display:none}
 .hand{display:flex;flex-wrap:wrap;gap:5px;min-height:calc(var(--mw)*1.4 + 6px);margin-top:8px;position:relative;perspective:800px}
 .below{display:flex;align-items:center;gap:8px;margin-top:6px;min-height:20px;flex-wrap:wrap}
 .tag{background:rgba(255,250,240,.9);border-radius:999px;padding:1px 9px;font-size:12.5px;color:var(--muted)}
@@ -92,8 +94,10 @@ button{font:inherit;cursor:pointer}
 .book span.f{border:1.5px solid #fff;background:var(--c);color:var(--ci);box-shadow:0 0 0 1px var(--line)}
 .book small{margin:0 3px 0 5px;color:var(--muted);font-size:12px;white-space:nowrap}
 .book.sm{gap:2px;padding:3px 4px}.book.sm span{width:11px;height:11px;border-radius:3px;border-width:1px}
-.bubble{position:absolute;top:-22px;left:54px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:3px 11px;font:600 16px "EB Garamond",serif;box-shadow:0 3px 10px rgba(0,0,0,.3);z-index:6;animation:pop .18s ease-out;white-space:nowrap}
-.bubble::after{content:"";position:absolute;left:16px;bottom:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+.bubble{position:absolute;top:var(--bubtop,58px);left:54px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:3px 11px;font:600 16px "EB Garamond",serif;box-shadow:0 3px 10px rgba(0,0,0,.3);z-index:6;animation:pop .18s ease-out;white-space:nowrap}
+.bubble::after{content:"";position:absolute;left:16px;top:-7px;border:7px solid transparent;border-bottom-color:#fff;border-top:0}
+.rivals .seat:nth-child(3) .bubble{left:auto;right:12px}
+.rivals .seat:nth-child(3) .bubble::after{left:auto;right:18px}
 @keyframes pop{from{transform:scale(.5);opacity:0}}
 
 .center{display:grid;grid-template-columns:auto auto 1fr;gap:18px;align-items:center;margin:18px 6px}
@@ -111,6 +115,10 @@ button{font:inherit;cursor:pointer}
 .you .plate{max-width:540px}
 .you .hand{min-height:calc(var(--cw)*1.4 + 8px);gap:10px}
 .tip{background:#fff4cf;border:1px solid #e9c96a;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.35;display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+/* on phones and tablets the first-game tip is part of the dock, above the buttons (it never covers your cards) */
+.ctrl .tip{margin:0;font-size:14px;line-height:1.3;padding:7px 9px;box-shadow:none;align-items:center}
+.ctrl .tip button{min-height:44px;padding:4px 14px}
+html.tipping .ctrl .info{display:none}
 .tip button{flex:none;border:1px solid var(--line);background:#fff;border-radius:8px;padding:2px 9px;font-size:13px;font-weight:700}
 
 /* side panel */
@@ -256,7 +264,7 @@ button{font:inherit;cursor:pointer}
 .ach small{color:var(--muted);font-size:12.5px;line-height:1.3}
 .ach .h{font-family:"EB Garamond",serif;font-style:italic;font-size:14px;line-height:1.3}
 .ach .d{font-size:11px;color:var(--good);font-weight:700}
-.achtoast{position:fixed;left:16px;bottom:16px;z-index:48;display:flex;gap:10px;align-items:center;background:var(--paper);border-radius:14px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45);border:2px solid var(--gold);transform:translateY(160%);transition:transform .35s cubic-bezier(.2,1.2,.4,1);max-width:360px}
+.achtoast{position:fixed;left:16px;bottom:16px;z-index:52;display:flex;gap:10px;align-items:center;background:var(--paper);border-radius:14px;padding:10px 14px;box-shadow:0 10px 30px rgba(0,0,0,.45);border:2px solid var(--gold);transform:translateY(160%);transition:transform .35s cubic-bezier(.2,1.2,.4,1);max-width:360px}
 .achtoast.on{transform:none}
 .achtoast .seal{width:46px;height:46px}
 .achtoast small{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold2);font-weight:700}
@@ -267,35 +275,310 @@ button{font:inherit;cursor:pointer}
 .foot a{color:#ffe08a}
 .mbox [data-hl-next]{margin-top:4px}
 
-@media (max-width:1050px){ .main{grid-template-columns:1fr} .side{position:static} .log{max-height:110px} }
-@media (max-width:900px){ .board{grid-template-columns:repeat(5,1fr)} .modes{grid-template-columns:1fr} }
-@media (max-width:700px){
-  .top .hsign{display:none}
-  :root{--cw:78px;--mw:30px}
-  .wrap{padding:8px 8px 20px;gap:8px}
-  .top h1{font-size:30px}.top .where{font-size:15px;flex-basis:100%;order:3}
-  .tbtn{padding:3px 9px;font-size:12.5px}
-  .board{padding:4px;gap:3px}.cell{font-size:10.5px;padding:3px 2px}.cell b,.cell .ix{font-size:13px}
-  .strip{font-size:15px;padding:6px 10px}
-  .table{margin:8px;padding:10px 7px 12px;border-radius:24px}
-  .rivals{gap:5px}
-  .seat{padding:5px 5px 7px}
-  .plate{flex-wrap:wrap;border-radius:12px;padding:3px 5px;gap:3px 5px;min-height:0}
-  .rivals .plate img.pt{width:30px;height:30px}
-  .rivals .plate .nm{font-size:13.5px}.rivals .plate .fn{display:none}.rivals .plate .sn{display:inline}
-  .rivals .plate .mn span:not(.tot){display:none}
-  .rivals .chip{font-size:10px;padding:1px 5px;top:auto;bottom:-9px;right:4px}
-  .rivals .below .tag{display:none}
-  .bubble{left:4px;top:-20px;font-size:14px}
-  .center{grid-template-columns:auto 1fr;gap:10px;margin:12px 2px}
-  .center .pile:nth-child(2){display:none}
-  .pile .stack{width:52px}.pile .stack .card{--w:52px;width:52px}
-  .host img{width:42px;height:42px}.host p{font-size:16px}
-  .you .hand{gap:7px}
+/* controls: an info block and the action buttons (a column on the desktop, a dock on phones and tablets) */
+.ctrl .info,.ctrl .acts{display:flex;flex-direction:column;gap:8px}
+.ctrl .info:empty{display:none}
+.btn{position:relative}
+.btn>span{display:block;min-width:0}
+.btn kbd,.btn .kb{font:600 11px/1 "Source Sans 3",sans-serif;border:1px solid currentColor;border-radius:4px;padding:2px 4px;opacity:.55}
+.btn kbd{position:absolute;top:6px;right:7px}
+.btn .kb{margin-right:2px}
+.acts.pick .sn{display:none}
+.touch .btn kbd,.touch .btn .kb{display:none}
+.tools{display:contents}
+.tbtn.menu,#bLog{display:none}
+.tbtn.menu{width:44px;height:40px;padding:0;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.tbtn.menu i{display:block;width:18px;height:2px;border-radius:2px;background:var(--ink)}
+.cardtip{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--dockh,0px) + 14px + env(safe-area-inset-bottom));z-index:47;max-width:min(92vw,460px);background:var(--paper);border:1px solid var(--goldl);border-radius:12px;padding:9px 13px;font-size:14.5px;line-height:1.35;box-shadow:0 8px 24px rgba(0,0,0,.45);animation:pop .15s ease-out}
+.cardtip[hidden]{display:none}
+.loglist{max-height:55vh;overflow:auto;font-size:14.5px;margin-top:8px}
+.loglist p{margin:0 0 4px}
+html{-webkit-text-size-adjust:100%}
+body{-webkit-tap-highlight-color:transparent}
+button,.mode,.trader,.card,.cell,.seat,.ann{touch-action:manipulation}
+#table,#board,.ctrl{-webkit-user-select:none;user-select:none}
+
+/* desktop screens of ordinary laptop height: the whole table, your hand and the controls fit without scrolling */
+@media (min-width:1051px) and (max-height:960px){
+  :root{--cw:92px;--mw:40px}
+  .wrap{padding-top:6px;padding-bottom:10px;gap:6px}
+  .top{gap:8px}.top .logo{height:32px}.top .hl{font-size:10px}.top .hsign{height:40px;margin:-4px 0}
+  .top .where{font-size:16px}
+  .tbtn{padding:3px 11px;font-size:13.5px}
+  .board{padding:4px;gap:3px}
+  .cell{padding:2px 2px 3px;font-size:11.5px;line-height:1.15}
+  .cell b{display:inline;font-size:13.5px;margin-right:4px}
+  .cell .ix{font-size:14px}
+  .side .strip{display:block;padding:8px 12px;font-size:15.5px;line-height:1.3}
+  .side .strip b{display:block;font-size:11px;margin-bottom:2px;white-space:normal}
+  .main{gap:10px}
+  .table{margin:9px;padding:10px 14px 10px}
+  .rivals{gap:10px}
+  .seat{padding:5px 8px 6px}
+  .plate{min-height:44px;padding:2px 10px 2px 2px}
+  .plate img.pt{width:42px;height:42px}
+  .plate .nm{font-size:17px}
+  .plate .chip{top:-16px}
+  .rivals{margin-top:6px}
+  .hand{margin-top:6px;min-height:calc(var(--mw)*1.4 + 2px)}
+  .below{margin-top:4px;min-height:18px}
+  .center{margin:8px 4px;gap:14px}
+  .pile .stack,.pile .floor{width:58px}.pile .stack .card{--w:58px;width:58px}
+  .host{padding:6px 12px}.host img{width:46px;height:46px}.host p{font-size:17px}
+  .you{padding:6px 8px 8px}
+  .you .plate{min-height:40px}
+  .you .hand{min-height:calc(var(--cw)*1.4 + 4px);margin-top:6px;gap:8px}
+  .ctrl{min-height:0;padding:10px}
+  .ctrl .stake b{font-size:28px}
+  .log{max-height:150px}
+  .foot{display:none}
+}
+@media (min-width:1051px) and (max-height:700px){
+  :root{--cw:80px;--mw:34px}
+  .top .hl{display:none}.top .logo{height:28px}.top .hsign{display:none}
+  .board .cell .rk{font-size:11px}
+  .plate{min-height:38px}.plate img.pt{width:36px;height:36px}.plate .nm{font-size:16px}.plate .mn{font-size:12px}
+  .center{margin:4px 4px}
+  .pile .stack,.pile .floor{width:46px}.pile .stack .card{--w:46px;width:46px}
+  .pile .tag{font-size:11.5px}
+  .host{padding:4px 10px}.host img{width:38px;height:38px}.host p{font-size:16px}.host small{font-size:10.5px}
+  .you .plate{min-height:34px;padding-block:1px}
+  .you .plate .who{display:flex;align-items:baseline;gap:12px}
   .card .cp{display:none}
-  .abox{flex-direction:column;text-align:center;gap:10px}
-  .abox .card{--w:110px}
-  .cover .art h1{font-size:46px}
+  .ctrl .btn{padding:7px 12px}
+  .side .strip{font-size:14.5px}
+  .log{max-height:110px}
+}
+@media (max-width:1050px){
+  .main{grid-template-columns:1fr}
+  .side{position:static}
+  .log{max-height:140px}
+  /* the dock: Take / Stand under the thumb */
+  .ctrl{position:fixed;left:0;right:0;bottom:0;z-index:30;margin:0 auto;max-width:820px;min-height:0;border-radius:18px 18px 0 0;
+    padding:10px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));gap:8px;
+    box-shadow:0 -8px 24px rgba(30,15,5,.45);border-bottom:0;background:var(--paper)}
+  .ctrl .info{gap:6px}
+  .ctrl .acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .ctrl .acts .btn{min-height:60px}
+  .ctrl .acts .btn.hit{order:2}
+  .ctrl .acts.pick{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
+  .ctrl .wait{margin:4px auto;min-height:24px}
+  .ctrl .stake{justify-content:space-between}
+  .wrap{padding-bottom:calc(var(--dockh,150px) + 16px)}
+  .foot{padding-bottom:4px}
+  .achtoast{bottom:auto;top:calc(10px + env(safe-area-inset-top));transform:translateY(-160%)}
+  .rivals .plate .fn{display:none}.rivals .plate .sn{display:inline}
+  /* the site's feedback and Discord buttons sit just above the dock, not on the Stand button */
+  html .hlfb-game.hlfb-btn,html .hlfb-game.hlfb-dc{bottom:calc(var(--dockh,150px) + 10px)}
+  .achtoast.on{transform:none}
+}
+@media (max-width:900px){ .board{grid-template-columns:repeat(5,1fr)} .modes{grid-template-columns:1fr} }
+
+/* ---------- phones (portrait) and short landscape screens: one compact table ---------- */
+@media (max-width:700px), (max-height:520px) and (orientation:landscape){
+  :root{--cw:66px;--mw:30px}
+  .top .hsign,.top .hl{display:none}
+  .wrap{padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) calc(var(--dockh,150px) + 12px) max(8px,env(safe-area-inset-left));gap:6px}
+  .top{position:relative;flex-wrap:nowrap;gap:8px}
+  .top .logo{height:34px}
+  .top h1{font-size:26px}
+  .top .where{font-size:15px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top .sp{display:none}
+  .tbtn.menu{display:inline-flex;flex:none}
+  #bLog{display:block}
+  .tools{display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:35;flex-direction:column;gap:6px;padding:8px;background:rgba(255,250,240,.98);border-radius:14px;box-shadow:0 12px 30px rgba(0,0,0,.5);min-width:200px}
+  .tools.open{display:flex}
+  .tools .tbtn{min-height:44px;font-size:16px;text-align:left;padding:8px 14px;border-radius:10px}
+  /* the board: one row of ten */
+  .board{grid-template-columns:repeat(10,minmax(0,1fr));padding:3px;gap:2px;border-radius:10px}
+  .cell{font-size:0;padding:3px 0 4px;border-radius:7px;line-height:1.1;min-height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .cell b{font-size:12px}
+  .cell .ix{font-size:12.5px;letter-spacing:-.02em}
+  .cell .rk{font-size:10.5px;letter-spacing:-.02em}
+  .cell .w{display:none}.cell .n{display:inline}
+  .cell.crash b,.cell.alk b{font-size:10.5px}
+  .strip{display:none}
+  .table{margin:6px 6px 8px;padding:8px 6px 10px;border-radius:22px;box-shadow:0 0 0 7px var(--oak),0 0 0 9px var(--oak2),0 14px 30px rgba(0,0,0,.55),inset 0 0 40px rgba(0,0,0,.5)}
+  /* rivals: a compact strip of three */
+  .rivals{gap:5px}
+  .rivals .seat{padding:4px 4px 5px;border-radius:12px}
+  .rivals .plate{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;border-radius:10px;padding:3px 5px 4px;gap:2px 6px;min-height:0}
+  .rivals .plate .who{display:contents}
+  .rivals .plate .nm{grid-row:1;grid-column:1 / 3;font-size:14.5px;line-height:1.1;text-align:center;text-overflow:clip}
+  .rivals .plate img.pt{width:28px;height:28px;border-width:1.5px;grid-row:2;grid-column:1}
+  .rivals .plate .fn{display:none}.rivals .plate .sn{display:inline}
+  .rivals .plate .mn{grid-row:2;grid-column:2;font-size:13px;gap:0;line-height:1.1;justify-content:center}
+  .rivals .plate .mn span:not(.tot),.rivals .plate .mn .lbl{display:none}
+  .rivals .plate .mn .tot{white-space:nowrap}
+  .rivals .plate .chip{position:static;grid-row:3;grid-column:1 / 3;justify-self:stretch;text-align:center;font-size:11px;padding:1px 5px;box-shadow:none;overflow:hidden;text-overflow:ellipsis}
+  .rivals .chip .val{display:inline}
+  .rivals .chip .lbl{display:none}
+  .rivals .below .tag{display:none}
+  .rivals .hand{min-height:calc(var(--mw)*1.4 + 2px);margin-top:9px;gap:0;padding-right:12px}
+  .rivals .hand .card{margin-right:-12px}
+  .rivals .hand .card:nth-child(n+7){margin-right:-17px}
+  .rivals .below{margin-top:4px;gap:4px;min-height:13px;justify-content:center}
+  .book.sm{padding:2px 3px}.book.sm span{width:9px;height:9px}
+  .bubble{left:2px;top:var(--bubtop,98px);font-size:14.5px;padding:3px 9px;white-space:normal;width:max-content;max-width:min(170px,46vw);line-height:1.15}
+  .bubble::after{top:-7px;bottom:auto;border-top:0;border-bottom:7px solid #fff}
+  .rivals .seat:nth-child(3) .bubble{left:auto;right:2px}
+  .rivals .seat:nth-child(3) .bubble::after{left:auto;right:16px}
+  .rivals .seat:nth-child(2) .bubble{left:0;right:0;margin-inline:auto}
+  .rivals .seat:nth-child(2) .bubble::after{left:calc(50% - 7px)}
+  /* the middle: pile + host */
+  .center{grid-template-columns:auto 1fr;gap:8px;margin:10px 2px 8px}
+  .center .pile:nth-child(2){display:none}
+  .pile{gap:3px}
+  .pile .stack{width:44px}.pile .stack .card{--w:44px;width:44px}
+  .pile .tag{font-size:11.5px;padding:0 7px}
+  .host{padding:6px 10px;gap:8px;border-radius:14px;min-height:62px}
+  .host img{width:38px;height:38px}
+  .host small{font-size:10px}
+  .host p{font-size:16px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  /* you */
+  .you{padding:6px 6px 8px;border-radius:14px}
+  .you .plate{min-height:0;padding:4px 10px;border-radius:12px;max-width:none}
+  .you .plate .nm{font-size:16px}
+  .you .plate .mn{font-size:12.5px;gap:2px 9px}
+  .you .chip{top:-10px}
+  .you .hand{gap:0;padding-right:20px;min-height:calc(var(--cw)*1.4 + 6px)}
+  .you .hand .card{margin-right:-20px}
+  .you .hand .card:last-child{margin-right:0}
+  .you .below{margin-top:5px}
+  .book{padding:2px 4px}
+  .book span{width:20px;height:20px;font-size:11.5px;line-height:17px}
+  .book small{font-size:11.5px}
+  .card .cp{display:none}
+  .card .rb{font-size:calc(var(--w)*.12)}.card .rb.long{font-size:calc(var(--w)*.1)}
+  .tip button{min-height:40px;padding:4px 14px;font-size:14px}
+  /* the dock on a phone */
+  .ctrl{padding-top:8px;gap:6px}
+  .ctrl .stake{font-size:13px}
+  .ctrl .stake b{font-size:26px}
+  .ctrl .danger{flex-wrap:wrap;gap:3px}
+  .ctrl .dchip{font-size:12px;padding-right:6px}
+  .ctrl .odds{font-size:13px;line-height:1.3}
+  .ctrl .acts .btn{padding:8px 10px;gap:8px;font-size:15.5px;line-height:1.15}
+  .ctrl .acts .btn img{width:26px;height:26px}
+  .ctrl .acts .btn small{font-size:11.5px;line-height:1.2;margin-top:2px}
+  .ctrl .acts .btn.hit{font-size:17px}
+  .ctrl .acts .btn.hit small,.ctrl .acts .btn.stay small{display:none}
+  .ctrl .picker .t,.ctrl .cash .t{font-size:18px;line-height:1.15}
+  .ctrl .acts.pick{grid-template-columns:1fr 1fr}
+  .ctrl .acts.pick .fn{display:none}.ctrl .acts.pick .sn{display:inline}
+  .ctrl .acts.pick .btn{flex-direction:column;align-items:flex-start;justify-content:center;gap:0;min-height:52px}
+  .log{display:none}
+  .foot{font-size:12px}
+  /* pop-ups */
+  .ann{padding:12px;align-items:center}
+  .abox{flex-direction:row;text-align:left;gap:14px;padding:14px;max-width:440px}
+  .abox .card{--w:92px}
+  .abox h2{font-size:25px}
+  .abox .eff{font-size:15px;margin:5px 0}
+  .abox .hist{font-size:14.5px}
+  .abox .kick{font-size:11px}
+  .toast{font-size:20px;top:calc(12px + env(safe-area-inset-top));padding:8px 16px;max-width:92vw;text-align:center}
+  .float{font-size:22px}
+  .modal{padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom));align-items:start}
+  .mbox{padding:16px;border-radius:14px}
+  .mbox h2{font-size:25px}
+  .mbox .btn{min-width:130px;min-height:48px}
+  .mbox .row .btn.primary{flex-basis:100%}
+  .mbox table{font-size:14px}
+  .news{font-size:17px}
+  .cover .art{height:150px}
+  .cover .art img.logo{height:84px;left:12px;bottom:8px}
+  .cover .art .sign{width:74px;right:10px;top:8px}
+  .cover .art h1{font-size:44px}
+  .cover .in{padding:12px 16px 16px}
+  .cover .in>p:first-child{font-size:18px!important;line-height:1.3}
+  .mode{padding:9px 11px}.mode b{font-size:18px}.mode small{font-size:13px}
+  .traders{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .trader{width:auto;font-size:11.5px;padding:2px 0;min-height:44px}
+  .trader img{width:56px;height:56px}
+  .trader b{font-size:12px}
+  .achs{grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+  .tileach{width:72px;height:72px}
+  .legend .card{--w:56px}
+  .rules ul{padding-left:18px}
+  .cardtip{font-size:14px}
+}
+/* a phone held upright: the table fills the screen between the header and the dock */
+@media (max-width:700px) and (orientation:portrait){
+  .wrap{display:flex;flex-direction:column;min-height:100vh;min-height:100svh}
+  .main{flex:1;display:flex;flex-direction:column}
+  .main>.table{flex:1;display:flex;flex-direction:column}
+  .center{margin-block:auto}
+  .center{padding-block:8px}
+}
+/* very narrow phones */
+@media (max-width:370px){
+  :root{--cw:60px;--mw:27px}
+  .rivals .plate img.pt{width:26px;height:26px}
+  .rivals .plate .nm{font-size:13px}
+  .cell b{font-size:11px}.cell .ix{font-size:11.5px}.cell .rk{font-size:10px}
+  .ctrl .acts .btn{font-size:14.5px}
+}
+/* phones held sideways: the table on the left, the controls on the right under the right thumb.
+   Everything is sized so the whole table, your hand included, fits the screen height without scrolling. */
+@media (max-height:520px) and (orientation:landscape){
+  :root{--cw:50px;--mw:22px}
+  .wrap{padding:max(4px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) 4px max(6px,env(safe-area-inset-left));gap:4px;max-width:none;min-height:0}
+  /* no header row: the board runs along the top of the table column, the menu button sits above the controls */
+  .top{position:absolute;top:max(4px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));width:276px;z-index:34;justify-content:flex-end}
+  .top #brand,.top .where,.top .sp{display:none}
+  .tbtn.menu{width:44px;height:36px}
+  .board{margin-right:284px;padding:2px;gap:2px}
+  .cell{min-height:0;padding:1px 0 2px}
+  .cell b{font-size:11px}.cell .ix{font-size:12px}.cell .rk{font-size:10px}
+  .main{grid-template-columns:minmax(0,1fr) 276px;gap:8px}
+  .side{position:fixed;top:calc(max(4px,env(safe-area-inset-top)) + 42px);right:max(6px,env(safe-area-inset-right));width:276px;bottom:4px;display:flex;flex-direction:column;gap:6px}
+  .ctrl{position:static;flex:0 1 auto;border-radius:14px;padding:7px 9px;gap:6px;box-shadow:0 6px 18px rgba(30,15,5,.3);border-bottom:1px solid var(--line);max-height:100%;overflow:auto;max-width:none}
+  .ctrl .stake b{font-size:22px}
+  .ctrl .odds{font-size:12.5px}
+  .ctrl .danger{flex-wrap:wrap}
+  .ctrl .acts{grid-template-columns:1fr;gap:6px}
+  .ctrl .acts .btn{min-height:46px;padding:6px 10px}
+  .ctrl .acts .btn.hit{order:0}
+  .ctrl .acts.pick{grid-template-columns:1fr 1fr}
+  .ctrl .acts.pick .btn{min-height:44px}
+  .ctrl .picker .t,.ctrl .cash .t{font-size:16px}
+  .table{margin:2px 5px 4px;padding:6px 6px 6px;border-radius:18px;box-shadow:0 0 0 5px var(--oak),0 0 0 7px var(--oak2),0 10px 24px rgba(0,0,0,.5),inset 0 0 30px rgba(0,0,0,.5)}
+  /* rivals: one tight tile each, no book dots (their cards are right below) */
+  .rivals{gap:4px}
+  .rivals .seat{padding:3px 3px 3px}
+  .rivals .plate{padding:2px 5px 2px 2px;gap:0 5px}
+  .rivals .plate img.pt{grid-row:1 / 3;width:28px;height:28px}
+  .rivals .plate .nm{grid-row:1;grid-column:2;text-align:left;font-size:13.5px}
+  .rivals .plate .mn{grid-row:2;grid-column:2;justify-content:flex-start;font-size:12px}
+  .rivals .plate .chip{grid-row:3;margin-top:1px;font-size:10.5px;padding:0 5px}
+  .rivals .hand{margin-top:3px;min-height:calc(var(--mw)*1.4)}
+  .rivals .below{display:none}
+  .center{grid-template-columns:1fr;margin:4px 2px;padding:0}
+  .center .pile{display:none}
+  .host{min-height:0;padding:3px 8px;border-radius:12px}
+  .host img{width:26px;height:26px}.host small{display:none}
+  .host p{font-size:14px;-webkit-line-clamp:1}
+  .you{padding:4px 5px 5px}
+  .you .plate{padding:2px 10px}
+  .you .plate .who{display:flex;align-items:baseline;gap:12px}
+  .you .plate .nm{font-size:15px}
+  .you .hand{margin-top:5px;min-height:calc(var(--cw)*1.4 + 2px);padding-right:16px}
+  .you .hand .card{margin-right:-16px}
+  .you .below{margin-top:4px;min-height:0}
+  .you .book span{width:17px;height:17px;font-size:10.5px;line-height:15px}
+  .you .book small{font-size:11px}
+  /* tips sit over the board and the rivals, never over your cards or the buttons */
+  .cardtip{bottom:auto;top:44px;left:calc(50% - 140px)}
+  .toast{font-size:18px}
+  .modes{grid-template-columns:1fr 1fr}
+  .cover .art{height:110px}.cover .art img.logo{height:70px}
+  .foot{display:none}
+  /* the site's feedback / Discord buttons: in the right column, under the controls; hidden while you decide */
+  html .hlfb-game.hlfb-btn,html .hlfb-game.hlfb-dc{left:auto;top:auto;bottom:8px}
+  html .hlfb-game.hlfb-btn{right:max(14px,env(safe-area-inset-right))}
+  html .hlfb-game.hlfb-dc{right:calc(max(14px,env(safe-area-inset-right)) + 46px)}
+  html.deciding .hlfb-game.hlfb-btn,html.deciding .hlfb-game.hlfb-dc{display:none!important}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition:none!important}}
 </style>
@@ -306,12 +589,16 @@ button{font:inherit;cursor:pointer}
     <div id="brand"><a class="hl" href="/">Homo Ludens</a><h1>Tulip <span>7</span></h1></div>
     <div class="where" id="where">Menniste Bruyloft, Amsterdam</div>
     <span class="sp"></span>
-    <button class="tbtn" id="bRules">Rules</button>
-    <button class="tbtn" id="bAch">Achievements</button>
-    <button class="tbtn" id="bHelp">Help</button>
-    <button class="tbtn" id="bSpeed">Speed</button>
-    <button class="tbtn" id="bSound">Sound</button>
-    <button class="tbtn" id="bNew">New game</button>
+    <button class="tbtn menu" id="bMenu" aria-expanded="false" aria-controls="tools" aria-label="Menu"><i></i><i></i><i></i></button>
+    <nav class="tools" id="tools" aria-label="Game menu">
+      <button class="tbtn" id="bRules">Rules</button>
+      <button class="tbtn" id="bAch">Achievements</button>
+      <button class="tbtn" id="bLog">Table log</button>
+      <button class="tbtn" id="bHelp">Help</button>
+      <button class="tbtn" id="bSpeed">Speed</button>
+      <button class="tbtn" id="bSound">Sound</button>
+      <button class="tbtn" id="bNew">New game</button>
+    </nav>
   </header>
   <div class="panel board" id="board" hidden></div>
   <div class="panel strip" id="strip" hidden aria-live="polite"></div>
@@ -336,6 +623,7 @@ button{font:inherit;cursor:pointer}
 <div class="ann" id="ann" hidden></div>
 <div class="modal" id="modal" hidden><div class="mbox" id="mbox"></div></div>
 <div class="toast" id="toast"></div>
+<div class="cardtip" id="cardTip" role="status" hidden></div>
 <div class="achtoast" id="achToast"></div>
 
 <script>/*ART*/</script>

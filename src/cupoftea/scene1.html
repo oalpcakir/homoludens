@@ -182,8 +182,28 @@ h2 .penny{width:30px;height:30px;vertical-align:-5px;margin-right:8px}
 #intro button,.hbtn{font:inherit;font-size:17px;padding:8px 18px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);cursor:pointer;border-radius:2px}
 #intro button.ghost{background:none;color:var(--ink)}
 .hbtn{background:none;border-color:#e9dcc0;color:#e9dcc0;font-size:14px;padding:3px 10px}
-@media (max-width:1100px){#app{grid-template-columns:1fr;height:auto}#right{display:block}#notes{max-height:none;margin-bottom:14px}}
-@media (max-width:700px){header{flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 14px}header h1{font-size:22px;white-space:nowrap}header .sub{flex-basis:100%;order:9;font-size:14px}header .prog{margin-left:0}header .hbtn{padding:6px 10px}#app{padding:0 8px 8px}}
+/* keyboard: a visible focus ring on everything that can be used */
+.c:focus-visible,.chip:focus-visible,.slot:focus-visible,.doctab:focus-visible,.tbtn:focus-visible,#pull:focus-visible,#door button:focus-visible,#door a:focus-visible,#intro button:focus-visible,.tool input:focus-visible,.tool select:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+#door .card:focus{outline:none}
+header a:focus-visible,header button:focus-visible{outline:3px solid #f6e3a8;outline-offset:2px}
+#replay{display:none;margin-top:8px}
+#replay.on{display:inline-block}
+.mobnote{display:none}
+@media (max-width:1100px){#app{grid-template-columns:minmax(0,1fr);height:auto}#right{display:block}#notes{max-height:none;margin-bottom:14px}}
+@media (max-width:700px){header{flex-wrap:wrap;align-items:center;gap:6px 10px;padding:10px 14px}header h1{font-size:22px;white-space:nowrap}header .sub{flex-basis:100%;order:9;font-size:14px}header .prog{margin-left:0}header .hbtn{padding:6px 10px}#app{padding:0 8px 8px}
+  .mobnote{display:block;font-size:15px;font-style:italic;color:var(--ink2);border-left:3px solid var(--gold);padding:4px 10px}
+  /* the ledger becomes a grid on a phone: the Labour note drops under its line instead of widening the page */
+  table.ledger,table.ledger tbody{display:block;width:100%}
+  table.ledger tr{display:grid;grid-template-columns:26px repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line)}
+  .slot{padding:3px}
+  .slot .chip{font-size:14px;padding:2px 6px;min-width:0;overflow-wrap:anywhere}
+  table.ledger tr:first-child{border-bottom:2px solid var(--ink)}
+  table.ledger td,table.ledger th{border-bottom:none;min-width:0}
+  table.ledger td.num{width:auto}
+  table.ledger th.emek{display:none!important}
+  .showEmek td.emek{grid-column:2/-1;padding-top:0}
+  tr.labour td{border-bottom:none}
+  table.ledger tr.labour{border-bottom:1.5px dashed var(--red)}}
 @media (prefers-reduced-motion:reduce){.coin{transition:none!important}}
 </style>
 </head>
@@ -221,10 +241,11 @@ h2 .penny{width:30px;height:30px;vertical-align:-5px;margin-right:8px}
       <div id="workOut" class="tool-out" style="display:none"></div>
       <button id="pull" disabled>Pull the thread</button>
       <div id="msg"></div>
+      <button id="replay" class="tbtn replayBtn">Replay scene</button>
     </div>
   </section>
 </div>
-<div id="door"><div class="card">
+<div id="door"><div class="card" tabindex="-1" role="dialog" aria-modal="true" aria-label="Scene finished">
   <div class="dtype">The thread is pulled</div>
   <h2>The way to Havana is open</h2>
   <p>London's ledger is closed, but the account is not. Of the 4½d paid for a pound of sugar, 1.75d never reached London: it stayed on the far side of the Atlantic. Seven of her eighteen farthings are still on the counter. Your ledger now has a new column: <b>Labour</b>. The last line of that column has no name.</p>
@@ -232,9 +253,10 @@ h2 .penny{width:30px;height:30px;vertical-align:-5px;margin-right:8px}
   <canvas class="rc" id="rcpt" role="img" aria-label="The grocer's receipt, reprinted with every share of the 4½d"></canvas>
   <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button></div>
   <a class="nextbtn" href="/cupoftea/2/">Follow the thread to Havana →</a>
-  <button onclick="document.getElementById('door').classList.remove('on')">Back to the ledger</button>
+  <button onclick="closeDoor()">Back to the ledger</button>
+  <button class="replayBtn">Replay scene</button>
 </div></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 /* ===== INTRO ===== */
 const INTRO = [
@@ -258,9 +280,10 @@ const INTRO = [
   </ol>`
 ];
 let introStep=0;
+const MOBNOTE=`<p class="mobnote">Made for a laptop or desktop screen. It works on a phone, but you will scroll a lot between the papers and the ledger.</p>`;
 function renderIntro(){
   const last=introStep===INTRO.length-1;
-  $("#introCard").innerHTML = INTRO[introStep] + `<div class="nav">
+  $("#introCard").innerHTML = INTRO[introStep] + (introStep===0?MOBNOTE:"") + `<div class="nav">
     <div class="dots">${INTRO.map((_,i)=>`<span class="${i===introStep?"on":""}"></span>`).join("")}</div>
     <div>${introStep>0?'<button class="ghost" data-go="-1">Back</button> ':''}<button data-go="${last?"start":"1"}">${last?"Sit down at the desk":"Continue"}</button></div></div>`;
 }
@@ -448,7 +471,7 @@ const DOCS = [
 
 /* ===== STATE ===== */
 const S = {got:new Set(), place:{}, locked:new Set(), cur:"receipt", sel:null, seen:new Set(["receipt"]), pulled:false, lockAns:{},
-  lockOrder:[], coins:Array(FARTHINGS).fill("counter")};
+  lockOrder:[], coins:Array(FARTHINGS).fill("counter"), tried:new Set()};
 function $(s){return document.querySelector(s)}
 const TOTAL = new Set(DOCS.flatMap(d=>[...d.html.matchAll(/data-c="(\w+)"/g)].map(m=>m[1]))).size + 1; // +1: the inference
 
@@ -459,11 +482,12 @@ function fmt(n){return n.toFixed(2)+"d"}
 function renderTabs(){
   $("#tabs").innerHTML = DOCS.filter(d=>!d.hidden).map(d=>
     `<button class="doctab ${d.id===S.cur?"on":""} ${d.fresh?"fresh":""}" data-d="${d.id}">${d.tab}<small>${d.sub}</small>${S.seen.has(d.id)?"":'<span class="new">new</span>'}</button>`).join("");
+  saveScene();
 }
 function renderDoc(){
   const d = DOCS.find(x=>x.id===S.cur);
   $("#doc").innerHTML = `<div class="dtype">${d.type}</div><h2>${d.id==="table"?'<img class="penny" src="/cupoftea/img/tea_coin_penny.webp" alt="">':""}${d.title}</h2>${d.img?`<figure class="plate"><img src="${d.img.src}" alt="" loading="lazy" onerror="this.parentNode.remove()"><figcaption>${d.img.cap} Wikimedia Commons, public domain.</figcaption></figure>`:""}${d.html}<div class="src">Source: ${d.src}</div>`;
-  $("#doc").querySelectorAll(".c").forEach(e=>{ if(S.got.has(e.dataset.c)) e.classList.add("got") });
+  $("#doc").querySelectorAll(".c[data-c]").forEach(e=>{ e.tabIndex=0; e.setAttribute("role","button"); if(S.got.has(e.dataset.c)) e.classList.add("got") });
   $("#doc").scrollTop=0;
   if(d.id==="table"){ fillRem(); calcReck(); }
 }
@@ -490,7 +514,12 @@ function collect(id){
 /* ===== RECKONER ===== */
 function lsd(p){ // pence -> "£ s d" text
   const L=Math.floor(p/240), s=Math.floor((p-L*240)/12), d=+(p-L*240-s*12).toFixed(2);
-  return [L?`£${L}`:"", s?`${s}s`:"", (d||(!L&&!s))?`${d}d`:""].filter(Boolean).join(" ");
+  return [L?`£${L}`:"", s?`${s}s`:"", (d||(!L&&!s))?`${pd(d)}d`:""].filter(Boolean).join(" ");
+}
+function pd(d){ // pence with farthings written as ¼ ½ ¾, as the papers do
+  const w=Math.floor(d+1e-9), f=Math.round((d-w)*100);
+  const fr={25:"¼",50:"½",75:"¾"}[f];
+  return f===0 ? String(w) : fr ? (w?w:"")+fr : String(d);
 }
 function shareClue(v,conf,note){ // reuse a known clue if the value matches, else create one
   const t=v.toFixed(2)+"d";
@@ -501,7 +530,7 @@ function shareClue(v,conf,note){ // reuse a known clue if the value matches, els
 let reckVal=null, remVal=null;
 function calcReck(){
   const r=$("#reck"); if(!r) return;
-  const g=k=>parseFloat(r.querySelector(`[data-k="${k}"]`).value)||0;
+  const g=k=>Math.max(0,parseFloat(r.querySelector(`[data-k="${k}"]`).value)||0); // no negative money
   const u=r.querySelector('[data-k="u"]').value;
   const pence=g("L")*240+g("s")*12+g("d");
   const out=$("#reckOut"), btn=$("#reckNote");
@@ -542,7 +571,7 @@ $("#doc").addEventListener("click",e=>{
 });
 function chipHTML(id,inSlot){
   const c=CLUES[id];
-  return `<span class="chip ${!inSlot&&S.sel===id?"sel":""} ${!inSlot&&S.fresh===id?"fresh":""}" draggable="${!inSlot}" data-id="${id}" data-conf="${c.conf==="calc"?"hesap":c.conf==="inference"?"cikarim":"kaynak"}" title="${CONF_LABEL[c.conf]}${c.note?" · "+c.note:""}">${c.t}</span>`;
+  return `<span class="chip ${!inSlot&&S.sel===id?"sel":""} ${!inSlot&&S.fresh===id?"fresh":""}" draggable="${!inSlot}" data-id="${id}"${inSlot?"":` tabindex="0" role="button" aria-pressed="${S.sel===id}"`} data-conf="${c.conf==="calc"?"hesap":c.conf==="inference"?"cikarim":"kaynak"}" title="${CONF_LABEL[c.conf]}${c.note?" · "+c.note:""}">${c.t}</span>`;
 }
 function renderChips(){
   const groups={who:[],what:[],share:[],place:[]};
@@ -550,7 +579,7 @@ function renderChips(){
   $("#chips").innerHTML = Object.entries(groups).filter(([,v])=>v.length)
     .map(([k,v])=>`<div class="grp">${CAT_LABEL[k]}</div>`+v.map(id=>chipHTML(id)).join("")).join("")
     || `<span class="hint">No notes yet. Start with the receipt.</span>`;
-  S.fresh=null;
+  S.fresh=null; saveScene();
 }
 $("#chips").addEventListener("click",e=>{
   const c=e.target.closest(".chip"); if(!c) return;
@@ -574,7 +603,7 @@ function renderLedger(){
     h+=`<tr id="${row.id}" class="${lk?"locked":""}"><td class="num">${lk?"✓":"No."+(i+1)}</td>`+
       FIELDS.map(f=>{
         const v=S.place[row.id+"."+f];
-        return `<td><div class="slot" data-slot="${row.id}.${f}">${v?chipHTML(v,true):""}</div></td>`;
+        return `<td><div class="slot" data-slot="${row.id}.${f}"${slotAttrs(lk,i,f,v)}>${v?chipHTML(v,true):""}</div></td>`;
       }).join("")+`<td class="emek">${lk?r.labour:""}</td></tr>`;
   });
   if(lab){
@@ -586,8 +615,10 @@ function renderLedger(){
   }
   $("#ltable").innerHTML=h;
   $("#ltable").classList.toggle("showEmek",lab);
+  $("#replay").classList.toggle("on",S.pulled);
   renderSum();
   renderTray();
+  saveScene();
 }
 
 /* ===== COINS ON THE COUNTER =====
@@ -746,8 +777,9 @@ function placeAt(slot,id){
   const [rid]=slot.split(".");
   if(S.locked.has(rid)||!CLUES[id]) return;
   if(!window.__teaFirst){ window.__teaFirst=1; track("tea_first_entry",{scene:SCENE}); }
+  const wasFull=FIELDS.every(f=>S.place[rid+"."+f]);
   S.place[slot]=id; S.sel=null;
-  checkRow(rid); renderLedger(); renderChips(); progress();
+  checkRow(rid,wasFull); renderLedger(); renderChips(); progress();
 }
 $("#ltable").addEventListener("click",e=>{
   const s=e.target.closest(".slot[data-slot]"); if(!s) return;
@@ -762,8 +794,9 @@ $("#ltable").addEventListener("drop",e=>{
   const s=e.target.closest(".slot[data-slot]"); if(!s) return; e.preventDefault();
   placeAt(s.dataset.slot, e.dataTransfer.getData("text/plain"));
 });
-function checkRow(rid){
+function checkRow(rid,wasFull){
   if(FIELDS.some(f=>!S.place[rid+"."+f])) return;
+  const combo=FIELDS.map(f=>S.place[rid+"."+f]).join("|");
   const taken=Object.values(S.lockAns);
   let best=0, hit=-1;
   ROWS.forEach((r,i)=>{ if(taken.includes(i)) return;
@@ -774,7 +807,10 @@ function checkRow(rid){
     $("#msg").textContent=""; toast(`Line locked. ${ROWS[hit].coins} farthing${ROWS[hit].coins>1?"s":""} to ${CLUES[ROWS[hit].ans.who].t.replace(/^The /,"the ")}.`);
     if(S.locked.size===ROWS.length) setTimeout(()=>{toast("Everything known is accounted for. Seven farthings are still on the counter."); checkPull();},1400);
   } else {
-    blots++;
+    // a blot is one fresh attempt: a line that has just been filled, with a combination not tried before.
+    // Correcting one box of a full line, or trying the same line again, is not another blot.
+    if(!wasFull && !S.tried.has(combo)) blots++;
+    S.tried.add(combo);
     setTimeout(()=>{const tr=document.getElementById(rid); if(tr){tr.classList.add("shake"); setTimeout(()=>tr.classList.remove("shake"),400)}},30);
     $("#msg").innerHTML=`<span class="re">“${reaction(rid)}”</span>${best} of 3 boxes on that line are right.`;
   }
@@ -814,11 +850,16 @@ $("#pull").addEventListener("click",()=>{
   if(!S.pulled){
     S.pulled=true;
     const m=DOCS.find(d=>d.id==="madden"); m.hidden=false; m.fresh=true;
-    renderLedger(); renderTabs(); checkPull(); showReceipt(); hush(2.5); saveDone(SCENE);
+    renderLedger(); renderTabs(); checkPull(); showReceipt(); hush(2.5); saveDone(SCENE); saveScene();
     $("#msg").textContent="A new column has appeared in the ledger: Labour. A new paper has arrived on the desk.";
-    setTimeout(()=>$("#door").classList.add("on"),1800);
-  } else $("#door").classList.add("on");
+    setTimeout(openDoor,1800);
+  } else openDoor();
 });
+function finishedView(){ // a solved scene, reopened from a save
+  DOCS.find(d=>d.id==="madden").hidden=false;
+  renderLedger(); renderTabs(); checkPull(); showReceipt();
+  $("#msg").textContent="This scene is solved. The ledger is as you left it.";
+}
 function progress(){ $("#prog").textContent = `Notes ${S.got.size} · Lines ${S.locked.size}/${ROWS.length}`; }
 
 /* ===== REPRINTED RECEIPT =====
@@ -952,6 +993,93 @@ document.getElementById("hintBtn").addEventListener("click",()=>{
   toast(`You have every note for "${r.q}" Try: ${CLUES[r.ans.who].t} · ${CLUES[r.ans.what].t} · ${CLUES[r.ans.share].t}.`);
 });
 
+/* ===== IN-SCENE SAVE (this browser only) =====
+   The desk is kept under cupoftea.scene1: notes, ledger, blots, and the figures the player worked out.
+   Anything that does not fit the scene (a broken or old save) is ignored and the scene starts fresh.
+   A browser that finished the scene before this save existed gets the solved ledger back. */
+const SAVE_KEY="cupoftea.scene1", BASE_CLUES=new Set(Object.keys(CLUES));
+let saveOn=false;
+function saveScene(){
+  if(!saveOn) return;
+  const extra={}; Object.keys(CLUES).forEach(k=>{ if(!BASE_CLUES.has(k)) extra[k]=CLUES[k]; });
+  const d={v:1, got:[...S.got], place:S.place, lockAns:S.lockAns, lockOrder:S.lockOrder, seen:[...S.seen], cur:S.cur,
+    tried:[...S.tried], blots, extra, pulled:S.pulled};
+  try{ localStorage.setItem(SAVE_KEY,JSON.stringify(d)); }catch(e){}
+}
+function solvedSave(){ // the answer key as a save, for a scene finished before in-scene saves existed
+  const place={}, lockAns={};
+  ROWS.forEach((r,i)=>{ FIELDS.forEach(f=>place[r.id+"."+f]=r.ans[f]); lockAns[r.id]=i; });
+  const got=[...new Set(ROWS.flatMap(r=>Object.values(r.ans)).concat("d239","havana"))];
+  return {v:1, got, place, lockAns, lockOrder:ROWS.map(r=>r.id), seen:["receipt"], cur:"receipt", tried:[], blots:(teaStore().blots||{})[SCENE]||0, extra:{}, pulled:true};
+}
+function restoreScene(){ // -> false | "progress" | "done"
+  let d=null, raw=null;
+  try{ raw=localStorage.getItem(SAVE_KEY); d=JSON.parse(raw); }catch(e){ d=null; }
+  if(!d||typeof d!=="object"||d.v!==1){ if((teaStore().done||[]).includes(SCENE)) d=solvedSave(); else return false; }
+  try{
+    const extra=d.extra&&typeof d.extra==="object"?d.extra:{};
+    const okClue=c=>c&&typeof c.t==="string"&&CAT_LABEL[c.cat]&&CONF_LABEL[c.conf]&&(c.note==null||typeof c.note==="string");
+    const known=id=>typeof id==="string"&&(BASE_CLUES.has(id)||(Object.prototype.hasOwnProperty.call(extra,id)&&/^\w+$/.test(id)&&okClue(extra[id])));
+    if(!Array.isArray(d.got)||!d.got.length||!d.got.every(known)) return false;
+    const place=d.place&&typeof d.place==="object"?d.place:{};
+    for(const [slot,id] of Object.entries(place)){ const [rid,f]=slot.split(".");
+      if(!ROWS.some(r=>r.id===rid)||!FIELDS.includes(f)||!known(id)) return false; }
+    const lockOrder=Array.isArray(d.lockOrder)?d.lockOrder:[], lockAns=d.lockAns&&typeof d.lockAns==="object"?d.lockAns:{};
+    if(new Set(lockOrder).size!==lockOrder.length||new Set(lockOrder.map(r=>lockAns[r])).size!==lockOrder.length) return false;
+    for(const rid of lockOrder){ const row=ROWS[lockAns[rid]];
+      if(!ROWS.some(r=>r.id===rid)||!row||FIELDS.some(f=>place[rid+"."+f]!==row.ans[f])) return false; }
+    // everything checks out: apply it
+    Object.entries(extra).forEach(([k,c])=>{ if(!BASE_CLUES.has(k)) CLUES[k]={t:c.t,cat:c.cat,conf:c.conf,note:c.note||undefined}; });
+    S.got=new Set(d.got); S.place={...place}; S.lockAns={...lockAns}; S.lockOrder=[...lockOrder]; S.locked=new Set(lockOrder);
+    S.coins=Array(FARTHINGS).fill("counter");
+    lockOrder.forEach(rid=>{ let n=ROWS[lockAns[rid]].coins; for(let i=FARTHINGS-1;i>=0&&n>0;i--) if(S.coins[i]==="counter"){ S.coins[i]=rid; n--; } });
+    S.tried=new Set(Array.isArray(d.tried)?d.tried.filter(x=>typeof x==="string"):[]);
+    blots=Number.isInteger(d.blots)&&d.blots>=0?d.blots:0;
+    S.pulled=!!d.pulled&&S.locked.size===ROWS.length&&S.got.has("havana");
+    DOCS.find(x=>x.id==="madden").hidden=!S.pulled;
+    const ids=new Set(DOCS.filter(x=>!x.hidden).map(x=>x.id));
+    S.seen=new Set((Array.isArray(d.seen)?d.seen:[]).filter(x=>ids.has(x)).concat("receipt"));
+    S.cur=ids.has(d.cur)?d.cur:"receipt";
+    if(raw==null) saveOn=true, saveScene(), saveOn=false; // keep the rebuilt solved ledger
+    return S.pulled?"done":"progress";
+  }catch(e){ return false; }
+}
+function replayScene(){
+  saveOn=false;
+  try{ localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,got:[]})); }catch(e){} // an empty save: start fresh, even though the scene is done
+  location.reload();
+}
+document.querySelectorAll(".replayBtn").forEach(b=>b.addEventListener("click",replayScene));
+
+/* ===== KEYBOARD AND THE END SCREEN =====
+   Notes, ledger boxes and dotted words are role=button: Enter or Space uses them, like a click.
+   Pick a note with Enter, then press Enter on a box. Escape closes the end screen. */
+let doorFrom=null;
+function openDoor(){
+  doorFrom=document.activeElement; $("#door").classList.add("on");
+  setTimeout(()=>$("#door .card").focus({preventScroll:true}),30);
+}
+function closeDoor(){
+  $("#door").classList.remove("on");
+  if(doorFrom&&document.contains(doorFrom)) doorFrom.focus(); doorFrom=null;
+}
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&$("#door").classList.contains("on")){ e.preventDefault(); closeDoor(); return; }
+  const t=e.target;
+  if((e.key==="Enter"||e.key===" ")&&t&&t.getAttribute&&t.getAttribute("role")==="button"&&!/^(BUTTON|A)$/.test(t.tagName)){
+    e.preventDefault();
+    const again = t.matches(".chip") ? `#chips .chip[data-id="${t.dataset.id}"]`
+      : t.matches(".slot") ? `.slot[data-slot="${t.dataset.slot}"]`
+      : t.matches(".c") ? `#doc .c[data-c="${t.dataset.c}"]` : null;
+    t.click();
+    if(t.matches(".chip")&&S.sel===t.dataset.id) toast(`Picked: ${CLUES[S.sel].t}. Now press Enter on a box in the ledger.`);
+    const n=again&&document.querySelector(again); if(n&&n!==document.activeElement) n.focus({preventScroll:true});
+  }
+});
+function slotAttrs(locked,i,f,v){
+  return `${locked?"":' tabindex="0" role="button"'} aria-label="Line ${i+1}, ${CAT_LABEL[f]}: ${v?CLUES[v].t.replace(/"/g,"&quot;"):"empty"}"`;
+}
+
 /* ===== PROGRESS (this browser only) AND ANALYTICS ===== */
 const SCENE=1;
 function teaStore(){ try{ return JSON.parse(localStorage.getItem("cupoftea.v1"))||{}; }catch(e){ return {}; } }
@@ -969,7 +1097,14 @@ function renderSnav(){
 }
 (function(){ const s=teaStore(); s.cur=SCENE; s.t=Date.now(); teaSave(s); renderSnav(); track("tea_scene_start",{scene:SCENE}); })();
 
+const resumed=restoreScene();
 renderIntro(); renderTabs(); renderDoc(); renderChips(); renderLedger(); checkPull(); progress();
+if(resumed){
+  $("#intro").classList.add("off"); // a returning player goes straight to the desk
+  const wake=()=>startAmbience(); addEventListener("pointerdown",wake,{once:true}); addEventListener("keydown",wake,{once:true});
+}
+if(resumed==="done"){ finishedView(); $("#replay").classList.add("on"); openDoor(); }
+saveOn=true;
 </script>
 </body>
 </html>
