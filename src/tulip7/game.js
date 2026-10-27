@@ -29,6 +29,11 @@ function warmArt(k){
   return ARTP[k] = (im.decode ? im.decode() : new Promise((r, j) => { im.onload = r; im.onerror = j; })).catch(() => {});
 }
 const tableArtReady = () => Promise.all(TABLE_ART.map(warmArt));
+/* the picture of one card: a drawn card waits for its own art (briefly), so it never turns face up blank on a slow line */
+function artFor(c){
+  const m = cardHTML(c).match(/src="([^"]+)"/); if (!m) return Promise.resolve();
+  const k = Object.keys(ART).find(k => ART[k] === m[1]); return k ? warmArt(k) : Promise.resolve();
+}
 if (document.readyState === 'complete') setTimeout(tableArtReady, 0); else addEventListener('load', () => setTimeout(tableArtReady, 0), {once:true});
 
 /* ---------- settings ---------- */
@@ -600,6 +605,7 @@ async function onEvent(t, d){
     case 'roundStart': ui.blown = new Set(); ui.after = false; render(); await pace(.4); break;
     case 'turn': render(); if (!p.human) await pace(.15); break;
     case 'draw':
+      await Promise.race([artFor(d.c), sleep(4000)]);
       ui.pending = {p, odds:d.odds, id:(ui.pid = (ui.pid || 0) + 1)}; ui.lastOdds = d.odds; ui.flip = d.c.uid; SND.slide(); render();
       if (d.odds >= .25) SND.heart();
       await sleep((SET.fast ? 280 : 560) + d.odds * (SET.fast ? 450 : 1100));

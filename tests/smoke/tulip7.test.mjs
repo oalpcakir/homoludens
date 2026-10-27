@@ -249,7 +249,8 @@ test('Tulip 7: on a 768x1024 tablet your hand is in sight on your turn; rival ch
       if (st.pick) { await page.locator('#ctrl [data-pick]').first().tap(); continue; }
       if (st.cash) { await page.locator('#ctrl [data-cash="hold"]').tap(); continue; }
       if (st.act) {
-        await page.waitForTimeout(900); // the page scrolls smoothly
+        // the page scrolls smoothly to your hand: wait until it has stopped moving (slow CI machines take longer)
+        await page.waitForFunction(() => new Promise(r => { const y = scrollY; setTimeout(() => r(scrollY === y), 350); }), null, { timeout: 8000, polling: 100 }).catch(() => {});
         const bad = await page.evaluate(() => {
           const R = e => e.getBoundingClientRect(), out = [], hit = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
           const dock = R(document.querySelector('#ctrl')), fixed = getComputedStyle(document.querySelector('#ctrl')).position === 'fixed';
