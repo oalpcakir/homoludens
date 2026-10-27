@@ -159,7 +159,7 @@ test('the real VOC figures are the cited ones', () => {
   assert.equal(R.lastDiv, 1782);
   assert.deepEqual({ ...R.early }, { from: 1610, to: 1612, total: 162.5 });
   assert.deepEqual({ ...R.war }, { y: 1780, loss: 43e6 });
-  assert.deepEqual({ ...R.endDebt }, { y: 1799, lo: 100e6, hi: 120e6 });
+  assert.deepEqual({ ...R.endDebt }, { y: 1796, v: 120e6, lo: 102e6, hi: 138e6 });
 });
 
 test('one line of commentary compares the player with the real Company', () => {
@@ -169,10 +169,10 @@ test('one line of commentary compares the player with the real Company', () => {
     return S;
   };
   const line = S => V('compareLine')(S);
-  assert.match(line(mk(y => y < 1690 ? 25 : 10, 50e6)), /^Your company paid out more than the real VOC's 18% a year until the 1680s, then less, and left ƒ50.0M of debt, against the real Company's roughly ƒ100–120 million\.$/);
+  assert.match(line(mk(y => y < 1690 ? 25 : 10, 50e6)), /^Your company paid out more than the real VOC's 18% a year until the 1680s, then less, and left ƒ50.0M of debt, against the real Company's ƒ120 million or so\.$/);
   assert.match(line(mk(() => 25, 0)), /matched or beat the real VOC's 18% a year in every decade, and left no debt at all/);
   assert.match(line(mk(() => 5, 110e6)), /never matched .* about what the real Company left/);
-  assert.match(line(mk(y => (Math.floor(y / 10) % 2 ? 25 : 10), 130e6)), /in \d+ of 17 decades, most of all in the \d{4}s \(25%\), and left ƒ130M of debt, more than/);
+  assert.match(line(mk(y => (Math.floor(y / 10) % 2 ? 25 : 10), 150e6)), /in \d+ of 17 decades, most of all in the \d{4}s \(25%\), and left ƒ150M of debt, more than/);
   const B = mk(() => 20, 121e6, { endReason: 'bankrupt' }); B.t = at(1700, 3); B.yhist = B.yhist.filter(r => r.y < 1700);
   assert.match(line(B), /went under in 1699 with ƒ121M of debt/);
   assert.equal(V('finalScore')({ stats: { divPaid: 300e6 }, debt: 50e6 }), 250);

@@ -1267,13 +1267,13 @@ function checkEvents(S) {
 //  lastDiv no dividend was paid after 1782 (Gaastra 2003; B. Taylor, "The First and the Greatest", Global Financial Data, 2013).
 //  war     the Fourth Anglo-Dutch War (1780–84) cost the Company up to ƒ43 million and the loans that kept it going brought
 //          its net assets to zero (De Vries & Van der Woude 1997, pp. 454–455).
-//  endDebt debt taken over by the Batavian state at the end, usually put at roughly ƒ100–120 million; estimates vary with
-//          what is counted (Gaastra 2003; De Vries & Van der Woude 1997). Drawn as a range.
+//  endDebt after the revolution of 1795 the Company's debt stood at about ƒ120 million and became part of the state debt
+//          (De Vries & Van der Woude 1997, p. 457). Drawn as one point at 1796; "about the same" means within 15%.
 const REAL_VOC = {
   avgDiv: 18, firstDiv: 1610, lastDiv: 1782,
   early: { from: 1610, to: 1612, total: 162.5 },
   war: { y: 1780, loss: 43e6 },
-  endDebt: { y: 1799, lo: 100e6, hi: 120e6 },
+  endDebt: { y: 1796, v: 120e6, lo: 102e6, hi: 138e6 },
 };
 // Player's company by decade: average dividend (% of capital a year, from 1610) and debt at the end of the decade.
 function compareData(S) {
@@ -1312,10 +1312,10 @@ function compareLine(S, data) {
   const debt = D.endDebt, yr = D.endYear;
   let b;
   if (S.endReason === 'bankrupt') b = `went under in ${yr} with ${money(debt)} of debt, a sum the real Company reached only at its very end`;
-  else if (debt > R.endDebt.hi) b = `left ${money(debt)} of debt, more than the real Company's roughly ƒ100–120 million`;
-  else if (debt >= R.endDebt.lo) b = `left ${money(debt)} of debt, about what the real Company left`;
-  else if (debt > 0) b = `left ${money(debt)} of debt, against the real Company's roughly ƒ100–120 million`;
-  else b = 'left no debt at all, where the real Company left roughly ƒ100–120 million';
+  else if (debt > R.endDebt.hi) b = `left ${money(debt)} of debt, more than the real Company's ƒ120 million or so`;
+  else if (debt >= R.endDebt.lo) b = `left ${money(debt)} of debt, about what the real Company left (some ƒ120 million)`;
+  else if (debt > 0) b = `left ${money(debt)} of debt, against the real Company's ƒ120 million or so`;
+  else b = 'left no debt at all, where the real Company left some ƒ120 million';
   return `${a}, and ${b}.`;
 }
 // Final score for the passport: millions of guilders paid to shareholders, less the debt left behind.
@@ -2183,7 +2183,7 @@ function showCredits() {
   showSheet(`<h3 id="m-title">Sources</h3><div class="body">
     <p>Retourvloot is a game, not a textbook. Prices, costs and quantities are simplified so the economy can be played. Dates, people, events and the human costs in the other ledger follow the historical record.</p>
     <p>Main works behind it: Femme Gaastra, <i>The Dutch East India Company</i>; J. R. Bruijn, F. S. Gaastra and I. Schöffer, <i>Dutch-Asiatic Shipping</i>; Jan de Vries and Ad van der Woude, <i>The First Modern Economy</i>; Om Prakash on the Asian trade; Markus Vink on slavery in the Indian Ocean; Chris Nierstrasz on the Company's decline.</p>
-    <p>The end-of-game comparison draws only figures that can be cited: the VOC's average dividend of about 18% a year on its original capital, and the 162.5% paid out in 1610–12, mostly in spices (Gaastra, <i>The Dutch East India Company</i>, 2003; De Vries and Van der Woude, <i>The First Modern Economy</i>, 1997); no dividend after 1782 (Gaastra; Bryan Taylor, "The First and the Greatest", Global Financial Data, 2013); losses of up to ƒ43 million in the war of 1780–84, after which loans brought the Company's net assets to zero (De Vries and Van der Woude, pp. 454–455); and a debt at the end usually put at roughly ƒ100–120 million, an estimate that varies with what is counted.</p>
+    <p>The end-of-game comparison draws only figures that can be cited: the VOC's average dividend of about 18% a year on its original capital, and the 162.5% paid out in 1610–12, mostly in spices (Gaastra, <i>The Dutch East India Company</i>, 2003; De Vries and Van der Woude, <i>The First Modern Economy</i>, 1997); no dividend after 1782 (Gaastra; Bryan Taylor, "The First and the Greatest", Global Financial Data, 2013); losses of up to ƒ43 million in the war of 1780–84, after which loans brought the Company's net assets to zero (De Vries and Van der Woude, pp. 454–455); and a debt of about ƒ120 million when, after the revolution of 1795, it became part of the state debt (De Vries and Van der Woude, p. 457).</p>
     <p>The tulip card of February 1637 follows Anne Goldgar, <i>Tulipmania: Money, Honor, and Knowledge in the Dutch Golden Age</i> (2007). The chart's coastlines come from Natural Earth (public domain).</p>
     <p>All images come from the Rijksmuseum, Amsterdam, and are in the public domain (CC0):</p><ul class="credits">${rows}</ul></div>
     <div class="actions"><button type="button" class="btn" id="m-go">Close</button></div>`);
@@ -3017,9 +3017,9 @@ function compareSvg(D) {
   const pts = D.decades.filter(d => d.debt != null).map(d => [x(Math.min(d.decade + 9, D.endYear)), y2(d.debt / 1e6)]);
   if (pts.length) { s += `<path class="pl" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + pts.map(p => `<circle class="pd" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.8"/>`).join(''); }
   const ex = x(R0.endDebt.y);
-  const bTop = y2(R0.endDebt.hi / 1e6), bH = y2(R0.endDebt.lo / 1e6) - bTop;
-  s += `<rect class="rb" x="${ex - 7}" y="${bTop.toFixed(1)}" width="14" height="${bH.toFixed(1)}"/><rect class="rbe" x="${ex - 7}" y="${bTop.toFixed(1)}" width="14" height="${bH.toFixed(1)}"/>`;
-  s += `<text class="lbl rvt" x="${ex - 12}" y="${y2(R0.endDebt.hi / 1e6) + 4}" text-anchor="end">real VOC at the end: c. ƒ100–120M</text>`;
+  const ey = y2(R0.endDebt.v / 1e6);
+  s += `<rect class="rb" x="${ex - 5}" y="${(ey - 5).toFixed(1)}" width="10" height="10" transform="rotate(45 ${ex} ${ey.toFixed(1)})"/><rect class="rbe" x="${ex - 5}" y="${(ey - 5).toFixed(1)}" width="10" height="10" transform="rotate(45 ${ex} ${ey.toFixed(1)})"/>`;
+  s += `<text class="lbl rvt" x="${ex - 12}" y="${(ey + 4).toFixed(1)}" text-anchor="end">real VOC, 1796: about ƒ120M</text>`;
   s += `<line x1="${x(R0.war.y)}" x2="${x(R0.war.y)}" y1="${t2}" y2="${t2 + h2}" stroke="var(--brass)" stroke-dasharray="2 3"/><text class="lbl rvt" x="${x(R0.war.y) - 5}" y="${t2 + h2 - 7}" text-anchor="end">1780–84 war: losses up to ƒ43M</text>`;
   s += `<line class="ax" x1="${L}" x2="${W - R}" y1="${t2 + h2}" y2="${t2 + h2}"/>`;
   for (let yr = 1600; yr <= 1800; yr += 50) s += `<text x="${x(yr)}" y="${t2 + h2 + 18}" text-anchor="middle">${yr}</text><line class="ax" x1="${x(yr)}" x2="${x(yr)}" y1="${t2 + h2}" y2="${t2 + h2 + 4}"/>`;
@@ -3053,7 +3053,7 @@ function showEnd() {
       <span>Died at sea or in Asia</span><b class="num neg">${num(S.humans.diedSea + S.humans.diedAsia)}</b>
       <span>Came home</span><b class="num">${num(S.humans.returned)} (${S.humans.sent ? Math.round(S.humans.returned / S.humans.sent * 100) : 0}%)</b>
     </div>
-    <div class="hist"><b>The real Company</b>About a million people sailed east for the VOC between 1602 and 1795; roughly a third came home. It paid an average dividend of around 18% a year on its original capital, from 1730 mostly with money it did not earn, and none after 1782. At the end its debt is usually put at ƒ100–120 million; estimates vary.</div>
+    <div class="hist"><b>The real Company</b>About a million people sailed east for the VOC between 1602 and 1795; roughly a third came home. It paid an average dividend of around 18% a year on its original capital, from 1730 mostly with money it did not earn, and none after 1782. After the revolution of 1795 its debt, about ƒ120 million, became part of the state debt.</div>
     </div>
     <div class="cmp" id="cmp"><h4>Your company and the real VOC</h4><p class="line" id="cmp-line">${esc(line)}</p>${compareSvg(D)}
       <p class="src">Real VOC: lifetime average dividend and 1610–12 payouts after Gaastra (2003) and De Vries &amp; Van der Woude (1997); last dividend 1782; war losses after De Vries &amp; Van der Woude (1997), pp. 454–5. Only cited figures are drawn; see Sources.</p></div>

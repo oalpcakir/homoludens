@@ -208,8 +208,8 @@ test('the end card compares the company with the real VOC, stamps the passport a
   }));
   assert.equal(c.bars, 19 + 1, '1610s–1790s bars plus the legend swatch');
   assert.ok(c.real && c.range && c.debt >= 19);
-  assert.match(c.text, /about 18% a year/); assert.match(c.text, /none after 1782/); assert.match(c.text, /ƒ100–120M/);
-  assert.equal(c.line, 'Your company paid out more than the real VOC\'s 18% a year until the 1690s, then less, and left ƒ40.0M of debt, against the real Company\'s roughly ƒ100–120 million.');
+  assert.match(c.text, /about 18% a year/); assert.match(c.text, /none after 1782/); assert.match(c.text, /about ƒ120M/);
+  assert.equal(c.line, 'Your company paid out more than the real VOC\'s 18% a year until the 1690s, then less, and left ƒ40.0M of debt, against the real Company\'s ƒ120 million or so.');
   assert.equal(c.data.decades.find(d => d.decade === 1650).div, 22);
   assert.equal(c.data.decades.find(d => d.decade === 1750).debt, 59 * 4e5);
   const pass = await t.page.evaluate(() => JSON.parse(localStorage.getItem('hl.passport.v1')).games.retourvloot);

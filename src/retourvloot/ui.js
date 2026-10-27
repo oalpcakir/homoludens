@@ -825,9 +825,9 @@ function compareSvg(D) {
   const pts = D.decades.filter(d => d.debt != null).map(d => [x(Math.min(d.decade + 9, D.endYear)), y2(d.debt / 1e6)]);
   if (pts.length) { s += `<path class="pl" d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('')}"/>` + pts.map(p => `<circle class="pd" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2.8"/>`).join(''); }
   const ex = x(R0.endDebt.y);
-  const bTop = y2(R0.endDebt.hi / 1e6), bH = y2(R0.endDebt.lo / 1e6) - bTop;
-  s += `<rect class="rb" x="${ex - 7}" y="${bTop.toFixed(1)}" width="14" height="${bH.toFixed(1)}"/><rect class="rbe" x="${ex - 7}" y="${bTop.toFixed(1)}" width="14" height="${bH.toFixed(1)}"/>`;
-  s += `<text class="lbl rvt" x="${ex - 12}" y="${y2(R0.endDebt.hi / 1e6) + 4}" text-anchor="end">real VOC at the end: c. ƒ100–120M</text>`;
+  const ey = y2(R0.endDebt.v / 1e6);
+  s += `<rect class="rb" x="${ex - 5}" y="${(ey - 5).toFixed(1)}" width="10" height="10" transform="rotate(45 ${ex} ${ey.toFixed(1)})"/><rect class="rbe" x="${ex - 5}" y="${(ey - 5).toFixed(1)}" width="10" height="10" transform="rotate(45 ${ex} ${ey.toFixed(1)})"/>`;
+  s += `<text class="lbl rvt" x="${ex - 12}" y="${(ey + 4).toFixed(1)}" text-anchor="end">real VOC, 1796: about ƒ120M</text>`;
   s += `<line x1="${x(R0.war.y)}" x2="${x(R0.war.y)}" y1="${t2}" y2="${t2 + h2}" stroke="var(--brass)" stroke-dasharray="2 3"/><text class="lbl rvt" x="${x(R0.war.y) - 5}" y="${t2 + h2 - 7}" text-anchor="end">1780–84 war: losses up to ƒ43M</text>`;
   s += `<line class="ax" x1="${L}" x2="${W - R}" y1="${t2 + h2}" y2="${t2 + h2}"/>`;
   for (let yr = 1600; yr <= 1800; yr += 50) s += `<text x="${x(yr)}" y="${t2 + h2 + 18}" text-anchor="middle">${yr}</text><line class="ax" x1="${x(yr)}" x2="${x(yr)}" y1="${t2 + h2}" y2="${t2 + h2 + 4}"/>`;
@@ -861,7 +861,7 @@ function showEnd() {
       <span>Died at sea or in Asia</span><b class="num neg">${num(S.humans.diedSea + S.humans.diedAsia)}</b>
       <span>Came home</span><b class="num">${num(S.humans.returned)} (${S.humans.sent ? Math.round(S.humans.returned / S.humans.sent * 100) : 0}%)</b>
     </div>
-    <div class="hist"><b>The real Company</b>About a million people sailed east for the VOC between 1602 and 1795; roughly a third came home. It paid an average dividend of around 18% a year on its original capital, from 1730 mostly with money it did not earn, and none after 1782. At the end its debt is usually put at ƒ100–120 million; estimates vary.</div>
+    <div class="hist"><b>The real Company</b>About a million people sailed east for the VOC between 1602 and 1795; roughly a third came home. It paid an average dividend of around 18% a year on its original capital, from 1730 mostly with money it did not earn, and none after 1782. After the revolution of 1795 its debt, about ƒ120 million, became part of the state debt.</div>
     </div>
     <div class="cmp" id="cmp"><h4>Your company and the real VOC</h4><p class="line" id="cmp-line">${esc(line)}</p>${compareSvg(D)}
       <p class="src">Real VOC: lifetime average dividend and 1610–12 payouts after Gaastra (2003) and De Vries &amp; Van der Woude (1997); last dividend 1782; war losses after De Vries &amp; Van der Woude (1997), pp. 454–5. Only cited figures are drawn; see Sources.</p></div>

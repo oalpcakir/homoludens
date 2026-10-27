@@ -582,13 +582,13 @@ function checkEvents(S) {
 //  lastDiv no dividend was paid after 1782 (Gaastra 2003; B. Taylor, "The First and the Greatest", Global Financial Data, 2013).
 //  war     the Fourth Anglo-Dutch War (1780–84) cost the Company up to ƒ43 million and the loans that kept it going brought
 //          its net assets to zero (De Vries & Van der Woude 1997, pp. 454–455).
-//  endDebt debt taken over by the Batavian state at the end, usually put at roughly ƒ100–120 million; estimates vary with
-//          what is counted (Gaastra 2003; De Vries & Van der Woude 1997). Drawn as a range.
+//  endDebt after the revolution of 1795 the Company's debt stood at about ƒ120 million and became part of the state debt
+//          (De Vries & Van der Woude 1997, p. 457). Drawn as one point at 1796; "about the same" means within 15%.
 const REAL_VOC = {
   avgDiv: 18, firstDiv: 1610, lastDiv: 1782,
   early: { from: 1610, to: 1612, total: 162.5 },
   war: { y: 1780, loss: 43e6 },
-  endDebt: { y: 1799, lo: 100e6, hi: 120e6 },
+  endDebt: { y: 1796, v: 120e6, lo: 102e6, hi: 138e6 },
 };
 // Player's company by decade: average dividend (% of capital a year, from 1610) and debt at the end of the decade.
 function compareData(S) {
@@ -627,10 +627,10 @@ function compareLine(S, data) {
   const debt = D.endDebt, yr = D.endYear;
   let b;
   if (S.endReason === 'bankrupt') b = `went under in ${yr} with ${money(debt)} of debt, a sum the real Company reached only at its very end`;
-  else if (debt > R.endDebt.hi) b = `left ${money(debt)} of debt, more than the real Company's roughly ƒ100–120 million`;
-  else if (debt >= R.endDebt.lo) b = `left ${money(debt)} of debt, about what the real Company left`;
-  else if (debt > 0) b = `left ${money(debt)} of debt, against the real Company's roughly ƒ100–120 million`;
-  else b = 'left no debt at all, where the real Company left roughly ƒ100–120 million';
+  else if (debt > R.endDebt.hi) b = `left ${money(debt)} of debt, more than the real Company's ƒ120 million or so`;
+  else if (debt >= R.endDebt.lo) b = `left ${money(debt)} of debt, about what the real Company left (some ƒ120 million)`;
+  else if (debt > 0) b = `left ${money(debt)} of debt, against the real Company's ƒ120 million or so`;
+  else b = 'left no debt at all, where the real Company left some ƒ120 million';
   return `${a}, and ${b}.`;
 }
 // Final score for the passport: millions of guilders paid to shareholders, less the debt left behind.

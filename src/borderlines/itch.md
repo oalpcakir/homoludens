@@ -1,6 +1,6 @@
 # Borderlines on itch.io
 
-Upload: `dist/itch/borderlines-itch.zip` (build with `python3 src/borderlines/build_itch.py` after `build_borderlines.py`).
+Upload: `dist/platforms/itch/borderlines-itch.zip` (build with `python3 build.py && python3 src/platform/build_platforms.py borderlines --only itch`; see `src/platform/STORES.md` for all six games).
 Re-upload only when the game itself changes; new monthly dailies arrive on their own.
 
 ## Settings (Create new project)
