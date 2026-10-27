@@ -31,8 +31,8 @@ function warmArt(k){
 const tableArtReady = () => Promise.all(TABLE_ART.map(warmArt));
 /* the picture of one card: a drawn card waits for its own art (briefly), so it never turns face up blank on a slow line */
 function artFor(c){
-  const m = cardHTML(c).match(/src="([^"]+)"/); if (!m) return Promise.resolve();
-  const k = Object.keys(ART).find(k => ART[k] === m[1]); return k ? warmArt(k) : Promise.resolve();
+  const k = c.k === 'num' ? V[c.v].id : c.k === 'mod' ? 'm_offset' : c.k === 'x2' ? 'm_broken' : SP[c.k] && SP[c.k].art;
+  return k && ART[k] ? warmArt(k) : Promise.resolve();
 }
 if (document.readyState === 'complete') setTimeout(tableArtReady, 0); else addEventListener('load', () => setTimeout(tableArtReady, 0), {once:true});
 
@@ -107,7 +107,7 @@ function showMyHand(){
   if (dy > 2) scrollBy({top:dy, behavior:matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth'});
 }
 /* The control panel is a dock at the bottom of a phone or tablet; the page keeps room for it. */
-if (window.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty('--dockh', $('#ctrl').offsetHeight + 'px')).observe($('#ctrl'));
+if (window.ResizeObserver) new ResizeObserver(() => { document.documentElement.style.setProperty('--dockh', $('#ctrl').offsetHeight + 'px'); if (typeof ui !== 'undefined' && ui && ui.turn) requestAnimationFrame(showMyHand); }).observe($('#ctrl'));
 const pace = (k = 1) => sleep((SET.fast ? 260 : 680) * k);
 /* Analytics (the site adds PostHog; standalone this does nothing). Event names map to the shared ones in posthog_head.html. */
 function track(ev, props){ try { if (window.posthog && posthog.capture) posthog.capture(ev, Object.assign({mode:G ? G.mode : SET.mode}, props || {})); } catch(e){} }
@@ -580,7 +580,7 @@ const Human = {
       say(pickLine('turnYou', {}));
       ui.turn = a => { if (a === 'hit' && !ui.firstDraw){ ui.firstDraw = true; track('tulip_first_draw', {}); } res(a === 'hit' ? 'hit' : 'stay'); render(); };
       tip('first'); if (g.bustOdds(p) >= .2) tip('danger'); if (p.nums.length >= 5) tip('book');
-      render(); requestAnimationFrame(showMyHand);
+      render(); requestAnimationFrame(showMyHand); setTimeout(showMyHand, 400); // again once the dock and new cards have settled
     });
   },
   sell(g, p){ return new Promise(res => { say('The evening is over. Hold your paper, or cash it in?'); ui.cash = {done(v){ ui.cash = null; res(v === 'sell'); render(); }}; tip('cash'); render(); }); },
