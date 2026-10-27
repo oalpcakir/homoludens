@@ -7,7 +7,7 @@ small however many days there are and future answers are not in the page source.
 Also writes public/borderlines/tiers.json (read by the itch.io build) and updates the daily count the portal uses for its "Today" box (public/index.html, src/portal/portal.html).
 Run from anywhere: python3 src/borderlines/build_borderlines.py
 """
-import json, os, re, glob
+import json, os, re, glob, hashlib
 
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
@@ -47,7 +47,14 @@ def build():
     ids = {q["id"] for q in base["pool"]} | {f"d{i + 1}-{j + 1}" for i in range(n) for j in range(5)}
     lapse = sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(PUB, "borderlines", "lapse", "*.json")))
     lapse = [x for x in lapse if x in ids]
-    data = dict(base, days=tiers, lapse=lapse)
+    # The big, rarely changing part (base map + practice pool) goes to map.json, fetched and cached by the browser;
+    # the page keeps only the schedule. The ?v= hash lets map.json be cached for a long time.
+    MAPKEYS = ("pool", "land", "rivers", "lakes")
+    map_json = json.dumps({k: base[k] for k in MAPKEYS}, ensure_ascii=False, separators=(",", ":"))
+    with open(os.path.join(PUB, "borderlines", "map.json"), "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(map_json)
+    map_v = hashlib.sha1(map_json.encode("utf-8")).hexdigest()[:10]
+    data = dict({k: v for k, v in base.items() if k not in MAPKEYS}, days=tiers, lapse=lapse)
     data_js = "window.GAME_DATA = " + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n"
 
     ph = analytics_head("borderlines")
@@ -59,6 +66,7 @@ def build():
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="A daily history map game. Paint the land a historical realm ruled, then see how close you came.">
 {og("Borderlines", "You get a year and a realm. Paint the land it ruled. A daily history map game.", SITE + "/borderlines/", SITE + "/og-borderlines.png")}{canonical("/borderlines/")}
+<link rel="preload" href="/borderlines/map.json?v={map_v}" as="fetch" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f2b4a'/%3E%3Cpath d='M7 22l6-12 5 8 3-4 4 8z' fill='%23f7f6f2'/%3E%3C/svg%3E">
 <script>
   window.BORDERLINES_CONFIG = {{
@@ -66,6 +74,7 @@ def build():
     siteUrl: "{SITE}/borderlines/",
     portalUrl: "/",
     daysUrl: "/borderlines/days/",
+    mapUrl: "/borderlines/map.json?v={map_v}",
     lapseUrl: "/borderlines/lapse/",
     scoreApi: "/api/borderlines/"
   }};

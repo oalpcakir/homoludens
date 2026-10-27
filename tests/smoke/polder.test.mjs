@@ -60,14 +60,16 @@ test('Polder: a card closed by mouse within 250 ms leaves no key listener that l
   // next turn levels up: the upgrade picker opens
   await t.page.evaluate(() => { window.__polder.S.xp = 100; window.__polder.waitDecade(); });
   await t.page.waitForSelector('#mbox .up');
-  const owned = await t.page.evaluate(() => Object.keys(window.__polder.S.up).length);
+  // upgrade levels in all (a pick may raise one already owned, e.g. Willow mattresses II)
+  const levels = () => t.page.evaluate(() => Object.values(window.__polder.S.up).reduce((a, b) => a + b, 0));
+  const owned = await levels();
   await t.page.evaluate(() => document.activeElement && document.activeElement.blur());
   await t.page.keyboard.press('Enter');
   await t.page.waitForTimeout(300);
   assert.equal(await t.page.locator('#mbox .up').count(), 3, 'Enter closed the upgrade picker without a choice');
   await t.page.locator('#mbox .up').first().click();
   await t.page.waitForFunction(() => !window.__polder.S.busy, null, { timeout: 5000 });
-  assert.equal(Object.keys(await t.page.evaluate(() => window.__polder.S.up)).length, owned + 1);
+  assert.equal(await levels(), owned + 1);
   assert.deepEqual(t.problems, []);
   await t.close();
 });
@@ -123,7 +125,7 @@ const FACTS = {
   friesland: ['955', '3,181', 'Middelzee', 'Oudebildtdijk'],
   zeeland: ['1,365 km²', '67', '1,836', 'Oosterschelde'],
   holland: ['1612', '1622', '1635', '7,208 ha', '16,850 ha'],
-  zuiderzee: ['1932', '28 May 1932', '19 people', '1,600 km²'],
+  zuiderzee: ['1932', '28 May 1932', '19 people', '1,600 km²', 'Eastern Flevoland fell dry in 1957, Southern Flevoland in 1968'],
 };
 test('Polder: every region ends with "Your dikes vs. history": the real map with a hatched layer, sourced numbers, a passport stamp and an image share', async () => {
   const t = await open();
@@ -337,4 +339,121 @@ test('Polder: on a desktop the touch bar stays hidden and mouse play is unchange
   assert.equal(await t.page.locator('#rotBtn').isVisible(), true);
   assert.equal(await t.page.evaluate(() => window.__polderTest.touch()), false);
   await t.close();
+});
+
+// ---------- QA, late October 2026 ----------
+test('Polder (keyboard): arrow keys aim the piece and Enter builds it', async () => {
+  const t = await open();
+  await startRegion(t.page, 'friesland');
+  await t.page.evaluate(() => document.activeElement && document.activeElement.blur());
+  await t.page.keyboard.press('ArrowLeft'); // the first arrow puts the aim in the middle of the board
+  const a0 = await t.page.evaluate(() => window.__polderTest.aim());
+  assert.ok(a0, 'no aim after an arrow key');
+  await t.page.keyboard.press('ArrowLeft');
+  assert.deepEqual(await t.page.evaluate(() => { const a = window.__polderTest.aim(); return [a.x, a.y]; }), [a0.x - 1, a0.y]);
+  // walk to a square where the piece fits, then build it with Enter
+  let ok = false;
+  for (let k = 0; k < 40 && !ok; k++) { await t.page.keyboard.press(k < 20 ? 'ArrowUp' : 'ArrowRight'); ok = (await t.page.evaluate(() => window.__polderTest.aim())).ok; }
+  assert.ok(ok, 'no buildable square found by keyboard');
+  const p0 = (await t.page.evaluate(() => window.__polderTest.snapshot())).piece;
+  await t.page.keyboard.press('Enter');
+  await t.page.waitForFunction(p => window.__polderTest.snapshot().piece > p, p0);
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('Polder: the region intro keeps place names capitalised', async () => {
+  const t = await open();
+  await t.page.evaluate(() => window.__polder.startLevel('holland'));
+  const text = await t.page.locator('#mbox').innerText();
+  assert.match(text, /Goals:.*drain the Purmer.*Christmas Flood.*Haarlemmermeer/s);
+  await t.close();
+});
+
+for (const size of [{ width: 1366, height: 768 }, { width: 390, height: 844 }]) {
+  test(`Polder: the labels on the real maps stay inside their frame (${size.width}px)`, async () => {
+    const ctx = await browser.newContext({ viewport: size, reducedMotion: 'reduce' });
+    await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+    await ctx.addInitScript(s => { for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v); }, RETURNING);
+    const page = await ctx.newPage();
+    await page.goto(srv.url + '/polder/'); await page.waitForTimeout(600);
+    for (const id of Object.keys(FACTS)) {
+      await startRegion(page, id);
+      await page.evaluate(() => window.__polder.dbg.end());
+      await page.waitForSelector('#vsPanel');
+      const out = await page.evaluate(() => {
+        const svg = document.querySelector('#vsPanel svg'), f = svg.getBoundingClientRect();
+        return [...svg.querySelectorAll('text')].filter(t => { const b = t.getBoundingClientRect(); return b.left < f.left || b.right > f.right || b.top < f.top || b.bottom > f.bottom; }).map(t => t.textContent);
+      });
+      assert.deepEqual(out, [], id + ': labels cut off');
+      await page.locator('#mOk2').click(); await page.waitForTimeout(200);
+    }
+    await ctx.close();
+  });
+}
+
+test('Polder: labels on the board are not cut off at its edge (small landscape screen)', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 844, height: 390 } });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  await ctx.addInitScript(s => {
+    for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v);
+    const fill = CanvasRenderingContext2D.prototype.fillText; window.__labels = [];
+    CanvasRenderingContext2D.prototype.fillText = function (txt, x, y) { if (this.canvas.id === 'cv' && this.textAlign === 'center') window.__labels.push([String(txt), x, this.measureText(txt).width]); return fill.apply(this, arguments); };
+  }, RETURNING);
+  const page = await ctx.newPage();
+  await page.goto(srv.url + '/polder/'); await page.waitForTimeout(600);
+  await startRegion(page, 'holland');
+  await page.evaluate(() => { window.__labels = []; }); await page.waitForTimeout(300);
+  const r = await page.evaluate(() => { const W = document.getElementById('cv').getBoundingClientRect().width, seen = {};
+    for (const [t, x, w] of window.__labels) if (/ · /.test(t)) seen[t] = [Math.round(x - w / 2), Math.round(W - x - w / 2)];
+    return seen; });
+  assert.ok(Object.keys(r).some(t => /deep water/.test(t)), JSON.stringify(r));
+  for (const [t, [l, rr]] of Object.entries(r)) assert.ok(l >= 0 && rr >= 0, `"${t}" is cut off: ${l}, ${rr}`);
+  await ctx.close();
+});
+
+// ---------- accessibility and performance audit, October 2026 ----------
+test('Polder: cards are modal dialogs (named, focus in, game inert, focus back) and the board is not redrawn behind them', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  await ctx.addInitScript(s => {
+    if (!sessionStorage.getItem('seeded')) { for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v); sessionStorage.setItem('seeded', '1'); }
+    const fr = CanvasRenderingContext2D.prototype.fillRect; window.__boardDraws = 0;
+    CanvasRenderingContext2D.prototype.fillRect = function () { if (this.canvas.id === 'cv') window.__boardDraws++; return fr.apply(this, arguments); };
+  }, RETURNING);
+  const page = await ctx.newPage();
+  const problems = []; page.on('pageerror', e => problems.push(e.message));
+  await page.goto(srv.url + '/polder/'); await page.waitForTimeout(600);
+  // static structure: a main landmark, no blur behind the dialog, no h3 in the game before an h2
+  const st = await page.evaluate(() => ({
+    main: !!document.querySelector('main #cv'), blur: getComputedStyle(document.getElementById('modal')).backdropFilter,
+    heads: [...document.querySelectorAll('#app h1,#app h2,#app h3')].map(h => h.tagName).join(','),
+  }));
+  assert.ok(st.main, 'no <main> around the board'); assert.ok(!st.blur || st.blur === 'none', 'backdrop blur: ' + st.blur);
+  assert.doesNotMatch(st.heads, /^H3|H1,H3/, 'heading order: ' + st.heads);
+  await page.evaluate(() => window.__polder.startLevel('friesland')); // the region intro card
+  await page.waitForTimeout(100);
+  const d = await page.evaluate(() => { const b = document.getElementById('mbox'); return { role: b.getAttribute('role'), modal: b.getAttribute('aria-modal'), name: document.getElementById(b.getAttribute('aria-labelledby'))?.textContent, focus: document.activeElement.id, inert: document.getElementById('app').inert }; });
+  assert.deepEqual(d, { role: 'dialog', modal: 'true', name: 'Friesland · The terp lands', focus: 'mOk', inert: true });
+  const n0 = await page.evaluate(() => window.__boardDraws); await page.waitForTimeout(500);
+  assert.equal(await page.evaluate(() => window.__boardDraws), n0, 'the board is redrawn behind a dialog');
+  await page.keyboard.press('Enter'); // the focused OK button
+  await page.waitForFunction(() => !window.__polder.S.busy);
+  assert.equal(await page.evaluate(() => document.getElementById('app').inert), false);
+  const n1 = await page.evaluate(() => window.__boardDraws); await page.waitForTimeout(300);
+  assert.ok(await page.evaluate(() => window.__boardDraws) > n1, 'the board stopped drawing after the dialog');
+  // the Regions button opens a dialog; Keep playing gives focus back to the button
+  await page.locator('#restartBtn').focus(); await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.activeElement.id === 'mOk');
+  await page.waitForTimeout(300); await page.keyboard.press('Enter');
+  await page.waitForFunction(() => document.getElementById('modal').classList.contains('hidden'));
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'restartBtn');
+  // the upgrade picker gets focus on the box, not on a choice; a held Enter picks nothing
+  await page.evaluate(() => { window.__polder.S.xp = 100; window.__polder.waitDecade(); });
+  await page.waitForSelector('#mbox .up');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'mbox');
+  await page.keyboard.press('Enter'); await page.waitForTimeout(200);
+  assert.equal(await page.locator('#mbox .up').count(), 3);
+  assert.deepEqual(problems, []);
+  await ctx.close();
 });

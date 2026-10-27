@@ -230,3 +230,105 @@ test('the end card compares the company with the real VOC, stamps the passport a
   assert.deepEqual(t.problems, []);
   await t.close();
 });
+
+// ---- QA, late October 2026: crowded marks, stale letters, the top of the chart, the end card's buttons
+async function openAt(w, h) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: h } });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', e => problems.push('JS error: ' + e.message));
+  await page.goto(srv.url + '/retourvloot/');
+  await page.getByRole('button', { name: 'Take your seat' }).click();
+  await page.locator('#coach-skip').click();
+  return { page, problems, close: () => ctx.close() };
+}
+for (const [w, h] of [[1366, 768], [1920, 1080]]) {
+  test(`every post, port and ship on the chart can be seen and clicked (${w}×${h})`, async () => {
+    const t = await openAt(w, h);
+    const covered = await t.page.evaluate(() => {
+      S.t = tOf(1730, 6, 1); S.flags.brouwer = true; S.flags.batavia = true;
+      const blank = { pepper: 0, fine: 0, textiles: 0, coffee: 0, tea: 0 };
+      S.report = { date: S.t - 200, posts: Object.keys(POSTS), capital: 1e6, stock: blank, personnel: 500, need: 600, eff: 1, upkeep: 1e5, leak: 0.1, acts: [], letterIssued: -1, letterArrived: null, focus: 'balanced', wages: 'low', expansion: 'restrain', missing: [], lastYr: null, inAsia: [] };
+      S.asia.posts.cape = 1; S.ships = [];
+      // homebound ships north about Scotland, the northernmost stretch of the route
+      for (const f of [0.9, 0.93, 0.96]) { equipShip(S, 200000, true); Object.assign(S.ships[S.ships.length - 1], { state: 'home', dep2: S.t - f * 200, exp2: 200, days2: 210, cargo: {}, report: { date: S.t - 50 } }); }
+      render(); drawMap();
+      const bad = [];
+      for (const g of document.querySelectorAll('#map [data-k]')) {
+        const q = (g.querySelector('.badge') || g).getBoundingClientRect(), x = q.left + q.width / 2, y = q.top + q.height / 2;
+        const hit = document.elementFromPoint(x, y), k = hit && hit.closest('[data-k]');
+        if (!k || k !== g) bad.push(g.getAttribute('data-k') + ' under ' + (k ? k.getAttribute('data-k') : hit && (hit.id || hit.tagName)));
+        // and wholly inside the chart's border (10 chart units), not cut off at its edge
+        const w = document.getElementById('mapwrap').getBoundingClientRect(), m = 10 * mapView.scale - 1;
+        if (q.top < w.top + m || q.left < w.left + m || q.bottom > w.bottom - m || q.right > w.right - m) bad.push(g.getAttribute('data-k') + ' cut by the border');
+      }
+      return bad;
+    });
+    assert.deepEqual(covered, []);
+    // Bantam sits next to Batavia: a click on its mark opens Bantam, not Batavia
+    await t.page.click('#map [data-k="post:bantam"] .badge');
+    assert.match(await t.page.locator('#pop h3').innerText(), /Bantam/);
+    assert.deepEqual(t.problems, []);
+    await t.close();
+  });
+}
+
+test('orders that already reached Batavia are not drawn as a letter at sea, and the letter says so', async () => {
+  const t = await openAt(1366, 768);
+  const r = await t.page.evaluate(() => {
+    S.t = tOf(1650, 6, 1); S.letterSealed = true; S.letter = { ...S.letter, issued: tOf(1640, 1, 1) };
+    S.ships = []; equipShip(S, 200000, true); equipShip(S, 200000, true);
+    const [a, b] = S.ships;
+    Object.assign(a, { state: 'asia', dep: S.t - 400, exp: 250, letter: { ...S.letter } }); // arrived long ago with these orders
+    Object.assign(b, { state: 'out', dep: S.t - 30, exp: 250, days: 260, letter: { ...S.letter } }); // the same orders, again
+    render(); drawMap();
+    const old = { mark: !!document.querySelector('#map [data-k="letter:out"]'), chips: document.getElementById('mapchips').textContent.replace(/\s+/g, ' '), status: document.getElementById('lstatus').textContent };
+    // new orders on the next ship are news again
+    S.letter = { ...S.letter, focus: 'cloth', issued: S.t - 20 }; b.letter = { ...S.letter };
+    render(); drawMap();
+    return { old, fresh: !!document.querySelector('#map [data-k="letter:out"]'), status: document.getElementById('lstatus').textContent };
+  });
+  assert.equal(r.old.mark, false, 'a delivered letter is still drawn at sea');
+  assert.match(r.old.chips, /0 letters at sea/);
+  assert.doesNotMatch(r.old.status, /first to arrive delivers/);
+  assert.equal(r.fresh, true);
+  assert.match(r.status, /Copies are aboard 1 ship at sea/);
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+for (const [w, h] of [[1280, 720], [1366, 768]]) {
+  test(`the end card keeps "Start a new company" on screen and the top bar text whole (${w}×${h})`, async () => {
+    const t = await openAt(w, h);
+    assert.ok(await t.page.evaluate(() => { const e = document.getElementById('s-div2'); return e.scrollWidth <= e.clientWidth; }), 'the dividend note is cut off');
+    await t.page.evaluate(() => {
+      S.yhist = []; for (let y = 1602; y <= 1799; y++) S.yhist.push({ y, div: 12, debt: 0 });
+      S.t = END_T; S.stats.divPaid = 150e6; S.stats.divYears = 190; S.ended = true; S.queue = []; openQueued();
+    });
+    const b = await t.page.locator('#m-new').boundingBox();
+    assert.ok(b && b.y >= 0 && b.y + b.height <= h, 'Start a new company is below the fold: ' + JSON.stringify(b));
+    assert.equal(await t.page.evaluate(() => { const r = document.getElementById('m-new').getBoundingClientRect(); const e = document.elementFromPoint(r.left + 5, r.top + 5); return e && e.id; }), 'm-new');
+    assert.deepEqual(t.problems, []);
+    await t.close();
+  });
+}
+
+// ---- accessibility audit, October 2026
+test('phone note is a modal dialog; the chart is a group of controls; the guide is named', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  const page = await ctx.newPage();
+  const problems = []; page.on('pageerror', e => problems.push(e.message));
+  await page.goto(srv.url + '/retourvloot/'); await page.waitForTimeout(500);
+  const a = await page.evaluate(() => { const s = document.getElementById('small-screen'); return { role: s.getAttribute('role'), modal: s.getAttribute('aria-modal'), name: document.getElementById(s.getAttribute('aria-labelledby')).textContent, focus: document.activeElement.id, inert: document.querySelector('.app').inert && document.getElementById('modal').inert, map: document.getElementById('map').getAttribute('role') }; });
+  assert.deepEqual(a, { role: 'dialog', modal: 'true', name: 'Best on a bigger screen', focus: 'small-go', inert: true, map: 'group' });
+  await page.keyboard.press('Enter');
+  const b = await page.evaluate(() => ({ hidden: document.getElementById('small-screen').hidden, inert: document.querySelector('.app').inert || document.getElementById('modal').inert, focus: document.activeElement.textContent }));
+  assert.deepEqual(b, { hidden: true, inert: false, focus: 'Take your seat' });
+  await page.keyboard.press('Enter'); // takes the seat: the guide starts
+  await page.waitForSelector('#coach:not([hidden])');
+  assert.equal(await page.evaluate(() => document.getElementById(document.getElementById('coach').getAttribute('aria-labelledby')).textContent), 'Equip your first ship');
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});

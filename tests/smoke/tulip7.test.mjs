@@ -177,15 +177,17 @@ test('Tulip 7: every templated line is grammatical when it is about you', async 
   await page.goto(srv.url + '/tulip7/'); await page.waitForTimeout(500);
   const lines = await page.evaluate(() => {
     const you = { human: true, short: 'You' }, a = { short: 'Van Cuyck' }, b = { short: 'De Busscher' }, out = [];
-    for (const [k, ts] of Object.entries(LINES)) for (const t of ts) for (const [p, q] of [[you, a], [a, you], [a, b], [you, you]]) out.push(k + ': ' + fill(t, { p, q, v: 'Viceroy' }));
+    for (const [k, ts] of Object.entries(LINES)) for (const t of ts) for (const [p, q] of [[you, a], [a, you], [a, b], [you, you]]) out.push(k + ': ' + fill(t, { p, q, v: 'Switsers' }));
     // the log lines built with fill() too
     for (const t of ['{p} gave a spare Rouwkoop to {q}.', "{p's} spare Rouwkoop is discarded.", '<b>{p}</b> sealed {p:his|your} own evening with Wijnkoop.', "<b>{p}</b> sealed {q's} evening with Wijnkoop.",
       '<b>{p}</b> called the seghsman on {p:himself|yourself}: three more papers.', '<b>{p}</b> {p:holds|hold} f100 of paper.'])
-      for (const [p, q] of [[you, a], [a, you]]) out.push(fill(t, { p, q }));
+      for (const [p, q] of [[you, a], [a, you]]) out.push('log: ' + fill(t, { p, q }));
     return out;
   });
   assert.ok(lines.length > 100);
-  const bad = lines.filter(l => BAD_YOU.test(l) || /\{|\}/.test(l));
+  // also: a sentence that opens with a tag still opens with a capital ("<b>You</b> sealed…", not "<b>you</b>"), and no
+  // tulip name is pluralised by an added s ("Two Switserss")
+  const bad = lines.filter(l => BAD_YOU.test(l) || /\{|\}/.test(l) || /^\w+: (?:<[^>]+>)*[a-z]/.test(l) || /Switserss/.test(l));
   assert.deepEqual(bad, []);
   assert.ok(lines.some(l => /^saved: Regret money! You escape the duplicate\.$/.test(l)));
   await ctx.close();
@@ -223,4 +225,136 @@ test('Tulip 7: on short laptop screens your hand and the Take / Stand buttons fi
     assert.ok(checked >= 3);
     await ctx.close();
   }
+});
+
+// A tablet in portrait (the dock covers the bottom of the page): on your turn the page lifts your hand above the dock,
+// the site's round buttons step aside, and the rivals' status chips never sit on their names. On a 360px phone a
+// rival's chip keeps its value in sight ("Stood f260", not "Stood up f2…").
+test('Tulip 7: on a 768x1024 tablet your hand is in sight on your turn; rival chips are readable on tablet and phone', { timeout: 240000 }, async () => {
+  for (const [w, h] of [[768, 1024], [360, 740]]) {
+    const ctx = await browser.newContext({ viewport: { width: w, height: h }, hasTouch: true, isMobile: true });
+    await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+    await ctx.addInitScript(() => localStorage.setItem('tulip7.set', JSON.stringify({ fast: true, help: true, sound: false, mode: 'winter' })));
+    const page = await ctx.newPage();
+    const problems = []; page.on('pageerror', e => problems.push(e.message));
+    await page.goto(srv.url + '/tulip7/'); await page.waitForTimeout(600);
+    await page.locator('#go').tap();
+    let turns = 0;
+    for (let i = 0; i < 1500 && turns < 4; i++) {
+      const st = await page.evaluate(() => ({ ann: !document.querySelector('#ann').hidden, modal: !document.querySelector('#modal').hidden, act: !!document.querySelector('#ctrl [data-act]'),
+        cash: !!document.querySelector('#ctrl [data-cash]'), pick: !!document.querySelector('#ctrl [data-pick]'), tip: !!document.querySelector('[data-tip]'), n: G.players[0].nums.length }));
+      if (st.ann) { await page.locator('#ann').tap().catch(() => {}); continue; }
+      if (st.modal) { await page.locator('#mbox [data-v]').first().tap(); continue; }
+      if (st.tip) { await page.locator('[data-tip]').tap(); continue; }
+      if (st.pick) { await page.locator('#ctrl [data-pick]').first().tap(); continue; }
+      if (st.cash) { await page.locator('#ctrl [data-cash="hold"]').tap(); continue; }
+      if (st.act) {
+        await page.waitForTimeout(900); // the page scrolls smoothly
+        const bad = await page.evaluate(() => {
+          const R = e => e.getBoundingClientRect(), out = [], hit = (a, b) => a.left < b.right - 1 && b.left < a.right - 1 && a.top < b.bottom - 1 && b.top < a.bottom - 1;
+          const dock = R(document.querySelector('#ctrl')), fixed = getComputedStyle(document.querySelector('#ctrl')).position === 'fixed';
+          const mine = [...document.querySelectorAll('#you [data-part=hand] .card, #you .plate')];
+          if (fixed) for (const c of mine) if (R(c).bottom > dock.top + 1 || R(c).top < 0) out.push('your hand is under the dock or off screen');
+          for (const b of document.querySelectorAll('.hlfb-btn, .hlfb-dc')) if (getComputedStyle(b).display !== 'none' && R(b).width && mine.some(c => hit(R(b), R(c)))) out.push('a site button covers your hand');
+          for (const s of document.querySelectorAll('.rivals .seat')) { const c = s.querySelector('.chip'), n = s.querySelector('.plate .nm');
+            if (c && n && getComputedStyle(c).position === 'absolute' && hit(R(c), R(n))) out.push('a status chip covers a name'); }
+          return [...new Set(out)];
+        });
+        assert.deepEqual(bad, [], `${w}x${h}`);
+        turns++;
+        await page.locator(`#ctrl [data-act="${st.n < 3 ? 'hit' : 'stay'}"]`).tap(); continue;
+      }
+      await page.waitForTimeout(100);
+    }
+    assert.ok(turns >= 4, `${w}x${h}: did not reach four turns`);
+    // every kind of rival chip, with a big value, on this screen
+    const clipped = await page.evaluate(() => {
+      const out = [], cards = [12, 11, 10, 9].map((v, k) => ({ k: 'num', v, uid: 'q' + k }));
+      for (const [st, fr] of [['stayed', true], ['stayed', false], ['book', false], ['active', false]]) {
+        G.players.slice(1).forEach(p => { p.status = st; p.frozen = fr; p.cards = cards.slice(); p.nums = [12, 11, 10, 9]; p.mods = []; p.x2 = false; });
+        G.turn = null; render();
+        for (const c of document.querySelectorAll('.rivals .plate .chip')) if (getComputedStyle(c).overflow === 'hidden' && c.scrollWidth > c.clientWidth + 1) out.push(c.textContent);
+      }
+      return out;
+    });
+    assert.deepEqual(clipped, [], `${w}x${h}: rival chips cut off`);
+    assert.deepEqual(problems, []);
+    await ctx.close();
+  }
+});
+
+// The tavern game's end: the heading names the winner of the game (not "richest"), the share card's headline is about
+// you, and in any open window Tab keeps the focus inside it.
+test('Tulip 7: the tavern game ends with the right words, and Tab stays inside the end window', { timeout: 120000 }, async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  const page = await ctx.newPage(); const problems = []; page.on('pageerror', e => problems.push(e.message));
+  await page.goto(srv.url + '/tulip7/'); await page.waitForTimeout(500);
+  const r = await page.evaluate(async () => {
+    closeModal();
+    const bot = { hitOrStay: (g, p) => T7.AI.hitOrStay(g, p), sell: (g, p) => T7.AI.sell(g, p), target: (g, p, c, cs) => T7.AI.target(g, p, c, cs), giveSecond: (g, p, cs) => T7.AI.giveSecond(g, p, cs) };
+    const out = [];
+    for (const seed of [3, 8, 11, 17, 25]) {
+      G = new T7.Game({ mode: 'classic', seed, players: [{ name: 'You', short: 'You', human: true, style: 'balanced', agent: bot }, ...RIVALS.map(r => ({ ...r, agent: bot }))], emit: () => {} });
+      await G.run(); buildSeats(); render(); endScene();
+      for (let k = 0; k < 50 && !document.querySelector('#bShare'); k++) await new Promise(r => setTimeout(r, 20));
+      const o = shareOpts();
+      out.push({ h2: document.querySelector('#mbox h2').textContent, title: o.title, lines: o.lines, won: G.players[0].total === Math.max(...G.players.map(p => p.total)) });
+    }
+    return out;
+  });
+  for (const x of r) {
+    assert.match(x.h2, /^(You win|.+ wins) the tavern game\.$/, x.h2);
+    assert.ok(!/richest/.test(x.h2));
+    if (x.won) assert.equal(x.title, 'Won the tavern game');
+    else { assert.match(x.title, /^\d(st|nd|rd|th) place in the tavern game$/); assert.match(x.lines[1], /^.+ won with \d+, in \d+ rounds$/); }
+  }
+  assert.ok(r.some(x => !x.won), 'no lost game among the seeds');
+  // Tab from the last button wraps to the first one in the window; Shift+Tab from the first goes to the last
+  const f = await page.evaluate(() => [...document.querySelectorAll('#mbox a[href], #mbox button, #mbox summary')].filter(x => x.getClientRects().length).length);
+  assert.ok(f >= 4);
+  await page.locator('#mbox [data-v="menu"]').focus();
+  for (let i = 0; i < f + 2; i++) {
+    await page.keyboard.press('Tab');
+    assert.ok(await page.evaluate(() => document.querySelector('#mbox').contains(document.activeElement)), 'Tab left the end window');
+  }
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+// Page weight and loading: no image is inlined (every ART entry is a relative img/… file, so the itch / CrazyGames
+// packages work), the start screen's images are preloaded, and the first deal waits for the card art, so no card is
+// ever drawn blank, even on a slow line. The start window is a named dialog with the focus inside it on a touch
+// screen too; the game screen has a <main> and an <h1>.
+test('Tulip 7: art loads as files, cards are never blank on the first deal, dialogs are named', { timeout: 120000 }, async () => {
+  const html = await (await fetch(srv.url + '/tulip7/')).text();
+  assert.ok(html.length < 400000, `page is ${html.length} bytes`);
+  assert.ok(!/data:image\/(webp|png|jpeg);base64/.test(html.split('const ART=')[1].split('\n')[0]), 'an ART image is inlined');
+  assert.match(html, /<link rel="preload" as="image" href="img\/bg_cover\.webp" fetchpriority="high">/);
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  // a slow line for the card art: each image arrives 1.2 s late
+  await ctx.route(/\/tulip7\/img\/(t\d\d|m_|a_|ui_frame|ui_cardback)/, async r => { await new Promise(res => setTimeout(res, 1200)); await r.continue(); });
+  await ctx.addInitScript(() => localStorage.setItem('tulip7.set', JSON.stringify({ fast: true, help: false, sound: false, mode: 'winter' })));
+  const page = await ctx.newPage(); const problems = []; page.on('pageerror', e => problems.push(e.message));
+  await page.goto(srv.url + '/tulip7/');
+  await page.waitForSelector('#mbox #go');
+  const a11y = await page.evaluate(() => {
+    const b = document.querySelector('#mbox'), lab = b.getAttribute('aria-labelledby');
+    return { role: b.getAttribute('role'), name: lab ? document.getElementById(lab)?.textContent : b.getAttribute('aria-label'), focusIn: b.contains(document.activeElement),
+      main: !!document.querySelector('main #table'), h1: document.querySelector('h1')?.textContent.trim(), relative: Object.values(ART).every(u => /^img\/[a-z0-9_]+\.webp$/.test(u)) };
+  });
+  assert.deepEqual(a11y, { role: 'dialog', name: 'Tulip 7', focusIn: true, main: true, h1: 'Tulip 7', relative: true });
+  await page.locator('#go').tap();
+  await page.waitForSelector('[data-part=hand] .card img', { timeout: 30000 });
+  const blank = await page.evaluate(() => [...document.querySelectorAll('[data-part=hand] .card img')].filter(i => !(i.complete && i.naturalWidth)).length);
+  assert.equal(blank, 0, 'a card was dealt before its picture had loaded');
+  // a window opened in the game (the rules) is named by its heading
+  await page.evaluate(() => showRules());
+  assert.equal(await page.evaluate(() => document.getElementById(document.querySelector('#mbox').getAttribute('aria-labelledby')).textContent), 'Tulip 7');
+  await page.evaluate(() => showLog());
+  assert.equal(await page.evaluate(() => document.getElementById(document.querySelector('#mbox').getAttribute('aria-labelledby')).textContent), 'Tonight at the table');
+  assert.ok(await page.evaluate(() => document.querySelector('#mbox').contains(document.activeElement)), 'focus not in the window on a touch screen');
+  assert.deepEqual(problems, []);
+  await ctx.close();
 });

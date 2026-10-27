@@ -3,7 +3,8 @@
 kantar.html is the whole game in one self-contained page (art, symbols and background embedded, sounds
 synthesised). It is the site copy of the standalone build in the Claude project (v2.7 + portal link,
 history notes and resume analytics). This script adds the shared head (meta, canonical, icon, analytics,
-feedback button) and copies the share image and the portal plate.
+feedback button, image preloads), moves every embedded picture to img/ (the built page carries no image data)
+and copies the share image and the portal plate.
 """
 import os, re, shutil, sys
 H = os.path.dirname(os.path.abspath(__file__))
@@ -41,12 +42,10 @@ head = f'''<meta name="description" content="{desc}">
 <script src="/next.js" defer data-game="kantar"></script>
 <script src="/hl.js" defer data-game="kantar"></script>'''
 src = open(os.path.join(H, "kantar.html"), encoding="utf-8").read()
-# Painted art (art/*.webp at game size; full size in art/master/; prompts and review in art-studio.html).
-# Inlined as CSS variables + art.css so the page stays one file for the itch.io and CrazyGames packages.
-# The four goods' card art lives in kantar.html itself (FULL_ART), so the bare source still plays.
+# Painted art (art/*.webp at game size; full size in art/master/; prompts and review in art-studio.html), as CSS
+# variables + art.css; the files themselves are served from img/ (see below).
+# The four goods' card art lives in kantar.html itself (FULL_ART), so the bare source still plays; the build moves it to img/.
 import base64
-def _b64(name):
-    return base64.b64encode(open(os.path.join(H, "art", name), "rb").read()).decode()
 ART_VARS = {  # css variable -> art file
     "cirak": "ka_rival_cirak", "usta": "ka_rival_usta", "seal-uc": "ka_seal_threepans", "seal-kes": "ka_seal_cut",
     "ic-S": "ka_icon_S", "ic-I": "ka_icon_I", "ic-K": "ka_icon_K", "ic-B": "ka_icon_B", 
@@ -60,24 +59,42 @@ ART_VARS = {  # css variable -> art file
 }
 OPTIONAL = {"end-win-cirak", "end-lose-cirak", "end-draw-cirak", "end-win-usta", "end-lose-usta", "end-draw-usta", "tray", "caravan", "advisor"}
 ART_VARS = {v: f for v, f in ART_VARS.items() if v not in OPTIONAL or os.path.exists(os.path.join(H, "art", f + ".webp"))}
-# Art shown only at some moments (the end-of-match pictures, the tall phone background) is not inlined: it is copied
-# to img/ and referenced from the CSS variable, so the browser fetches it only when an element actually uses it.
-LAZY = {"end-win-cirak", "end-lose-cirak", "end-draw-cirak", "end-win-usta", "end-lose-usta", "end-draw-usta", "bg-tall"}
-def _url(v, f):
-    return f"url(img/{f}.webp)" if v in LAZY else f"url(data:image/webp;base64,{_b64(f + '.webp')})"
-_art = (":root{" + ";".join(f"--ka-{v}:{_url(v, f)}" for v, f in ART_VARS.items()) + "}\n"
+# All art is served as cacheable files in img/ (relative URLs, so the itch.io / CrazyGames packages, which copy
+# kantar/img to img/, keep working): the page itself carries no image data (it was 1.17 MB with 945 KB of data: URIs).
+os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
+def _put(name, data):
+    with open(os.path.join(OUT, "img", name), "wb") as fh:
+        fh.write(data)
+    return "img/" + name
+for v, f in ART_VARS.items():
+    shutil.copy(os.path.join(H, "art", f + ".webp"), os.path.join(OUT, "img", f + ".webp"))
+_art = (":root{" + ";".join(f"--ka-{v}:url(img/{f}.webp)" for v, f in ART_VARS.items()) + "}\n"
         + open(os.path.join(H, "art.css"), encoding="utf-8").read())
 assert src.count("/*KANTAR_ART*/") == 1
 src = src.replace("/*KANTAR_ART*/", _art, 1)
-# favicon: the brass steelyard emblem
-icon = f'<link rel="icon" type="image/png" href="data:image/png;base64,{_b64("favicon-64.png")}">'
+# the bare source's own embedded images: CSS variables (--seal, --bazaar) and the goods' card art (FULL_ART)
+EXT = {"png": "png", "webp": "webp", "jpeg": "jpg"}
+def _css_var(m):
+    return f"--{m.group(1)}:url({_put('ka_css_' + m.group(1) + '.' + EXT[m.group(2)], base64.b64decode(m.group(3)))})"
+src, n = re.subn(r'--([\w-]+):url\("?data:image/(png|webp|jpeg);base64,([A-Za-z0-9+/=]+)"?\)', _css_var, src)
+assert n >= 2, "embedded CSS images not found"
+import json
+fa = re.search(r"const FULL_ART=(\{.*?\});", src)
+assert fa, "FULL_ART not found"
+FA = json.loads(fa.group(1))
+CARD = {c: _put(f"ka_card_{c}.webp", base64.b64decode(u.split(",", 1)[1])) for c, u in FA.items()}
+src = src.replace(fa.group(0), "const FULL_ART=" + json.dumps(CARD) + ";", 1)
+assert "data:image/webp" not in src and "data:image/png" not in src, "an image is still inlined"
+# favicon: the brass steelyard emblem (a file too)
+icon = f'<link rel="icon" type="image/png" href="{_put("favicon-64.png", open(os.path.join(H, "art", "favicon-64.png"), "rb").read())}">'
 head = re.sub(r'<link rel="icon"[^>]*>', lambda m: icon, head, count=1)
+# the first screen: the background (wide or tall, by the same media query as art.css), the scale and the goods' card art
+# (drawn by script, so the browser would find it late)
+_wide, _tall = "(min-width:701px) and (min-aspect-ratio:4/5)", "(max-width:700px),(max-aspect-ratio:4/5)"
+head += "".join(f'\n<link rel="preload" as="image" href="{h}" type="image/webp"{f" media={chr(34)}{m}{chr(34)}" if m else ""}>' for h, m in [
+    ("img/ka_css_bazaar.webp", _wide), ("img/ka_bg_tall.webp", _tall), ("img/ka_scale_beam.webp", ""), ("img/ka_scale_pan.webp", ""), ("img/ka_scale_stand.webp", "")] + [(h, "") for h in CARD.values()])
 anchor = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
 assert anchor in src
-os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
-for v, f in ART_VARS.items():
-    if v in LAZY:
-        shutil.copy(os.path.join(H, "art", f + ".webp"), os.path.join(OUT, "img", f + ".webp"))
 with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8", newline="\n") as fh:
     fh.write(src.replace(anchor, anchor + "\n" + head, 1))
 shutil.copy(os.path.join(H, f"plate-{ART}.jpg"), os.path.join(OUT, "img", "portal-plate.jpg"))

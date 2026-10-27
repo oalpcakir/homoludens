@@ -29,7 +29,7 @@
    Colours are tokens on :root; dark mode follows the system unless the visitor picks a theme (data-theme on <html>). */
 :root {
   --paper: #f7f6f2; --paper-2: #efede6; --card: #ffffff; --pp: #fbf8ef;
-  --ink: #1f2b4a; --ink-soft: #55617a; --ink-faint: #8a93a6;
+  --ink: #1f2b4a; --ink-soft: #55617a; --ink-faint: #6b7488;
   --rule: #dcdfe3; --rule-strong: #c2c8d0;
   --sea: #d9e3e6; --coast: #9fb0b5; --grat: #c7d4d8; --seal: #8a9aa0;
   --accent: #9c2f45; --accent-soft: rgba(156, 47, 69, .09);
@@ -51,7 +51,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --paper: #12151c; --paper-2: #171b24; --card: #1a1f2a; --pp: #191d26;
-    --ink: #ebe6d9; --ink-soft: #a9b0bf; --ink-faint: #6f7789;
+    --ink: #ebe6d9; --ink-soft: #a9b0bf; --ink-faint: #8a93a6;
     --rule: #2a303d; --rule-strong: #3b4354;
     --sea: #1b2631; --coast: #3e5260; --grat: #243440; --seal: #5b6d78;
     --accent: #e58a9c; --accent-soft: rgba(229, 138, 156, .12);
@@ -67,7 +67,7 @@
 }
 :root[data-theme="dark"] {
   --paper: #12151c; --paper-2: #171b24; --card: #1a1f2a; --pp: #191d26;
-  --ink: #ebe6d9; --ink-soft: #a9b0bf; --ink-faint: #6f7789;
+  --ink: #ebe6d9; --ink-soft: #a9b0bf; --ink-faint: #8a93a6;
   --rule: #2a303d; --rule-strong: #3b4354;
   --sea: #1b2631; --coast: #3e5260; --grat: #243440; --seal: #5b6d78;
   --accent: #e58a9c; --accent-soft: rgba(229, 138, 156, .12);
@@ -91,6 +91,7 @@ a { color: inherit; }
 /* room under the footer for the floating Discord / Feedback buttons (feedback.js), so the end of the page is never covered */
 body { padding-bottom: 64px; }
 .eyebrow { font: 500 11px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+h2.eyebrow { margin: 0; }
 
 /* ---------- masthead */
 header.mast { display: grid; gap: 6px; padding-bottom: 18px; border-bottom: 1px solid var(--ink); }
@@ -260,7 +261,7 @@ section > .eyebrow { display: block; margin-bottom: 16px; }
 .tl-gap { position: absolute; transform: translate(-50%, -50%); font: italic 400 12px/1 var(--f-display); color: var(--ink-soft); background: var(--card); padding: 0 5px; white-space: nowrap; pointer-events: none; }
 .tl-moment { margin: 12px 16px 0; padding: 12px 14px; border-left: 3px solid var(--gc, var(--accent)); background: color-mix(in srgb, var(--gc, var(--accent)) 7%, var(--card)); border-radius: 0 6px 6px 0; min-height: 64px; }
 .tl-moment .mw { font: 500 11px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--gc, var(--accent)); }
-.tl-moment h4 { font: 400 20px/1.2 var(--f-display); margin: 3px 0 4px; }
+.tl-moment h3 { font: 400 20px/1.2 var(--f-display); margin: 3px 0 4px; }
 .tl-moment p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); max-width: 46em; }
 @media (prefers-reduced-motion: reduce) { .tl-lab, .tl-dot { transition: none; } }
 
@@ -360,7 +361,7 @@ footer a { color: var(--ink-soft); }
     <div class="topline">
       <span class="eyebrow">Small games about the past</span>
       <div class="mast-tools">
-        <a class="chip" id="passChip" href="#passport" aria-label="Your passport"><span class="seal" aria-hidden="true">HL</span><span><span class="lbl">Passport · </span><b id="passCount">0/6</b></span></a>
+        <a class="chip" id="passChip" href="#passport" aria-label="Passport · 0/6"><span class="seal" aria-hidden="true">HL</span><span><span class="lbl">Passport · </span><b id="passCount">0/6</b></span></a>
         <button class="iconbtn" id="themeBtn" type="button" aria-label="Colour theme: automatic" title="Colour theme: automatic"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg></button>
       </div>
     </div>
@@ -372,15 +373,16 @@ footer a { color: var(--ink-soft); }
       <img class="emblem" src="data:image/webp;base64,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" alt="" width="100" height="100">
     </div>
   </header>
+  <main>
 
   <section class="foryou" id="forYou" aria-labelledby="fyLabel">
-    <div class="fy-head"><span class="eyebrow" id="fyLabel">For you</span><span class="sub" id="fySub"></span></div>
+    <div class="fy-head"><h2 class="eyebrow" id="fyLabel">For you</h2><span class="sub" id="fySub"></span></div>
     <div class="fy-row" id="fyRow"></div>
   </section>
 
   <section aria-labelledby="gamesLabel" id="games">
     <div class="sechead">
-      <span class="eyebrow" id="gamesLabel">The games</span>
+      <h2 class="eyebrow" id="gamesLabel">The games</h2>
       <div class="viewtabs" role="tablist" aria-label="Show the games as">
         <button type="button" role="tab" id="tabCards" aria-selected="true" aria-controls="viewCards"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></svg>Cards</button>
         <button type="button" role="tab" id="tabMap" aria-selected="false" aria-controls="viewMap" tabindex="-1"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5z M5.5 2v10 M10.5 4v10"/></svg>Map &amp; timeline</button>
@@ -408,8 +410,8 @@ footer a { color: var(--ink-soft); }
     </div>
     <div class="games" id="viewCards" role="tabpanel" aria-labelledby="tabCards">
       <article class="game" data-game="tulip">
-        <a class="plate" href="/tulip7/" data-from="card" aria-label="Play Tulip 7">
-          <img src="/tulip7/img/portal-plate.jpg" alt="Flamed tulips, contracts and coins flying over a tavern table in Amsterdam (art made for the game)" loading="lazy">
+        <a class="plate" href="/tulip7/" data-from="card" tabindex="-1" aria-hidden="true">
+          <img src="/tulip7/img/portal-plate.jpg" alt="Flamed tulips, contracts and coins flying over a tavern table in Amsterdam (art made for the game)" fetchpriority="high">
           <img class="shot" src="/shots/tulip7.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">Art made for the game</span>
         </a>
@@ -418,12 +420,12 @@ footer a { color: var(--ink-soft); }
           <h3>Tulip 7</h3>
           <p class="desc">In the winter of 1636, people in Amsterdam traded tulips that were still in the ground, on paper, in the back rooms of taverns. Draw until you have enough, but a second copy of a tulip burns the evening, and you still have to sell before February.</p>
           <div class="tags"><span class="tag">Push your luck</span><span class="tag">15 minutes</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
-          <div class="row"><a class="btn" href="/tulip7/" data-from="card">Play</a></div>
+          <div class="row"><a class="btn" href="/tulip7/" data-from="card" aria-label="Play Tulip 7">Play</a></div>
         </div>
       </article>
       <article class="game" data-game="kantar">
-        <a class="plate" href="/kantar/" data-from="card" aria-label="Play Kantar">
-          <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi" loading="lazy">
+        <a class="plate" href="/kantar/" data-from="card" tabindex="-1" aria-hidden="true">
+          <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi">
           <img class="shot" src="/shots/kantar.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">Amadeo Preziosi · The Grand Bazaar</span>
         </a>
@@ -432,11 +434,11 @@ footer a { color: var(--ink-soft); }
           <h3>Kantar</h3>
           <p class="desc">A card game for two, set in the Grand Bazaar. You split three goods between two pans, your rival picks one and you get the other. While you learn, a teacher tells you what he would do and why.</p>
           <div class="tags"><span class="tag">Card duel</span><span class="tag">10 minutes</span><span class="tag">English · Türkçe</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
-          <div class="row"><a class="btn" href="/kantar/" data-from="card">Play</a></div>
+          <div class="row"><a class="btn" href="/kantar/" data-from="card" aria-label="Play Kantar">Play</a></div>
         </div>
       </article>
       <article class="game" data-game="borderlines">
-        <a class="plate" href="/borderlines/" data-from="card" aria-label="Play Borderlines">
+        <a class="plate" href="/borderlines/" data-from="card" tabindex="-1" aria-hidden="true">
           <svg viewBox="0 0 {{W}} {{H}}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The Roman Empire in 1 BC, painted on a map of the Mediterranean">
             <path class="land" d="{{LAND}}"/>
             <path class="realm" d="{{REALM}}"/>
@@ -450,11 +452,11 @@ footer a { color: var(--ink-soft); }
           <p class="desc">You get a year and the name of a realm, and a map with no borders on it. Paint where you think it was, then see how far off you were. Five new ones every day, from easy to properly hard.</p>
           <div class="tags"><span class="tag">Map puzzle</span><span class="tag">5-minute daily</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
           <div class="cardnote" id="blCardNote"></div>
-          <div class="row"><a class="btn" href="/borderlines/" data-from="card">Play</a></div>
+          <div class="row"><a class="btn" href="/borderlines/" data-from="card" aria-label="Play Borderlines">Play</a></div>
         </div>
       </article>
       <article class="game" data-game="polder">
-        <a class="plate" href="/polder/" data-from="card" aria-label="Play Polder">
+        <a class="plate" href="/polder/" data-from="card" tabindex="-1" aria-hidden="true">
           <img src="/polder/img/portal-plate.jpg" alt="The Windmill at Wijk bij Duurstede, painted by Jacob van Ruisdael around 1670" loading="lazy">
           <img class="shot" src="/shots/polder.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">Ruisdael · The Windmill at Wijk, c. 1670</span>
@@ -465,11 +467,11 @@ footer a { color: var(--ink-soft); }
           <p class="desc">Build dikes and pump the water out, region by region, from the first terps in Friesland to the flood of 1953. It looks like a cute puzzle game, but the storms and the dates are real.</p>
           <div class="tags"><span class="tag">Puzzle</span><span class="tag">15 minutes a region</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
           <p class="desknote">Best on a computer. It opens on a phone, but it's cramped.</p>
-          <div class="row"><a class="btn" href="/polder/" data-from="card">Play</a></div>
+          <div class="row"><a class="btn" href="/polder/" data-from="card" aria-label="Play Polder">Play</a></div>
         </div>
       </article>
       <article class="game" data-game="retourvloot">
-        <a class="plate" href="/retourvloot/" data-from="card" aria-label="Play Retourvloot">
+        <a class="plate" href="/retourvloot/" data-from="card" tabindex="-1" aria-hidden="true">
           <img src="/retourvloot/img/portal-plate.jpg" alt="The Castle of Batavia, painted by Andries Beeckman around 1661" loading="lazy">
           <img class="shot" src="/shots/retourvloot.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">Beeckman · The Castle of Batavia, c. 1661</span>
@@ -480,11 +482,11 @@ footer a { color: var(--ink-soft); }
           <p class="desc">You run the VOC from Amsterdam for two hundred years. A letter to Batavia takes a year to arrive, so every order you send is a guess about what Asia will look like when it gets there.</p>
           <div class="tags"><span class="tag">Idle strategy</span><span class="tag">30–80 minute run</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
           <p class="desknote">Best on a computer. It opens on a phone, but it's cramped.</p>
-          <div class="row"><a class="btn" href="/retourvloot/" data-from="card">Play</a></div>
+          <div class="row"><a class="btn" href="/retourvloot/" data-from="card" aria-label="Play Retourvloot">Play</a></div>
         </div>
       </article>
       <article class="game" data-game="cupoftea">
-        <a class="plate" href="/cupoftea/" data-from="card" aria-label="Play A Cup of Tea">
+        <a class="plate" href="/cupoftea/" data-from="card" tabindex="-1" aria-hidden="true">
           <img src="/cupoftea/img/portal-plate.jpg" alt="The Flor de Cuba sugar estate in Cuba, with the chimneys of its boiling houses; lithograph by Eduardo Laplante, 1857" loading="lazy">
           <img class="shot" src="/shots/cupoftea.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
           <span class="cap">Laplante · A Cuban sugar estate, 1857</span>
@@ -495,7 +497,7 @@ footer a { color: var(--ink-soft); }
           <p class="desc">A grocer's receipt from London in 1850: a pound of sugar and a bit of tea. Using newspapers and reports from the time, you work out who got paid out of those few pennies, all the way back to a sugar estate in Cuba.</p>
           <div class="tags"><span class="tag">Detective</span><span class="tag">3 scenes</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
           <p class="desknote">Best on a computer. It opens on a phone, but it's cramped.</p>
-          <div class="row"><a class="btn" id="teaPlay" href="/cupoftea/" data-from="card">Play</a></div>
+          <div class="row"><a class="btn" id="teaPlay" href="/cupoftea/" data-from="card" aria-label="Play A Cup of Tea">Play</a></div>
         </div>
       </article>
     </div>
@@ -516,7 +518,7 @@ footer a { color: var(--ink-soft); }
   </section>
 
   <section aria-labelledby="recordLabel" id="recordSec" hidden>
-    <span class="eyebrow" id="recordLabel">Your record</span>
+    <h2 class="eyebrow" id="recordLabel">Your record</h2>
     <div class="record" id="record"></div>
   </section>
 
@@ -542,13 +544,14 @@ footer a { color: var(--ink-soft); }
   </section>
 
   <section class="about" aria-labelledby="aboutLabel">
-    <span class="eyebrow" id="aboutLabel">About</span>
+    <h2 class="eyebrow" id="aboutLabel">About</h2>
     <div>
       <p>I make these in Rotterdam. Most of them start with something I was reading: Sidney Mintz on sugar turned into A Cup of Tea, and the traders at the table in Tulip 7 are real people Anne Goldgar found in the Dutch archives. I try to turn each one into a game you can finish in one sitting, and then show you what actually happened. The name comes from Johan Huizinga's 1938 book <i>Homo Ludens</i>, about how old play is.</p>
       <p>If I got something wrong, please tell me. Every game has a feedback button, and I do read them and fix things.</p>
       <p>There's also a <a href="https://discord.gg/7PcDfAMdr5" target="_blank" rel="noopener">Discord</a>, where people post their scores and new games show up first.</p>
     </div>
   </section>
+  </main>
 
   <footer>
     <span>© 2026 Homo Ludens</span>
@@ -571,15 +574,18 @@ footer a { color: var(--ink-soft); }
     tulip: { no: 6, title: "Tulip 7", href: "/tulip7/", img: "/tulip7/img/portal-plate.jpg", era: "1636–37", where: "Amsterdam", len: "15 minutes", dev: "any", ring: "TULIP 7 · AMSTERDAM · 1636–1637 ·" }
   };
   var ORDER = ["borderlines", "retourvloot", "cupoftea", "polder", "kantar", "tulip"];
-  // localStorage keys that mean "this browser has played it" (same as PLAYED in /next.js): players from before the passport
-  // existed get their stamps from these.
-  var PLAYED = {
-    borderlines: /^borderlines:(day:|practice|tutorialDone)/,
-    retourvloot: /^retourvloot\.(v1|runs)$/,
-    cupoftea: /^cupoftea\.v1$/,
-    polder: /^polder\.(progress|run)\.v1$/,
-    kantar: /^kantar(\.stats\.v1|-game-v04)$/,
-    tulip: /^tulip7\.(save\.v1|record\.v1)$/
+  // Players from before the passport existed get their stamps from the old saves, but only from the records a game keeps
+  // once something was finished (a daily, a company that ended, a solved scene, a region's result, a finished match or winter).
+  // A game merely started (a tutorial, a run or match in progress) is not "played before the passport": it gets its stamp
+  // from HL.stamp() when it ends. (/next.js uses the broader "ever opened" keys to pick an unplayed game.)
+  function pos(v) { return typeof v === "number" ? v > 0 : !!v && typeof v === "object" && (v.games > 0 || v.played > 0); }
+  var LEGACY = {
+    borderlines: function () { return KEYS.some(function (k) { return /^borderlines:day:\d+$/.test(k); }) || pos(get("borderlines:practice")); },
+    retourvloot: function () { var r = get("retourvloot.runs"), v = get("retourvloot.v1"); return (Array.isArray(r) && r.length > 0) || !!(v && v.ended); },
+    cupoftea: function () { var v = get("cupoftea.v1"); return !!(v && Array.isArray(v.done) && v.done.length); },
+    polder: function () { var v = get("polder.progress.v1"); return !!v && typeof v === "object" && Object.keys(v).some(function (k) { return k.charAt(0) !== "_" && v[k] && typeof v[k] === "object"; }); },
+    kantar: function () { var v = get("kantar.stats.v1"); return (!!v && Array.isArray(v.games) && v.games.length > 0) || pos(get("kantar.record.v1")); },
+    tulip: function () { var v = get("tulip7.record.v1"); return pos(v) || !!(v && v.winters > 0); }
   };
   var SEEN = "hl.portal.stamps.v1"; // stamps this browser has already watched land (the animation plays once)
 
@@ -589,7 +595,7 @@ footer a { color: var(--ink-soft); }
   function track(name, props) { try { if (window.posthog && window.posthog.capture) window.posthog.capture(name, props || {}); } catch (e) {} }
   function keys() { var a = []; try { for (var i = 0; i < localStorage.length; i++) a.push(localStorage.key(i)); } catch (e) {} return a; }
   var KEYS = keys();
-  function inferred(id) { var re = PLAYED[id]; return !!re && KEYS.some(function (k) { return re.test(k); }); }
+  function inferred(id) { try { return !!(LEGACY[id] && LEGACY[id]()); } catch (e) { return false; } }
   function money(v) { var s = v < 0 ? "−" : ""; v = Math.abs(v); if (v >= 1e6) return s + "ƒ" + (v / 1e6).toFixed(v >= 1e7 ? 1 : 2) + "M"; if (v >= 1e3) return s + "ƒ" + Math.round(v / 1e3) + "k"; return s + "ƒ" + Math.round(v); }
   var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
   function rvDate(t) { var d = new Date(Date.UTC(1602, 0, 1) + Math.floor(t) * 864e5); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
@@ -618,10 +624,11 @@ footer a { color: var(--ink-soft); }
     daily.meta = streak ? "Keep your <b>" + streak + "-day</b> streak · five realms" : "Five realms, from easy to hard";
     // a daily started and left part-way (the game saves after every round): it is a "continue"
     var run = get("borderlines:run:" + idx);
-    if (run && run.scores && run.scores.length && run.scores.length < 5) {
+    if (run && Array.isArray(run.scores) && run.scores.length && run.scores.length <= 5) {
       var sofar = run.scores.reduce(function (a, b) { return a + (b || 0); }, 0);
       daily.kind = "daily"; daily.cont = true; daily.kicker = "Continue · Borderlines daily";
-      daily.meta = "Round <b>" + (run.scores.length + 1) + "</b> of 5 · " + sofar + " points so far";
+      // all five rounds played but the tab closed before the final score: the game opens on the results
+      daily.meta = run.scores.length >= 5 ? "All 5 rounds played · <b>" + sofar + "</b> points · see your score" : "Round <b>" + (run.scores.length + 1) + "</b> of 5 · " + sofar + " points so far";
       continues.push(daily); daily = null;
     }
   }
@@ -676,7 +683,7 @@ footer a { color: var(--ink-soft); }
   var nOn = stamps.filter(function (x) { return x.on; }).length;
   document.getElementById("passCount").textContent = nOn + "/6";
   document.getElementById("passBig").textContent = nOn + "/6";
-  document.getElementById("passChip").setAttribute("aria-label", "Your passport: " + nOn + " of 6 games stamped");
+  document.getElementById("passChip").setAttribute("aria-label", "Passport · " + nOn + "/6: " + nOn + " of 6 games stamped");
   if (nOn === 6) document.getElementById("passTitle").textContent = "All six stamped";
   else if (nOn) document.getElementById("passTitle").textContent = (6 - nOn) + " stamp" + (6 - nOn === 1 ? "" : "s") + " to go";
 
@@ -768,7 +775,7 @@ footer a { color: var(--ink-soft); }
   row.innerHTML = items.map(function (it) {
     var g = GAMES[it.game], art = it.game === "borderlines"
       ? '<span class="fy-art" aria-hidden="true"><i>Daily</i><b>#' + esc(it.num) + '</b></span>'
-      : '<span class="fy-art"><img src="' + g.img + '" alt="" loading="lazy"></span>';
+      : '<span class="fy-art"><img src="' + g.img + '" alt="" width="60" height="60"></span>';
     return '<a class="fy fy-' + it.kind + '" data-kind="' + (it.cont ? "continue" : it.kind.split(" ")[0]) + '" data-game="' + it.game + '" href="' + esc(it.href) + '" data-from="foryou">' + art +
       '<span class="fy-t"><span class="fy-k">' + esc(it.kicker) + '</span><b>' + esc(it.title) + '</b><span class="fy-m">' + it.meta + '</span></span><span class="fy-go" aria-hidden="true">→</span></a>';
   }).join("");
@@ -936,7 +943,7 @@ footer a { color: var(--ink-soft); }
     b.style.left = (L[0] / C.W * 100) + "%"; b.style.top = (L[1] / C.H * 100) + "%";
     b.innerHTML = (g.isNew ? "<i class='new'>New</i>" : "") + "<b></b><span></span>";
     b.querySelector("b").textContent = name; b.querySelector("span").textContent = g.when;
-    b.setAttribute("aria-label", name + ", " + g.when + ", " + g.place);
+    b.setAttribute("aria-label", (g.isNew ? "New " : "") + name + " " + g.when + ", " + g.place);
     b.addEventListener("click", function () { select(i, true); });
     b.addEventListener("dblclick", function () { var go = brief.querySelector(".btn"); if (go) go.click(); });
     b.addEventListener("mouseenter", function () { hot([g.game]); });
@@ -956,7 +963,7 @@ footer a { color: var(--ink-soft); }
     b.style.setProperty("--gc", gc);
     b.innerHTML = "<i></i><b></b><span></span>";
     b.querySelector("i").textContent = k.m.when + " · " + k.m.place; b.querySelector("b").textContent = k.m.title; b.querySelector("span").textContent = it.name;
-    b.setAttribute("aria-label", k.m.when + ", " + k.m.place + ": " + k.m.title + ". " + it.name);
+    b.setAttribute("aria-label", k.m.when + " · " + k.m.place + " " + k.m.title + " " + it.name);
     var d = document.createElement("button"); d.type = "button"; d.className = "tl-dot"; d.tabIndex = -1; d.setAttribute("aria-hidden", "true"); d.style.setProperty("--gc", gc);
     var l = document.createElement("span"); l.className = "tl-lead"; l.style.setProperty("--gc", gc);
     [b, d].forEach(function (e) {
@@ -1024,9 +1031,9 @@ footer a { color: var(--ink-soft); }
     var m = it && it.moment;
     if (!m) { momentEl.hidden = true; return; }
     momentEl.hidden = false; momentEl.style.setProperty("--gc", "var(--c-" + m.game + ")");
-    momentEl.innerHTML = "<div class='mw'></div><h4></h4><p></p>";
+    momentEl.innerHTML = "<div class='mw'></div><h3></h3><p></p>";
     momentEl.querySelector(".mw").textContent = m.when + " · " + m.place + " · " + it.name;
-    momentEl.querySelector("h4").textContent = m.title; momentEl.querySelector("p").textContent = m.text;
+    momentEl.querySelector("h3").textContent = m.title; momentEl.querySelector("p").textContent = m.text;
   }
   function placeLinks() { layoutTimeline(); }
   if (window.ResizeObserver) new ResizeObserver(function () { if (!viewMap.hidden) layoutTimeline(); }).observe(tlScroll);
@@ -1060,7 +1067,7 @@ footer a { color: var(--ink-soft); }
     var pic = plate.querySelector("img:not(.shot), svg");
     var tags = c.querySelector(".tags"), note = c.querySelector(".desknote"), cn = c.querySelector(".cardnote");
     brief.innerHTML = "<a class='bplate plate'></a><div class='btext'><span class='bwhen'></span><h3></h3><p class='bdesc'></p><div class='row'><a class='btn'>Play</a><span class='hint'></span></div></div>";
-    var bp = brief.querySelector(".bplate"); bp.href = go.getAttribute("href"); bp.setAttribute("aria-label", "Play " + it.name); bp.setAttribute("tabindex", "-1");
+    var bp = brief.querySelector(".bplate"); bp.href = go.getAttribute("href"); bp.setAttribute("aria-hidden", "true"); bp.setAttribute("tabindex", "-1");
     if (pic) bp.appendChild(pic.cloneNode(true));
     brief.querySelector(".bwhen").textContent = g.when + " · " + g.place;
     brief.querySelector("h3").textContent = it.name;

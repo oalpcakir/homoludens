@@ -18,6 +18,10 @@ title = "Tulip 7"
 desc = ("Amsterdam, winter 1636. A tavern card game of the tulip mania: take papers one by one and collect seven "
         "different tulips, but a second copy burns your evening. Write your winnings on paper as the price index "
         "rises, and cash in before the crash of February 1637. About 15 minutes, any screen.")
+# what the start screen shows first: the cover, the logo and the four portraits (the tavern behind the window and
+# the sign come next, without competing with them)
+FIRST = "\n".join('<link rel="preload" as="image" href="img/%s.webp"%s>' % (k, ' fetchpriority="high"' if k == "bg_cover" else '')
+                  for k in ("bg_cover", "ui_logo", "c_cuyck", "c_busscher", "c_meeckeren", "c_theunisz"))
 fav = base64.b64encode(open(os.path.join(H, "favicon-64.png"), "rb").read()).decode()
 head = f'''<meta name="description" content="{desc}">
 <meta property="og:type" content="website">
@@ -34,24 +38,29 @@ head = f'''<meta name="description" content="{desc}">
 {analytics_head("tulip")}
 <script src="/feedback.js" defer data-game="tulip"></script>
 <script src="/next.js" defer data-game="tulip"></script>
-<script src="/hl.js" defer data-game="tulip"></script>'''
+<script src="/hl.js" defer data-game="tulip"></script>
+{FIRST}'''
 src = page()
-# Achievement tiles (only seen in the Achievements sheet and the unlock toast) and the three big backgrounds are
-# written to img/ instead of being inlined: the tiles load only when shown, and the backgrounds load in parallel
-# while the page itself (now ~1 MB lighter) is already running. The carpet fallback is not needed when ui_table exists.
+# Every ART image (cards, portraits, UI pieces, backgrounds, achievement tiles) is written to img/ instead of being
+# inlined, as a relative img/<key>.webp URL (the itch / CrazyGames packages copy tulip7/img to img/ beside their page).
+# The page itself drops from ~1.25 MB to the code; the images load in parallel and are cached. The first screen's
+# images are preloaded in the head (FIRST above), and game.js decodes the card art before the first deal.
+# The carpet fallback is not needed when ui_table exists.
 import re
 os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
+for f in os.listdir(os.path.join(OUT, "img")):  # stale files from an older build (the portal plate is copied below)
+    if f.endswith(".webp"): os.remove(os.path.join(OUT, "img", f))
 def _lazy(m):
-    open(os.path.join(OUT, "img", m.group(1) + ".webp"), "wb").write(base64.b64decode(m.group(2)))
-    return f'"{m.group(1)}": "img/{m.group(1)}.webp"'
-src, n = re.subn(r'"(ach_[a-z0-9_]+|bg_cover|bg_tavern|ui_table)":\s*"data:image/webp;base64,([A-Za-z0-9+/=]+)"', _lazy, src)
-assert n >= 13, n
+    open(os.path.join(OUT, "img", m.group(1) + "." + m.group(2)), "wb").write(base64.b64decode(m.group(3)))
+    return f'"{m.group(1)}": "img/{m.group(1)}.{m.group(2)}"'
+src, n = re.subn(r'"([a-z0-9_]+)":\s*"data:image/(webp|png|jpeg);base64,([A-Za-z0-9+/=]+)"', _lazy, src)
+assert n >= 50, n
+assert ';base64,' not in src.split("const ART=", 1)[1].split("\n", 1)[0], "an ART image is still inlined"
 if '"ui_table": "img/' in src:
     src, k = re.subn(r'const CARPET="[^"]*";', 'const CARPET="";', src)
     assert k == 1, k
 anchor = '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
 assert src.count(anchor) == 1
-os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8", newline="\n") as fh:
     fh.write(src.replace(anchor, anchor + "\n" + head, 1))
 shutil.copy(os.path.join(H, "plate.jpg"), os.path.join(OUT, "img", "portal-plate.jpg"))

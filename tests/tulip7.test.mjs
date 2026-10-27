@@ -223,6 +223,11 @@ test('the one line of commentary says what happened', () => {
     'You held to the end, and the crash took f1,930 of your paper. Van Cuyck was caught holding f100 and lost f96 of it.');
   assert.equal(say({ crashAfter: 2, sales: [{ e: 0, i: 0, v: 10 }, { e: 1, i: 2, v: 10 }] }),
     'You sold at evening I, two evenings before the crash. Every rival got out in time; De Busscher was the last, at evening II.');
+  // rivals who sold on the same last evening are all named
+  assert.equal(say({ crashAfter: 7, sales: [{ e: 4, i: 0, v: 9 }, { e: 7, i: 1, v: 9 }, { e: 7, i: 3, v: 9 }, { e: 5, i: 2, v: 9 }] }),
+    'You sold at evening V, three evenings before the crash. Every rival got out in time; Van Cuyck and Van Meeckeren were the last, at evening VIII.');
+  assert.equal(say({ crashAfter: 7, sales: [{ e: 7, i: 1, v: 9 }, { e: 7, i: 2, v: 9 }, { e: 7, i: 3, v: 9 }] }),
+    'You never held paper when it mattered: the crash took nothing from you. Every rival got out in time; Van Cuyck, De Busscher and Van Meeckeren were the last, at evening VIII.');
   assert.equal(say({ crashAfter: 5 }), 'You never held paper when it mattered: the crash took nothing from you.');
   const txt = TC.summaryText(TC.chartData(fakeWinter({ crashAfter: 7, sales: [{ e: 3, i: 1, v: 1 }, { e: 5, i: 1, v: 1 }, { e: 6, i: 1, v: 1 }] }))).join(' ');
   assert.match(txt, /Van Cuyck: cashed in at evenings IV, VI and VII\./);

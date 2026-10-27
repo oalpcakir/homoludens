@@ -275,6 +275,13 @@ test("Borderlines today's players: percentile and sparkline after a daily, passp
   await page.locator('#btnDaily').click();
   await page.locator('#ePct').waitFor({ state: 'visible' });
   assert.equal(posted, null);
+  assert.ok(await page.locator('#intro').isHidden(), 'the title screen stays open behind the results');
+  await page.evaluate(() => localStorage.setItem('borderlines:day:3', JSON.stringify({ scores: [50, 50, 50, 50, 50], late: true })));
+  await page.locator('#btnMenu').click();
+  await page.locator('#btnArchive').click();
+  await page.locator('#aList button[data-view="3"]').click();
+  await page.locator('#end').waitFor({ state: 'visible' });
+  assert.ok(await page.locator('#archive').isHidden(), 'the archive stays open behind the results');
   assert.deepEqual(problems, []);
   await ctx.close();
 });
@@ -291,4 +298,165 @@ test("Borderlines today's players: the line stays hidden when the API is off (20
   assert.ok(await page.locator('#ePct').isHidden());
   assert.deepEqual(problems, []);
   await ctx.close();
+});
+
+// ---------------------------------------------------------------- QA regressions
+test('Borderlines: all five rounds played but the tab closed before the final score: it resumes at the end, never restarts', async () => {
+  const run = { scores: [70, 60, 50, 40, 30], raw: [70, 60, 50, 40, 30], hints: [], late: false };
+  const { page, ctx, problems } = await openWith({ 'borderlines:run:29': run });
+  assert.match(await page.textContent('#btnDaily'), /Continue Daily #30[\s\S]*All 5 rounds played · 250 points[\s\S]*Results/);
+  assert.equal(await page.locator('#dailyPips .pip.done').count(), 5);
+  await page.locator('#btnDaily').click();
+  await page.locator('#end').waitFor({ state: 'visible' });
+  const s = await S(page);
+  assert.equal(s.phase, 'end', 'the daily restarted from round 1');
+  assert.deepEqual(s.scores, run.scores);
+  const ls = await page.evaluate(() => ({ day: JSON.parse(localStorage.getItem('borderlines:day:29')), run: localStorage.getItem('borderlines:run:29'), pass: JSON.parse(localStorage.getItem('hl.passport.v1')) }));
+  assert.deepEqual(ls.day, { scores: run.scores, late: false });
+  assert.equal(ls.run, null);
+  assert.equal(ls.pass.games.borderlines.best, 250);
+  // the same in the archive, for an older day: "Finish", and it counts as played late
+  await page.evaluate(() => localStorage.setItem('borderlines:run:20', JSON.stringify({ scores: [10, 20, 30, 40, 50], hints: [] })));
+  await page.locator('#btnMenu').click();
+  await page.locator('#btnArchive').click();
+  await page.locator('#aList button[data-play="20"]', { hasText: 'Finish' }).click();
+  await page.locator('#end').waitFor({ state: 'visible' });
+  assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('borderlines:day:20'))), { scores: [10, 20, 30, 40, 50], late: true });
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+test("Borderlines share image: a daily's card never names its realms (the people it is sent to may not have played it)", async () => {
+  const { page, ctx, problems } = await openWith({ 'borderlines:run:29': { scores: [80, 80, 80, 80], raw: [80, 80, 80, 80], hints: [], late: false } });
+  await page.evaluate(() => { window.__shared = []; window.HL.share = (o) => { window.__shared.push(o); return Promise.resolve(true); }; });
+  await page.locator('#btnDaily').click();
+  await page.locator('#btnSubmit').waitFor({ state: 'visible' });
+  await playRound(page);
+  await next(page);
+  await page.locator('#btnShareImg').click();
+  const shared = await page.evaluate(() => window.__shared);
+  assert.equal(shared.length, 1);
+  const card = JSON.stringify(shared[0]);
+  for (const q of DAY30) assert.ok(!card.includes(q.label), 'the share card names ' + q.label);
+  assert.match(shared[0].lines.join(' '), /Easy 80/);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+test('Borderlines title screen: moves on to the new daily after midnight, and the drifting map never scrolls the page', async () => {
+  const { page, ctx, problems } = await openWith({ 'borderlines:day:29': done([50, 50, 50, 50, 50]) });
+  assert.match(await page.textContent('#dailyKick'), /Daily #30/);
+  assert.match(await page.textContent('#dailyTitle'), /Done/);
+  await page.evaluate(() => { scrollTo(200, 200); document.scrollingElement.scrollLeft = 200; });
+  assert.deepEqual(await page.evaluate(() => [scrollX, scrollY]), [0, 0], 'the title screen scrolled');
+  await page.clock.setFixedTime(new Date(NOW.getTime() + 13 * 3600e3)); // 01:00 the next day
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  assert.match(await page.textContent('#dailyKick'), /Daily #31/);
+  assert.match(await page.textContent('#dailyTitle'), /Today's challenge/);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+test("Borderlines on a phone: the tutorial realm and a round's answer are framed in the free strip of map, not under the cards", async () => {
+  const ctx = await browser.newContext({ viewport: { width: 360, height: 740 }, isMobile: true, hasTouch: true, timezoneId: 'Europe/Amsterdam' });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r =>
+    r.request().url().includes('/d3.min.js') ? r.fulfill({ body: D3, contentType: 'text/javascript' }) : r.fulfill({ status: 204, body: '' }));
+  const page = await ctx.newPage();
+  await page.clock.setFixedTime(NOW);
+  const problems = [];
+  page.on('pageerror', e => problems.push('JS error: ' + e.message));
+  await page.goto(srv.url + '/borderlines/');
+  await page.waitForFunction(() => !!window.__borderlines);
+  await page.locator('#btnDaily').click();
+  await page.locator('#coach').waitFor({ state: 'visible' });
+  await page.waitForTimeout(900); // the zoom transition
+  const r = await page.evaluate(() => {
+    const B = window.__borderlines, [[x0, y0], [x1, y1]] = B.path().bounds(B.q().geometry), z = B.z();
+    const st = document.getElementById('stage').getBoundingClientRect();
+    return { top: z.applyY(y0) + st.top, bottom: z.applyY(y1) + st.top, coach: document.getElementById('coach').getBoundingClientRect().bottom, tools: document.getElementById('tools').getBoundingClientRect().top, label: B.q().label };
+  });
+  assert.equal(r.label, 'Australia');
+  assert.ok(r.top >= r.coach && r.bottom <= r.tools, `Australia spans ${Math.round(r.top)}–${Math.round(r.bottom)}px, the free gap is ${Math.round(r.coach)}–${Math.round(r.tools)}px`);
+  // after Submit the answer is framed above the result card, not under it
+  await paint(page);
+  await page.locator('#btnSubmit').click();
+  await page.waitForFunction(() => window.__borderlines.state.phase === 'result');
+  await page.waitForTimeout(900);
+  const q = await page.evaluate(() => {
+    const t = document.querySelector('#topG .truth').getBoundingClientRect();
+    return { top: t.top, bottom: t.bottom, card: document.getElementById('cartouche').getBoundingClientRect().bottom, result: document.getElementById('result').getBoundingClientRect().top };
+  });
+  assert.ok(q.top >= q.card - 1 && q.bottom <= q.result + 1, `the answer spans ${Math.round(q.top)}–${Math.round(q.bottom)}px, the free gap is ${Math.round(q.card)}–${Math.round(q.result)}px`);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+test('Borderlines keyboard: focus follows to the next screen when the button used disappears (final score, Menu, Archive)', async () => {
+  const { page, ctx, problems } = await openWith({ 'borderlines:run:29': { scores: [80, 80, 80, 80], raw: [80, 80, 80, 80], hints: [], late: false }, 'borderlines:day:2': done([50, 50, 50, 50, 50], true) });
+  const active = () => page.evaluate(() => document.activeElement.id || document.activeElement.tagName);
+  assert.equal(await active(), 'BODY', 'the first load should not grab focus');
+  await page.locator('#btnDaily').focus(); await page.keyboard.press('Enter');
+  await page.locator('#btnSubmit').waitFor({ state: 'visible' });
+  await paint(page);
+  await page.keyboard.press('Enter'); // submit
+  await page.waitForFunction(() => window.__borderlines.state.phase === 'result');
+  await page.keyboard.press('Enter'); // see final score
+  await page.locator('#end').waitFor({ state: 'visible' });
+  assert.equal(await active(), 'end');
+  await page.locator('#btnMenu').focus(); await page.keyboard.press('Enter');
+  assert.equal(await active(), 'btnDaily');
+  await page.locator('#btnArchive').focus(); await page.keyboard.press('Enter');
+  assert.equal(await page.evaluate(() => !!document.activeElement.closest('#aList')), true);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+test('Borderlines load: the base map comes from a cached map.json (not inline script), D3 is deferred, labels match the visible text', async () => {
+  const html = readFileSync(ROOT + 'public/borderlines/index.html', 'utf8');
+  assert.ok(html.length < 300 * 1024, `page is ${Math.round(html.length / 1024)} KB`);
+  assert.ok(!/"land":/.test(html) && !/"pool":/.test(html), 'map data is still inline');
+  assert.match(html, /<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/d3\/7\.9\.0\/d3\.min\.js" defer><\/script>/);
+  const m = html.match(/mapUrl: "\/borderlines\/map\.json\?v=([0-9a-f]{10})"/);
+  assert.ok(m, 'no versioned mapUrl');
+  const map = JSON.parse(readFileSync(ROOT + 'public/borderlines/map.json', 'utf8'));
+  assert.deepEqual(Object.keys(map).sort(), ['lakes', 'land', 'pool', 'rivers']);
+  const { page, ctx, problems, fetched } = await openWith({});
+  assert.ok(fetched.includes('/borderlines/map.json'), 'map.json not fetched');
+  assert.ok(await page.locator('#baseG path.land').count() === 1, 'the map did not draw');
+  assert.equal(await page.getAttribute('#stage', 'role'), 'region');
+  assert.match(await page.getAttribute('#btnDaily', 'aria-label'), /\. Play$/);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+  // without the map file the title screen says so and offers a retry
+  const bad = await openWithRaw(r => r.fulfill({ status: 503, body: '' }));
+  assert.match(await bad.page.textContent('#dailyTitle'), /couldn't load/);
+  await bad.ctx.close();
+});
+async function openWithRaw(mapRoute) {
+  const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 } });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r =>
+    r.request().url().includes('/d3.min.js') ? r.fulfill({ body: D3, contentType: 'text/javascript' }) : r.fulfill({ status: 204, body: '' }));
+  await ctx.route(/\/borderlines\/map\.json/, mapRoute);
+  const page = await ctx.newPage();
+  await page.goto(srv.url + '/borderlines/');
+  await page.waitForTimeout(800);
+  return { page, ctx };
+}
+
+test('_headers: valid rules (one splat each, no two Cache-Control rules for one path) and the intended cache lifetimes', () => {
+  const lines = readFileSync(ROOT + 'public/_headers', 'utf8').split('\n');
+  const rules = []; let cur = null;
+  for (const l of lines) {
+    if (!l.trim() || l.startsWith('#')) continue;
+    if (!/^\s/.test(l)) { cur = { path: l.trim(), h: {} }; rules.push(cur); continue; }
+    const [k, ...v] = l.trim().split(':'); cur.h[k.trim().toLowerCase()] = v.join(':').trim();
+  }
+  for (const r of rules) assert.ok((r.path.match(/\*/g) || []).length <= 1, 'more than one splat: ' + r.path);
+  const re = (p) => new RegExp('^' + p.replace(/[.?+^$()|[\]\\]/g, '\\$&').replace(/:[a-z_]+/g, '[^/]+').replace(/\*/g, '.*') + '$');
+  const cc = (url) => rules.filter(r => r.h['cache-control'] && re(r.path).test(url)).map(r => r.h['cache-control']);
+  const want = { '/': /max-age=300, must-revalidate/, '/borderlines/': /max-age=300/, '/cupoftea/2/': /max-age=300/, '/hl.js': /max-age=300/, '/next.js': /max-age=300/, '/feedback.js': /max-age=300/, '/games.json': /max-age=300/,
+    '/tulip7/img/portal-plate.jpg': /max-age=2592000/, '/shots/kantar.jpg': /max-age=2592000/, '/og-polder.jpg': /max-age=2592000/, '/borderlines/og/250.png': /max-age=2592000/,
+    '/borderlines/days/12.json': /max-age=604800/, '/borderlines/lapse/d1-1.json': /max-age=604800/, '/borderlines/map.json': /max-age=/ };
+  for (const [u, w] of Object.entries(want)) { const c = cc(u); assert.equal(c.length, 1, u + ' matches ' + c.length + ' Cache-Control rules'); assert.match(c[0], w, u); }
+  assert.ok(rules.length <= 100);
 });

@@ -6,8 +6,8 @@
 /* Layout: a director's desk in the East India House. A chart of the route east fills the middle; the headline numbers
    sit in the top bar; every department (fleet, auction, Asia, shareholders, books, aims) is one tab in the side drawer. */
 :root{
-  --paper:#efe9db; --paper-2:#e6dfcd; --card:#f8f4ea; --ink:#2a2419; --ink-2:#5b5244; --ink-3:#7c7262;
-  --delft:#26457d; --delft-soft:rgba(38,69,125,.10); --brass:#9a6a14; --brass-soft:rgba(154,106,20,.13);
+  --paper:#efe9db; --paper-2:#e6dfcd; --card:#f8f4ea; --ink:#2a2419; --ink-2:#5b5244; --ink-3:#6f6556;
+  --delft:#26457d; --delft-soft:rgba(38,69,125,.10); --brass:#8a5d0f; --brass-soft:rgba(138,93,15,.13);
   --rule:rgba(92,70,36,.24); --rule-2:rgba(92,70,36,.12); --loss:#9b2f27; --gain:#2c6a47;
   --bar:#1b2538; --bar-ink:#f1ead8; --bar-ink-2:#b9b19e; --bar-rule:rgba(241,234,216,.14);
   /* chart (map) */
@@ -116,6 +116,8 @@ p{margin:0 0 .6em}
 #map .post.lost .dot{fill:var(--loss);stroke:var(--sea)}
 #map .post .mono{fill:none;stroke:var(--seal);stroke-width:2}
 #map .post .x{stroke:#fff;stroke-width:2;stroke-linecap:round}
+#map .post .lead{stroke:var(--chart-ink-2);stroke-width:1;fill:none;opacity:.75;pointer-events:none}
+#map .post .lead-pt{fill:var(--chart-ink-2);pointer-events:none}
 #map .port .dot{fill:var(--out);stroke:var(--sea);stroke-width:2.5}
 #map .count{font-family:var(--f-body);font-size:13px;font-weight:600;fill:var(--on-badge);text-anchor:middle;dominant-baseline:central}
 #map .countb{stroke:var(--sea);stroke-width:2}
@@ -160,7 +162,8 @@ i.lg-can{border:2px solid var(--brass)} i.lg-ord{border:2px dashed var(--out)} .
 .strip{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;min-height:0}
 .strip .card{display:flex;flex-direction:column;min-height:0;padding:10px 16px}
 .strip .card h2{font-size:17px;margin-bottom:6px}
-.notes{list-style:none;margin:0;padding:0 4px 0 0;display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0}
+/* bottom room for the site's round Feedback/Discord buttons, which sit over this card's lower-left corner */
+.notes{list-style:none;margin:0;padding:0 4px 46px 0;display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0}
 .notes li{font-size:15px;line-height:1.4;padding:6px 10px 6px 12px;border-left:3px solid var(--delft);background:var(--delft-soft);border-radius:0 4px 4px 0}
 .notes li.warn{border-left-color:var(--loss);background:color-mix(in srgb,var(--loss) 9%,transparent)}
 .notes li.good{border-left-color:var(--gain);background:color-mix(in srgb,var(--gain) 9%,transparent)}
@@ -344,6 +347,7 @@ ul.credits a,.sheet a{color:var(--delft)}
 .score{font-size:17px;margin:0}
 .score b{font-size:22px;font-weight:600}
 .endcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:26px;align-items:start}
+.sheet.end .actions{position:sticky;bottom:-20px;z-index:2;margin:14px -30px -20px;padding:12px 30px 16px;background:var(--card);border-top:1px solid var(--rule-2)}
 .endgrid{display:grid;grid-template-columns:1fr auto;gap:5px 16px;font-size:15px;margin:10px 0}
 .endgrid b{text-align:right;font-weight:600}
 .cmp h4{font-family:var(--f-sc);font-weight:400;font-size:17px;letter-spacing:.04em;color:var(--delft);margin:0 0 4px}
@@ -358,7 +362,7 @@ ul.credits a,.sheet a{color:var(--delft)}
 .cmp svg .rv{stroke:var(--brass);stroke-width:2.5;stroke-dasharray:7 4;fill:none}
 .cmp svg .rb{fill:var(--brass);opacity:.28}
 .cmp svg .rbe{fill:none;stroke:var(--brass);stroke-width:1.5}
-.cmp svg .lbl{font-size:13px}
+.cmp svg .lbl{font-size:13px;paint-order:stroke;stroke:var(--card);stroke-width:3.5px;stroke-linejoin:round}
 .cmp svg .lbl.rvt{fill:var(--brass)} .cmp svg .lbl.pt{fill:var(--out)} .cmp svg .lbl.dt{fill:var(--loss)}
 .cmp .src{font-size:13.5px;color:var(--ink-3);margin-top:4px}
 

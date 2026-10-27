@@ -116,7 +116,7 @@ function render() {
   $('s-debt2').textContent = S.debt > 0 ? `${money(S.debt * interestRate(S, y))} interest a year` : debtLine(S);
   const exp = expectation(S);
   $('s-div').textContent = y >= 1610 ? S.divRate + '%' : '—';
-  $('s-div2').innerHTML = y >= 1610 ? `they expect ${Math.round(exp)}%${S.divRate < Math.round(exp) ? ' · <span class="neg">below</span>' : ''}` : 'dividends from May 1610';
+  $('s-div2').innerHTML = y >= 1610 ? `they expect ${Math.round(exp)}%${S.divRate < Math.round(exp) ? ' · <span class="neg">below</span>' : ''}` : 'first due May 1610';
   $('s-mood').textContent = moodOf(S.discontent);
   $('s-moodbar').querySelector('i').style.width = Math.max(3, S.discontent) + '%';
   $('s-moodbar').classList.toggle('bad', S.discontent >= 60);
@@ -264,11 +264,11 @@ function renderLetter(y) {
   const au = autonomy(S, y);
   const pexp = k => Math.round(au * { restrain: .12, permit: .35, encourage: .7 }[k] * 100);
   $('eff-exp').innerHTML = `Chance each year that the Governor-General opens or seizes a post on his own: <b>${pexp(L.expansion)}%</b> (restrain ${pexp('restrain')}%, encourage ${pexp('encourage')}%). Every post adds upkeep for good. ${au >= 0.6 ? '<b>Coen</b> rarely waits for orders.' : ''}`;
-  const aboard = S.ships.filter(sh => sh.state === 'out' && sh.letter && sh.letter.issued === S.letter.issued).length;
+  const aboard = letterDelivered(S.letter.issued, S.t) ? 0 : S.ships.filter(sh => sh.state === 'out' && sh.letter && sh.letter.issued === S.letter.issued).length;
   const ls = $('lstatus');
   const nw = nextWindow(S);
   if (!S.letterSealed) { ls.className = 'lstatus dirty'; ls.textContent = `Unsent. These instructions sail with the next ship${nw ? `, ${nw.days ? 'in ' + nw.days + ' days' : 'this season'}` : ''}. Expect them in Batavia 8 to 11 months after that.`; }
-  else { ls.className = 'lstatus'; ls.textContent = aboard ? `Sealed. Copies are aboard ${aboard} ship${aboard > 1 ? 's' : ''} at sea; the first to arrive delivers them.` : 'Sealed and sent. Change anything to write a new letter.'; }
+  else { ls.className = 'lstatus'; ls.textContent = aboard ? `Sealed. Copies are aboard ${aboard} ship${aboard > 1 ? 's' : ''} at sea; the first to arrive delivers them.` : `Sealed and sent${S.report && S.report.letterIssued === S.letter.issued && S.report.letterArrived ? `; Batavia has had it since ${fmtMon(S.report.letterArrived)}` : ''}. Change anything to write a new letter.`; }
 }
 let otherKey = '';
 function renderOther() {
@@ -410,7 +410,7 @@ function drawSpark() {
 // Equirectangular, same constants as mapdata.js. Everything is drawn in chart units (5 per degree).
 const mx = lon => (lon - MAP_LON0) * MAP_K, my = lat => (MAP_LAT0 - lat) * MAP_K;
 const G = ([lon, lat]) => [mx(lon), my(lat)];
-const MAP_CORE = { x0: mx(-27), x1: mx(149), y0: my(61), y1: my(-46.5) };   // always in view
+const MAP_CORE = { x0: mx(-27), x1: mx(149), y0: my(65.5), y1: my(-46.5) }; // always in view (65.5°N: room for homebound ships north of Scotland)
 const MAP_ALL = { x0: 0, x1: mx(180), y0: 0, y1: my(-62) };              // the coastline data
 const PORTS = { texel: [4.8, 53.0], cape: [18.4, -33.9], batavia: [106.8, -6.2] };
 const ROUTE_A = [[4.8,53],[3,51.6],[0.5,50.6],[-5.5,49.2],[-11,44],[-17,33],[-23,18],[-27,6],[-30,-6],[-31,-18],[-26,-28],[-12,-35],[4,-37],[18.4,-34.8]];
@@ -419,7 +419,10 @@ const ROUTE_BROUWER = [[18.4,-34.8],[32,-39],[60,-41],[88,-40],[101,-33],[104.5,
 // Homeward: out through the Sunda Strait, across the Indian Ocean to the Cape, by St Helena and Ascension, wide of the
 // Azores and north about Scotland to Texel (the usual return in wartime, and common in peace).
 const ROUTE_HOME = [[106.8,-6.2],[105.6,-6.2],[104.5,-7.5],[100,-12],[90,-18],[78,-24],[60,-31],[40,-35.6],[26,-35.8],[18.4,-34.5],[13,-29],[2,-21],[-5.7,-15.9],[-14.4,-7.9],[-22,4],[-29,20],[-31,34],[-24,47],[-14,56.5],[-4,59.8],[1.5,58.6],[4.3,55.5],[4.8,53.1]];
-const MAP_LABEL = { bantam: ['end', -11, -9], priangan: ['start', 11, 18], ambon: ['start', 11, -6], banda: ['start', 11, 15], japan: ['end', -11, -6], coromandel: ['start', 11, 5], bengal: ['end', -11, -8], ceylon: ['end', -11, 14], malacca: ['end', -11, -6], mocha: ['end', -11, -6], canton: ['end', -11, -8], formosa: ['start', 11, 4], cape: ['start', 12, 18] };
+const MAP_LABEL = { bantam: ['end', -11, -9], priangan: ['start', 11, 6], ambon: ['start', 11, -6], banda: ['start', 11, 15], japan: ['end', -11, -6], coromandel: ['start', 11, 5], bengal: ['end', -11, -8], ceylon: ['end', -11, 14], malacca: ['end', -11, -6], mocha: ['end', -11, -6], canton: ['end', -11, -8], formosa: ['start', 11, 4], cape: ['start', 12, 18] };
+// Posts too close to a bigger mark to be seen or clicked (Bantam and Priangan sit under Batavia, Ambon under Banda):
+// drawn this far off their true spot, in chart units times the mark scale, with a thin line back to it.
+const MAP_NUDGE = { bantam: [-24, -11], priangan: [10, 16], ambon: [-12, -12] };
 const AIM_POST = { nutmeg: 'banda', cloves: 'ambon', cinnamon: 'ceylon', japan: 'japan', strait: 'malacca' };
 const SVGNS = 'http://www.w3.org/2000/svg';
 
@@ -455,11 +458,17 @@ function shipPos(sh, t) {
 }
 // Letters at sea, as Amsterdam can know them: your newest instructions ride with the leading outbound ship that carries
 // them, until that ship is due in Batavia; Batavia's newest letter rides home with the leading homebound ship.
+// A letter counts as delivered once Batavia reports having it, or once a ship carrying a copy is presumed to have
+// arrived: later ships carry the same orders, but they are no longer news on the way.
+function letterDelivered(issued, t) {
+  if (S.report && S.report.letterIssued >= issued) return true;
+  return S.ships.some(s => s.letter && s.letter.issued === issued && s.dep != null && !(s.revealed && s.state === 'lostOut') && (s.state !== 'out' && s.state !== 'lostOut' ? s.state !== 'harbour' : (t - s.dep) / s.exp >= 1));
+}
 function lettersAtSea(t) {
   const L = [];
   let best = null;
   for (const sh of S.ships) {
-    if (!sh.letter || (sh.state !== 'out' && sh.state !== 'lostOut') || sh.revealed) continue;
+    if (!sh.letter || (sh.state !== 'out' && sh.state !== 'lostOut') || sh.revealed || letterDelivered(sh.letter.issued, t)) continue;
     const f = (t - sh.dep) / sh.exp; if (f >= 1) continue;
     if (!best || sh.letter.issued > best.sh.letter.issued || (sh.letter.issued === best.sh.letter.issued && f > best.f)) best = { sh, f };
   }
@@ -596,9 +605,11 @@ function renderMapStatic(y) {
   let h = '';
   for (const p of ps) {
     if (p.id === 'cape') continue; // the Cape is drawn with the ports
-    const P = POSTS[p.id], [x, yy] = G([P.lon, P.lat]), [al, dx, dy] = MAP_LABEL[p.id] || ['start', 11, -6];
+    const P = POSTS[p.id], [x0, y0] = G([P.lon, P.lat]), [al, dx, dy] = MAP_LABEL[p.id] || ['start', 11, -6];
+    const nu = MAP_NUDGE[p.id], x = x0 + (nu ? nu[0] * mapView.k : 0), yy = y0 + (nu ? nu[1] * mapView.k : 0);
+    const lead = nu ? `<path class="lead" d="M0 0L${(x0 - x).toFixed(1)} ${(y0 - yy).toFixed(1)}"/><circle class="lead-pt" cx="${(x0 - x).toFixed(1)}" cy="${(y0 - yy).toFixed(1)}" r="${(1.8 * mapView.k).toFixed(1)}"/>` : '';
     const cls = `hit post ${p.st === 'has' ? '' : p.st}${sel === 'post:' + p.id ? ' sel' : ''}`;
-    h += `<g class="${cls}" data-k="post:${p.id}" tabindex="0" role="button" aria-label="${esc(P.name)}: ${p.st === 'has' ? 'Company post' : p.st === 'can' ? 'could be ordered' : p.st === 'ordered' ? 'ordered in your letter' : 'lost'}${p.mono ? ', monopoly secured' : ''}" transform="translate(${x.toFixed(1)} ${yy.toFixed(1)})">
+    h += `<g class="${cls}" data-k="post:${p.id}" tabindex="0" role="button" aria-label="${esc(P.name)}: ${p.st === 'has' ? 'Company post' : p.st === 'can' ? 'could be ordered' : p.st === 'ordered' ? 'ordered in your letter' : 'lost'}${p.mono ? ', monopoly secured' : ''}" transform="translate(${x.toFixed(1)} ${yy.toFixed(1)})">${lead}
       <g transform="scale(${K})"><circle r="16" fill="transparent"/>${p.mono ? '<circle class="mono" r="10.5"/>' : ''}<circle class="dot badge" r="${p.st === 'has' ? 6.5 : 6}"/>${p.st === 'lost' ? '<path class="x" d="M-3 -3L3 3M3 -3L-3 3"/>' : ''}</g>
       <text class="pl${p.st === 'has' || p.st === 'ordered' ? '' : ' dim'}" text-anchor="${al}" x="${(dx * K).toFixed(1)}" y="${(dy * K).toFixed(1)}">${esc(P.name)}${p.st === 'ordered' ? ' (ordered)' : ''}</text></g>`;
   }
@@ -655,7 +666,8 @@ function drawMap() {
     let g = letterEls.get(L.kind);
     if (!g) { g = el('g', { 'data-k': 'letter:' + L.kind, tabindex: '0', role: 'button', 'aria-label': L.kind === 'out' ? 'Your letter to Batavia' : 'Letter from Batavia' }, gL); g.innerHTML = sealSvg(); letterEls.set(L.kind, g); }
     const cls = `hit letter${popKey === 'letter:' + L.kind ? ' sel' : ''}`; if (g.getAttribute('class') !== cls) g.setAttribute('class', cls);
-    g.setAttribute('transform', `translate(${(p.x + 13 * K).toFixed(1)} ${(p.y - 15 * K).toFixed(1)}) scale(${K})`);
+    const ly = p.y - 15 * K < mapView.y + 10 + 9 * K ? p.y + 15 * K : p.y - 15 * K; // below the ship near the top border
+    g.setAttribute('transform', `translate(${(p.x + 13 * K).toFixed(1)} ${ly.toFixed(1)}) scale(${K})`);
   }
   for (const [k, g] of letterEls) if (!lseen.has(k)) { g.remove(); letterEls.delete(k); }
 }
@@ -953,7 +965,17 @@ function start(data) {
   $('credits').addEventListener('click', showCredits);
   document.addEventListener('keydown', onKey);
   const sn = $('small-screen'); let dismissed = false; try { dismissed = sessionStorage.getItem('rv-small') === '1'; } catch (e) {}
-  if (window.innerWidth < 900 && !dismissed) { sn.hidden = false; $('small-go').addEventListener('click', () => { sn.hidden = true; try { sessionStorage.setItem('rv-small', '1'); } catch (e) {} }); }
+  if (window.innerWidth < 900 && !dismissed) {
+    // a modal dialog over the desk: the desk and any card behind it are inert until "Play anyway", which gives focus back
+    const behind = [document.querySelector('.app'), $('modal'), $('coach')], back = document.activeElement;
+    behind.forEach(e => { if (e) e.inert = true; });
+    sn.hidden = false; $('small-go').focus();
+    $('small-go').addEventListener('click', () => {
+      sn.hidden = true; behind.forEach(e => { if (e) e.inert = false; });
+      try { sessionStorage.setItem('rv-small', '1'); } catch (e) {}
+      if (back && back.isConnected && back !== document.body) back.focus();
+    });
+  }
   requestAnimationFrame(frame);
 }
 window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? {});

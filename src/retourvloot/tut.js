@@ -38,7 +38,7 @@ function showCoach(step, n, total, ctx) {
   let sp = document.getElementById('coach-spot'); if (!sp) { sp = document.createElement('div'); sp.id = 'coach-spot'; sp.className = 'coach-spot'; document.body.appendChild(sp); }
   sp.hidden = false;
   const b = $('coach');
-  b.innerHTML = `<div class="coach-n">${ctx ? 'Tip' : `Step ${n} of ${total}`}</div><h4>${step.title}</h4><p>${step.text()}</p>
+  b.innerHTML = `<div class="coach-n">${ctx ? 'Tip' : `Step ${n} of ${total}`}</div><h4 id="coach-title">${step.title}</h4><p>${step.text()}</p>
     <div class="coach-act">${ctx ? '' : '<button type="button" class="linkbtn" id="coach-skip">Skip the guide</button>'}${step.wait ? '' : `<button type="button" class="btn small" id="coach-next">${ctx ? 'Got it' : 'Next'}</button>`}</div>`;
   b.hidden = false;
   const nx = $('coach-next'); if (nx) nx.addEventListener('click', () => ctx ? endCtx() : tutNext());

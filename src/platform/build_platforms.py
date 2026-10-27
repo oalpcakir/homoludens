@@ -72,7 +72,7 @@ GAMES = {
     },
     "kantar": {
         "pages": {"index.html": "kantar/index.html"},
-        "assets": [("kantar/img", "img")],  # end-of-match art and the phone background, loaded when shown
+        "assets": [("kantar/img", "img")],  # all the game art (the page loads it by relative path)
         "playing": """function () { var $ = function (i) { return document.getElementById(i); };
             return typeof G !== 'undefined' && G && started && G.phase !== 'end' && $('rules').classList.contains('hide') && $('endM').classList.contains('hide') && $('statsM').classList.contains('hide'); }""",
         # first visit on CrazyGames: follow the platform's language when it is Turkish
@@ -164,6 +164,8 @@ def page_for(game, platform, cfg, rel_out, src_rel):
         html = html.replace(cfg_re.group(0), "window.BORDERLINES_CONFIG = " + json.dumps({
             "reportEndpoint": "", "siteUrl": "" if cg else SITE + "/borderlines/", "portalUrl": "" if cg else SITE + "/",
             "daysUrl": SITE + "/borderlines/days/", "daysFallback": "days/"}) + ";")
+        # the base map (map.json) ships in the package and is loaded relative to the page (no mapUrl in the config)
+        html = re.sub(r'<link rel="preload" href="/borderlines/map\.json[^"]*"[^>]*>\n?', "", html)
         assert html.count(D3_CDN) == 1, "D3 script not found"
         html = html.replace(D3_CDN, "d3.min.js")
         # the live list of dailies (fetched in "before"), applied once the page data exists
@@ -174,6 +176,7 @@ def page_for(game, platform, cfg, rel_out, src_rel):
   if (t && D && t.start === D.dailyStart && Array.isArray(t.days) && t.days.length >= D.days.length) D.days = t.days; })();</script>""" + html[j + 9:]
     if game == "cupoftea":
         html = html.replace('"/cupoftea/img/', f'"{up}img/')
+        html = html.replace(', /cupoftea/img/', f', {up}img/')  # second entry of a srcset
         html = html.replace('url(/cupoftea/img/', f'url({up}img/')  # backgrounds in the scenes' CSS
         html = html.replace('href="/cupoftea/${k>1?k+"/":""}"', f'href="{up}' + '${k>1?k+"/":""}index.html"')
         html = html.replace('href="/cupoftea/2/"', f'href="{up}2/index.html"').replace('href="/cupoftea/3/"', f'href="{up}3/index.html"')
@@ -211,6 +214,7 @@ def build(game, platform):
         if not os.path.exists(D3_LOCAL):
             raise SystemExit("node_modules/d3 missing: run `npm ci` first (the package ships D3 instead of loading it from a CDN)")
         shutil.copy(D3_LOCAL, os.path.join(d, "d3.min.js"))
+        shutil.copy(os.path.join(PUB, "borderlines", "map.json"), os.path.join(d, "map.json"))
     # checks: every local reference resolves inside the package, no root-relative asset paths
     files = []
     for base, _, names in os.walk(d):

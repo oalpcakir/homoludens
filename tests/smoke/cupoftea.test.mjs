@@ -247,3 +247,70 @@ test('Cup of Tea: on CrazyGames the VOC line has no link and there is no Share b
   assert.deepEqual(errs, []);
   await ctx.close();
 });
+
+// The end screen is a modal dialog: Tab and Shift+Tab cycle through its links and buttons and never reach the
+// ledger behind it.
+test('Cup of Tea: Tab stays inside the end screen', async () => {
+  for (const path of ['/cupoftea/', '/cupoftea/2/', '/cupoftea/3/']) {
+    const t = await open(path, { viewport: { width: 1366, height: 768 }, storage: { 'cupoftea.v1': JSON.stringify({ done: [1, 2, 3], cur: 3 }) } });
+    await t.page.waitForSelector('#door.on', { timeout: 4000 });
+    await t.page.waitForTimeout(300);
+    for (const key of ['Tab', 'Shift+Tab']) {
+      for (let i = 0; i < 40; i++) {
+        await t.page.keyboard.press(key);
+        assert.ok(await t.page.evaluate(() => document.querySelector('#door .card').contains(document.activeElement)), `${path}: ${key} left the end screen`);
+      }
+    }
+    assert.deepEqual(t.problems, []);
+    await t.close();
+  }
+});
+
+// Loading and accessibility: the briefing's picture has its size (and a 640w variant), the page does not jump while
+// the script draws it (CLS), the ledger's first header cell is not empty, and the receipt's other line is readable.
+test('Cup of Tea: no layout shift on load, sized intro picture, named ledger column, readable receipt', async () => {
+  for (const [n, path] of [[1, '/cupoftea/'], [2, '/cupoftea/2/'], [3, '/cupoftea/3/']]) {
+    const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+    await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+    await ctx.addInitScript(() => { window.__cls = 0; new PerformanceObserver(l => { for (const e of l.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true }); });
+    const page = await ctx.newPage(); const errs = []; page.on('pageerror', e => errs.push(e.message));
+    await page.goto(srv.url + path); await page.waitForTimeout(1200);
+    const r = await page.evaluate(() => { const i = document.querySelector('#intro .iplate img');
+      return { cls: window.__cls, w: i.getAttribute('width'), h: i.getAttribute('height'), srcset: i.getAttribute('srcset'), ratio: +(i.getBoundingClientRect().width / i.getBoundingClientRect().height).toFixed(2), boot: document.body.classList.contains('boot') }; });
+    assert.ok(r.cls < 0.05, `${path}: layout shift ${r.cls}`);
+    assert.deepEqual([r.w, r.h, r.ratio, r.boot], ['1280', '560', 2.29, false], path);
+    assert.match(r.srcset, new RegExp(`tea_intro_${n}-640\\.webp 640w`));
+    assert.equal((await fetch(srv.url + `/cupoftea/img/tea_intro_${n}-640.webp`)).status, 200);
+    while (await introOpen(page)) await page.locator('#introCard button[data-go]').last().click();
+    const th = await page.evaluate(() => [...document.querySelectorAll('table.ledger tr:first-child th, #ltable tr:first-child th, #mtable tr:first-child th')].filter(t => !t.textContent.trim()).length);
+    assert.equal(th, 0, `${path}: an empty header cell in the ledger`);
+    const muted = await page.evaluate(() => [...document.querySelectorAll('.receipt .row')].map(r => getComputedStyle(r)).filter(c => +c.opacity < 1 || c.color === 'rgb(136, 128, 117)').length);
+    assert.equal(muted, 0, `${path}: a faded receipt line`);
+    assert.deepEqual(errs, []);
+    await ctx.close();
+  }
+});
+
+// Scene 3 can be solved from the papers with the desk's own tools: 2s 2¼d and 3s a pound converted, the remainder
+// 9.75d, both brought down to two ounces, the 0.50d left over, and the 269 per cent.
+test('Cup of Tea: Scene 3 shares and the 269% come from the tools, not from the answer key', async () => {
+  const t = await open('/cupoftea/3/');
+  await skipIntro(t.page);
+  for (const d of await t.page.$$eval('.doctab', b => b.map(x => x.dataset.d))) {
+    await tab(t.page, d);
+    for (const c of await t.page.$$eval('#doc .c[data-c]:not(.got)', b => b.map(x => x.dataset.c))) await clue(t.page, c);
+  }
+  await convert(t.page, 2, 2.25, 'lb'); await convert(t.page, 3, 0, 'lb');
+  await t.page.selectOption('#rem [data-r="a"]', 'l3600'); await t.page.selectOption('#rem [data-r="b"]', 'l2625'); await t.page.click('#remNote');
+  for (const v of ['l2625', 'l975']) { await tab(t.page, 'table'); await t.page.selectOption('#scale [data-r="a"]', v); await t.page.click('#scaleNote'); }
+  await tab(t.page, 'table');
+  await t.page.selectOption('#rem [data-r="a"]', 'd500'); await t.page.selectOption('#rem [data-r="b"]', 'd328'); await t.page.selectOption('#rem [data-r="c"]', 'd122'); await t.page.click('#remNote');
+  await t.page.selectOption('#prop [data-r="a"]', 'l2625'); await t.page.selectOption('#prop [data-r="b"]', 'l975'); await t.page.click('#propNote');
+  assert.deepEqual(await t.page.evaluate(() => ['d328', 'd122', 'd050', 'p269'].filter(k => !S.got.has(k))), []);
+  for (const [r, v] of [['r1', ['crown', 'w_tduty', 'd328']], ['r2', ['grocer', 'w_margin', 'd050']], ['r3', ['china', 'w_bond', 'd122']]])
+    for (const [i, f] of ['who', 'what', 'share'].entries()) await place(t.page, v[i], `${r}.${f}`);
+  await place(t.page, 'p269', 'f1.pct');
+  await t.page.waitForSelector('#door.on', { timeout: 5000 });
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});

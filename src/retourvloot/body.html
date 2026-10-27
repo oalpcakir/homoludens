@@ -27,7 +27,7 @@
         <button type="button" class="keybtn" id="keybtn" aria-expanded="false" aria-controls="mapkey">Key</button>
       </div>
       <div class="mapwrap" id="mapwrap">
-        <svg id="map" role="img" aria-label="Chart of the route from Texel by the Cape of Good Hope to Batavia, with the Company's posts in Asia and every ship at its presumed position" xmlns="http://www.w3.org/2000/svg"></svg>
+        <svg id="map" role="group" aria-label="Chart of the route from Texel by the Cape of Good Hope to Batavia, with the Company's posts in Asia and every ship at its presumed position" xmlns="http://www.w3.org/2000/svg"></svg>
         <div class="mapkey" id="mapkey" hidden>
           <span><i class="lg-out"></i>Outbound ship</span><span><i class="lg-home"></i>Homebound ship</span><span><i class="lg-letter"></i>Letter at sea</span>
           <span><i class="lg-post"></i>Company post</span><span><i class="lg-mono"></i>Post holding a monopoly</span><span><i class="lg-can"></i>Post you could order</span><span><i class="lg-ord"></i>Ordered in your letter</span><span><i class="lg-lost"></i>Post lost</span>
@@ -203,5 +203,5 @@
 </div>
 
 <div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title" id="sheet"></div></div>
-<div class="coach" id="coach" role="dialog" aria-live="polite" hidden></div>
-<div class="small-screen" id="small-screen" hidden><div><h3>Best on a bigger screen</h3><p>Retourvloot is a desk full of ledgers, letters and a chart of the route east. It is made for a laptop or desktop.</p><button type="button" class="btn" id="small-go">Play anyway</button></div></div>
+<div class="coach" id="coach" role="dialog" aria-live="polite" aria-labelledby="coach-title" hidden></div>
+<div class="small-screen" id="small-screen" role="dialog" aria-modal="true" aria-labelledby="small-title" hidden><div><h3 id="small-title">Best on a bigger screen</h3><p>Retourvloot is a desk full of ledgers, letters and a chart of the route east. It is made for a laptop or desktop.</p><button type="button" class="btn" id="small-go">Play anyway</button></div></div>

@@ -10,10 +10,26 @@ if (ART.ui_cardback) document.documentElement.style.setProperty('--cardback', `u
 if (ART.ui_frame) document.documentElement.style.setProperty('--frame', `url(${ART.ui_frame}) center/100% 100%`);
 if (ART.ui_frame) document.documentElement.classList.add('has-frame');
 if (ART.ui_emblem){ const l = document.createElement('link'); l.rel = 'icon'; l.href = ART.ui_emblem; document.head.appendChild(l); }
-if (ART.ui_sign){ const s = document.createElement('img'); s.className = 'hsign'; s.src = ART.ui_sign; s.alt = 'The sign of the Menniste Bruyloft'; s.title = 'The Menniste Bruyloft, Oude Brugsteeg, Amsterdam'; $('#where').before(s); }
+if (ART.ui_sign){ const s = document.createElement('img'); s.className = 'hsign'; s.width = s.height = 512; s.src = ART.ui_sign; s.alt = 'The sign of the Menniste Bruyloft'; s.title = 'The Menniste Bruyloft, Oude Brugsteeg, Amsterdam'; $('#where').before(s); }
 if (ART.ui_seal) document.documentElement.style.setProperty('--sealimg', `url(${ART.ui_seal}) center/cover`);
-if (ART.ui_logo) $('#brand').innerHTML = `<a class="hl" href="/">Homo Ludens</a><img class="logo" src="${ART.ui_logo}" alt="Tulip 7">`;
+if (ART.ui_logo) $('#brand').innerHTML = `<a class="hl" href="/">Homo Ludens</a><img class="logo" src="${ART.ui_logo}" alt="" width="640" height="405"><h1 class="vh">Tulip 7</h1>`; // the logo is the visible title; the page keeps a real h1
 $('#hostImg').src = ART.c_theunisz;
+
+/* ---------- art loading ----------
+   On the site every ART entry is a small file (img/<key>.webp, see build_tulip7.py), not a data URI. The table art
+   is fetched and decoded while the start screen is up, and the first deal waits for it (at most a few seconds), so
+   no card ever appears blank. Decoded images are kept so the browser does not drop them. */
+const TABLE_ART = [...V.map(v => v.id), 'm_offset', 'm_broken', 'a_wijnkoop', 'a_seghsman', 'a_rouwkoop', 'ui_cardback', 'ui_frame', 'ui_table',
+  'i_paper', 'i_purse', 'c_cuyck', 'c_busscher', 'c_meeckeren', 'c_theunisz', 'ui_seal'];
+const ARTP = {}, ARTKEEP = [];
+function warmArt(k){
+  if (ARTP[k]) return ARTP[k];
+  const src = ART[k]; if (!src || /^data:/.test(src)) return ARTP[k] = Promise.resolve();
+  const im = new Image(); im.decoding = 'async'; im.src = src; ARTKEEP.push(im);
+  return ARTP[k] = (im.decode ? im.decode() : new Promise((r, j) => { im.onload = r; im.onerror = j; })).catch(() => {});
+}
+const tableArtReady = () => Promise.all(TABLE_ART.map(warmArt));
+if (document.readyState === 'complete') setTimeout(tableArtReady, 0); else addEventListener('load', () => setTimeout(tableArtReady, 0), {once:true});
 
 /* ---------- settings ---------- */
 const SET = Object.assign({help:true, fast:false, sound:true, mode:'winter'}, (() => { try { return JSON.parse(localStorage.getItem('tulip7.set')) || {}; } catch(e){ return {}; } })());
@@ -64,13 +80,27 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey || e.metaKey || e.altKey) return;
   const k = e.key.toLowerCase(), click = sel => { const b = document.querySelector(sel); if (b){ e.preventDefault(); b.click(); return true; } return false; };
   if (!$('#ann').hidden){ if (['enter', ' ', 'escape'].includes(k)){ e.preventDefault(); $('#ann').click(); } return; }
-  if (!$('#modal').hidden){ if (k === 'escape' && MENU && G) click('#mbox [data-v="x"], #mbox #back'); return; }
+  if (!$('#modal').hidden){
+    if (k === 'tab'){ // keep the focus inside the open window (it is aria-modal)
+      const f = [...$('#mbox').querySelectorAll('a[href],button,summary,[tabindex="0"],input,select')].filter(x => !x.disabled && x.getClientRects().length);
+      const i = f.indexOf(document.activeElement);
+      if (f.length && (i < 0 || (e.shiftKey ? i === 0 : i === f.length - 1))){ e.preventDefault(); f[e.shiftKey ? f.length - 1 : 0].focus(); }
+      return;
+    }
+    if (k === 'escape' && MENU && G) click('#mbox [data-v="x"], #mbox #back'); return; }
   if (/^(input|textarea|select)$/i.test(e.target.tagName)) return;
   if (k === 't') click('#ctrl [data-act="hit"]'); else if (k === 's') click('#ctrl [data-act="stay"]');
   else if (k === 'h') click('#ctrl [data-cash="hold"]'); else if (k === 'c') click('#ctrl [data-cash="sell"]');
   else if (/^[1-4]$/.test(k)) click(`#ctrl [data-pick]:nth-child(${k})`);
   else if (k === 'escape') closeTools();
 });
+/* On your turn your own hand must be in sight: where the dock covers it (a tablet in portrait, a short window),
+   the page scrolls just far enough to lift it above the dock, never past the top of your seat. */
+function showMyHand(){
+  const me = document.querySelector('#you .me'), c = $('#ctrl'); if (!me || !c || getComputedStyle(c).position !== 'fixed') return;
+  const r = me.getBoundingClientRect(), top = c.getBoundingClientRect().top - 8, dy = Math.min(r.bottom - top, r.top - 8);
+  if (dy > 2) scrollBy({top:dy, behavior:matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth'});
+}
 /* The control panel is a dock at the bottom of a phone or tablet; the page keeps room for it. */
 if (window.ResizeObserver) new ResizeObserver(() => document.documentElement.style.setProperty('--dockh', $('#ctrl').offsetHeight + 'px')).observe($('#ctrl'));
 const pace = (k = 1) => sleep((SET.fast ? 260 : 680) * k);
@@ -160,7 +190,7 @@ const HOST_INFO = `<p>Jan Theunisz kept the Menniste Bruyloft ("the Mennonite We
    possessive (Van Cuyck's / your), {p:escapes|escape} the verb for a third person | for you, {,p} a vocative
    (", Van Cuyck") that is left out when the line is about you, {v} a tulip. fill() does the grammar. */
 const LINES = {
-  bust:["Up in smoke{,p}.","Windhandel! {p's} papers go up in flames.","Two {v}s in one evening{,p}? Into the fire.","That is what they call trading in wind{,p}."],
+  bust:["Up in smoke{,p}.","Windhandel! {p's} papers go up in flames.","{v} twice in one evening{,p}? Into the fire.","That is what they call trading in wind{,p}."],
   book:["A full tulip book! {p} {p:closes|close} the evening.","Seven tulips, seven pages. Well played{,p}.","{p} {p:has|have} the whole book. Everyone stops."],
   freeze:["{p} {p:pays|pay} the wine money for {q}. Sealed.","{q's} evening is sealed with {p's} wine.","Drink up{,q}. {p} {p:has|have} closed the deal."],
   freezeSelf:["{p} {p:pays|pay} the wine money and {p:stands|stand} up.","{p} {p:seals|seal} the evening with a glass."],
@@ -242,7 +272,7 @@ function fill(t, d = {}){
   while ((m = re.exec(t))){
     out += t.slice(last, m.index); last = re.lastIndex;
     if (m[0] === '{v}'){ out += d.v; continue; }
-    const pl = d[m[2]], you = !!(pl && pl.human), start = !out.trim() || /[.!?:]\s*$/.test(out);
+    const pl = d[m[2]], you = !!(pl && pl.human), bare = out.replace(/<[^>]*>/g, '').trim(), start = !bare || /[.!?:]$/.test(bare); // tags (<b>) do not count
     if (m[4] !== undefined) out += you ? m[5] : m[4];            // verb / pronoun form
     else if (m[1]) out += you ? '' : ', ' + pl.short;             // vocative
     else if (m[3]) out += you ? (start ? 'Your' : 'your') : pl.short + "'s";
@@ -368,12 +398,13 @@ function statusChip(p){
     if (p.status === 'bust') return `<span class="chip bust">Up in smoke</span>`;
     return `<span class="chip ${p.status === 'book' ? 'book' : 'stayed'}">${G.mode === 'classic' ? '+' + p.last : '+' + fmt(p.lastG)}${p.status === 'book' ? ' · book' : ''}</span>`;
   }
-  const m = {active:['', 'At the table'], stayed:['stayed', p.frozen ? 'Sealed' : 'Stood up'], bust:['bust', 'Up in smoke'], book:['book', 'Tulip book!']};
+  const m = {active:['', 'At the table'], stayed:['stayed', p.frozen ? 'Sealed' : 'Stood up', p.frozen ? 'Sealed' : 'Stood'], bust:['bust', 'Up in smoke'], book:['book', 'Tulip book!', 'Book']};
   const x = m[p.status]; if (!x) return '';
   // on a phone the chip also carries what a rival has on the table (the separate tag is hidden there)
   const has = !p.human && p.status !== 'bust' && p.nums.length + p.mods.length + (p.x2 ? 1 : 0);
   if (p.status === 'active') return `<span class="chip"><span class="lbl">${x[1]}</span>${has ? `<b class="val">On table ${tableValue(p)}</b>` : `<span class="val">At the table</span>`}</span>`;
-  return `<span class="chip ${x[0]}">${x[1]}${has ? ` <b class="val">${tableValue(p)}</b>` : ''}</span>`;
+  // a phone's rival tile is narrow: there the short label (.sl) goes with the value, so the value is never cut off
+  return has ? `<span class="chip ${x[0]}"><span class="lbl">${x[1]}</span><span class="sl">${x[2]}</span> <b class="val">${tableValue(p)}</b></span>` : `<span class="chip ${x[0]}">${x[1]}</span>`;
 }
 function moneyHTML(p){
   if (G.mode === 'classic') return `<span class="tot"><span class="lbl">Total </span><b>${p.total}</b> / ${TARGET}</span>`;
@@ -511,8 +542,15 @@ function announce(p, c){
 let MENU = false;
 function modal(html, cls = '', menu = false){
   const m = $('#modal'), b = $('#mbox'); b.className = 'mbox ' + cls; b.innerHTML = html; m.hidden = false; m.scrollTop = 0; MENU = menu;
-  b.setAttribute('role', 'dialog'); b.setAttribute('aria-modal', 'true');
-  const f = b.querySelector('.btn.primary') || b.querySelector('button'); if (f && !TOUCH) f.focus({preventScroll:true});
+  b.setAttribute('role', 'dialog'); b.setAttribute('aria-modal', 'true'); b.tabIndex = -1;
+  // the dialog is named by its heading (the start screen has only the logo: "Tulip 7")
+  const hd = b.querySelector('h1, h2');
+  if (hd){ hd.id = 'mtitle'; b.setAttribute('aria-labelledby', 'mtitle'); b.removeAttribute('aria-label'); }
+  else { b.removeAttribute('aria-labelledby'); b.setAttribute('aria-label', 'Tulip 7'); }
+  // focus moves into the dialog: its main button with a keyboard or mouse; on a touch screen the dialog itself
+  // (no focus ring under a finger, and a screen reader starts reading at the top)
+  const f = b.querySelector('.btn.primary') || b.querySelector('button');
+  if (f && !TOUCH) f.focus({preventScroll:true}); else b.focus({preventScroll:true});
   closeTools(); return b;
 }
 function closeModal(){ $('#modal').hidden = true; MENU = false; }
@@ -526,7 +564,7 @@ const Human = {
       say(pickLine('turnYou', {}));
       ui.turn = a => { if (a === 'hit' && !ui.firstDraw){ ui.firstDraw = true; track('tulip_first_draw', {}); } res(a === 'hit' ? 'hit' : 'stay'); render(); };
       tip('first'); if (g.bustOdds(p) >= .2) tip('danger'); if (p.nums.length >= 5) tip('book');
-      render();
+      render(); requestAnimationFrame(showMyHand);
     });
   },
   sell(g, p){ return new Promise(res => { say('The evening is over. Hold your paper, or cash it in?'); ui.cash = {done(v){ ui.cash = null; res(v === 'sell'); render(); }}; tip('cash'); render(); }); },
@@ -703,8 +741,10 @@ function shareOpts(){
         : gap === 0 ? 'The last evening before the crash' : gap > 0 ? `${['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'][gap]} evening${gap === 1 ? '' : 's'} before the crash` : 'Never caught holding paper',
       caught ? `${caught.short} lost ${fmt(caught.atCrash - caught.settled)} of paper` : `The crash came after evening ${ROMAN[G.crashAfter]}`];
   } else {
-    title = win ? 'Won the tavern game' : `${P[0].short} won the tavern game`;
-    lines = [`${me.books} tulip book${me.books === 1 ? '' : 's'}, ${me.busts} evening${me.busts === 1 ? '' : 's'} up in smoke`, `${G.round} rounds to ${TARGET}`];
+    // the headline is about you (the big number is your score), not about whoever beat you
+    title = win ? 'Won the tavern game' : `${ORD(rank)} place in the tavern game`;
+    lines = [`${me.books} tulip book${me.books === 1 ? '' : 's'}, ${me.busts} evening${me.busts === 1 ? '' : 's'} up in smoke`,
+      win ? `${G.round} rounds to ${TARGET}` : `${P[0].short} won with ${P[0].total}, in ${G.round} rounds`];
   }
   const big = winter ? fmt(worth) : `${me.total} points`;
   return {game:'tulip', kicker:winter ? 'Tulip 7 · The winter of 1636' : 'Tulip 7 · The tavern game', title, big, sub:rankLine, lines,
@@ -742,7 +782,7 @@ async function endScene(){
     <div class="src">Sources: Peter Garber, "Tulipmania" (1989); Anne Goldgar, <i>Tulipmania</i> (2007).</div></div>`
     : (() => { const n = nodHTML(); return n ? `<ul class="nodp">${n}</ul>` : ''; })();
   const n = ACH.filter(a => ACHS[a.id]).length;
-  const html = `<div class="kick">${G.mode === 'winter' ? 'The winter of 1636–37' : 'Game over'}</div><h2>${win ? 'You finish richest.' : esc(P[0].name) + ' finishes richest.'}</h2>
+  const html = `<div class="kick">${G.mode === 'winter' ? 'The winter of 1636–37' : 'Game over'}</div><h2>${G.mode === 'classic' ? (win ? 'You win the tavern game.' : esc(P[0].name) + ' wins the tavern game.') : win ? 'You finish richest.' : esc(P[0].name) + ' finishes richest.'}</h2>
     <table>${rows}</table>${mine}${d ? curveHTML(d) : ''}${facts}<div data-hl-next></div><div class="row"><button class="btn primary" data-v="again">Play again</button><button class="btn share" id="bShare" type="button">Share</button><button class="btn" data-v="ach">Achievements (${n}/${ACH.length})</button><button class="btn" data-v="menu">Change mode</button></div>`;
   const pr = ask(html, d ? 'endw' : '');
   for (let k = 0; k < 200 && !$('#bShare'); k++) await sleep(30);
@@ -789,8 +829,8 @@ function loadSave(){ try { const s = JSON.parse(localStorage.getItem(SAVE_KEY));
 function showStart(){
   let mode = SET.mode; const sv = loadSave();
   const people = [...RIVALS.map(r => ({name:r.name, img:r.img, role:PERSONAS[r.persona].label, info:r.info + playsHTML(r)})), {name:'Jan Theunisz', img:'c_theunisz', role:'The host', info:HOST_INFO}];
-  const head = ART.ui_logo ? `<img class="logo" src="${ART.ui_logo}" alt="Tulip 7">` : `<h1><small>Homo Ludens</small>Tulip 7</h1>`;
-  const sign = ART.ui_sign ? `<img class="sign" src="${ART.ui_sign}" alt="">` : '';
+  const head = ART.ui_logo ? `<img class="logo" src="${ART.ui_logo}" alt="Tulip 7" width="640" height="405">` : `<h1><small>Homo Ludens</small>Tulip 7</h1>`;
+  const sign = ART.ui_sign ? `<img class="sign" src="${ART.ui_sign}" alt="" width="512" height="512">` : '';
   const b = modal(`<div class="art" style="--cover:url(${ART.bg_cover})">${head}${sign}</div><div class="in">
     <p style="font-family:'EB Garamond',serif;font-size:20px;margin-top:0">Amsterdam, winter 1636. Seven tulips, one tavern, and a market made of paper.</p>
     <div class="modes"><div class="mode" data-m="winter" tabindex="0"><b>The winter of 1636</b><small>Eight evenings, a rising price index and a crash you can see coming. Cash in, or hold?</small></div>
@@ -825,6 +865,8 @@ async function start(mode, snap){
   buildSeats(); render(); say(snap ? 'Welcome back. Your seat is still warm.' : 'Sit down. The wine is poured.');
   if (snap){ log('Game resumed from the start of the evening.'); ui.resumedEv = true; ui.firstDraw = true; }
   track(snap ? 'tulip_resume' : 'tulip_game_start', {mode});
+  await Promise.race([tableArtReady(), sleep(5000)]); // the cards are decoded before the first deal
+  if (my !== runId) return;
   try { await G.run(); } catch(e){ if (e !== 'stale') { console.error(e); } }
 }
 showStart();

@@ -63,8 +63,15 @@
 .dish .card.tile+.card.tile{margin-left:-18px}
 body.narrow .dish .card.tile+.card.tile{margin-left:calc(-18px - (var(--cz,1) - 1)*50px)}
 .dish .empty{display:none}
-.pan.droppable:not(.dropOver):not(.pick){animation:panInvite 2.4s ease-in-out infinite}
-@keyframes panInvite{50%{filter:drop-shadow(0 0 9px rgba(255,226,150,.55)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}}
+/* the pans invite a drop with a slow glow. Animating filter: drop-shadow repainted both pans every frame (~18 fps at 4x CPU
+   on a desktop, ~2 on a slow phone). Now the glow is a copy of the pan's picture with the glow rendered once (::before,
+   its own layer) and only its opacity moves. A filter on .pan itself would still be re-applied every frame, so while the
+   pans invite, the pan's own shadow is drawn by a second static copy (::after) instead; both sit under the goods. */
+.pan.droppable:not(.dropOver):not(.pick){filter:none}
+.pan.droppable:not(.dropOver):not(.pick)::before,.pan.droppable:not(.dropOver):not(.pick)::after{content:"";position:absolute;inset:0;z-index:-1;background:inherit;pointer-events:none}
+.pan.droppable:not(.dropOver):not(.pick)::before{filter:drop-shadow(0 0 9px rgba(255,226,150,.55));opacity:0;will-change:opacity;animation:panInvite 2.4s ease-in-out infinite}
+.pan.droppable:not(.dropOver):not(.pick)::after{filter:drop-shadow(0 10px 10px rgba(0,0,0,.4))}
+@keyframes panInvite{50%{opacity:1}}
 .pan.droppable .dish{outline:0!important}
 .pan.pick,.pan.dropOver{filter:drop-shadow(0 0 7px rgba(246,223,162,.95)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
 .pan.pick .dish,.pan.dropOver .dish{outline:0!important}
@@ -80,7 +87,7 @@ body.narrow .pan .tag{bottom:-52px!important}
 .pan.M{left:calc(50% - 105px);top:318px;width:210px;height:102px;background:var(--ka-tray,var(--ka-pan)) center bottom/contain no-repeat;z-index:3}
 .pan.M .dish{bottom:52px;height:96px;left:10%;right:10%}
 .pan.M .tag{bottom:-40px!important}
-@media(prefers-reduced-motion:reduce){.beam,.pan{transition:none}.pan.droppable{animation:none}}
+@media(prefers-reduced-motion:reduce){.beam,.pan{transition:none}.pan.droppable::before{animation:none}}
 
 /* pans swing from their rings (JS animates `rotate`) */
 .pan.L,.pan.R{transform-origin:50% 3px}

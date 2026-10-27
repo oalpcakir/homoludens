@@ -221,7 +221,7 @@ tr.labour{animation:inkin 1.8s ease-out}
   background:radial-gradient(ellipse at 50% 30%,rgba(74,53,38,.55) 0,rgba(28,19,12,.92) 75%),#1c130c url(/cupoftea/img/tea_desk.webp) center/cover}
 #intro.off{display:none}
 #intro .iplate{margin:-34px -42px 18px;position:relative}
-#intro .iplate img{display:block;width:100%;aspect-ratio:1280/560;object-fit:cover;border-radius:3px 3px 0 0;background:#3b2a1e}
+#intro .iplate img{display:block;width:100%;height:auto;aspect-ratio:1280/560;object-fit:cover;border-radius:3px 3px 0 0;background:#3b2a1e}
 #intro .iplate figcaption{position:absolute;right:8px;bottom:6px;font-size:11px;font-style:italic;color:#f3ead6;background:rgba(28,19,12,.55);padding:1px 7px;border-radius:2px}
 h2 .penny{width:30px;height:30px;vertical-align:-5px;margin-right:8px}
 #intro .card{background:var(--paper);max-width:640px;width:100%;padding:34px 42px;border-radius:3px;box-shadow:0 24px 70px rgba(0,0,0,.7);
@@ -252,7 +252,7 @@ header a:focus-visible,header button:focus-visible{outline:3px solid #f6e3a8;out
   table.ledger,table.ledger tbody{display:block;width:100%}
   table.ledger tr{display:grid;grid-template-columns:26px repeat(3,minmax(0,1fr));border-bottom:1px solid var(--line)}
   .slot{padding:3px}
-  .slot .chip{font-size:14px;padding:2px 6px;min-width:0;overflow-wrap:anywhere}
+  .slot .chip{font-size:14px;padding:2px 6px;min-width:0;overflow-wrap:anywhere;-webkit-hyphens:auto;hyphens:auto}
   table.ledger tr:first-child{border-bottom:2px solid var(--ink)}
   table.ledger td,table.ledger th{border-bottom:none;min-width:0}
   table.ledger td.num{width:auto}
@@ -295,9 +295,14 @@ header a.hbtn{text-decoration:none}
 .rhead{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin:18px 0 0}
 canvas.rc{display:block;width:100%;max-width:420px;height:auto;margin:10px auto 4px;transform:rotate(-.5deg);filter:drop-shadow(2px 4px 0 rgba(0,0,0,.15))}
 .rbtns{display:flex;gap:4px;justify-content:center;flex-wrap:wrap}
+/* until the script below has drawn the briefing, the desk and the ledger, nothing is painted: the half-built
+   page would otherwise jump (layout shift). If the script never runs, everything shows after 2 s anyway. */
+.vh{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+body.boot>*{visibility:hidden;animation:bootshow 0s 2s forwards}
+@keyframes bootshow{to{visibility:visible}}
 </style>
 </head>
-<body>
+<body class="boot">
 <div id="intro"><div class="card" id="introCard"></div></div>
 <header>
   <h1>A Cup of Tea</h1>
@@ -872,7 +877,7 @@ padding:5px 9px;font:14px/1.35 "EB Garamond",Georgia,serif;color:' + INK + ';max
 <script>
 /* ===== INTRO ===== */
 const INTRO = [
- `<figure class="iplate"><img src="/cupoftea/img/tea_intro_2.webp" alt="The yard of a sugar estate's boiling house outside Havana during the harvest: ox carts of cut cane and workers carrying bundles." onerror="this.parentNode.remove()"><figcaption>Illustration made for this game, not a picture from 1850.</figcaption></figure><div class="kicker">Havana · the harvest</div>
+ `<figure class="iplate"><img src="/cupoftea/img/tea_intro_2.webp" srcset="/cupoftea/img/tea_intro_2-640.webp 640w, /cupoftea/img/tea_intro_2.webp 1280w" sizes="(max-width:700px) 100vw, 640px" width="1280" height="560" fetchpriority="high" alt="The yard of a sugar estate's boiling house outside Havana during the harvest: ox carts of cut cane and workers carrying bundles." onerror="this.parentNode.remove()"><figcaption>Illustration made for this game, not a picture from 1850.</figcaption></figure><div class="kicker">Havana · the harvest</div>
   <h2>The thread leads south</h2>
   <p>In East London, the woman stirs a spoonful of brown sugar into weak tea. She paid 4½d for the pound. You have found where 2.75d of it went: the grocer, Her Majesty's Customs, the shipowner.</p>
   <p>The other <b>1.75d</b>, seven of her eighteen farthings, never reached London. The sugar was bought in bond as Havana sugar. The money stayed where the sugar was made.</p>
@@ -1246,7 +1251,7 @@ $("#chips").addEventListener("dragstart",e=>{
 /* ===== LEDGERS ===== */
 function tableHTML(g){
   const G=GROUPS[g];
-  let h=`<tr><th></th>${G.heads.map(x=>`<th>${x}</th>`).join("")}</tr>`;
+  let h=`<tr><th><span class="vh">Line</span></th>${G.heads.map(x=>`<th>${x}</th>`).join("")}</tr>`;
   ROWS.filter(r=>r.g===g).forEach((row,i)=>{
     const lk=S.locked.has(row.id);
     h+=`<tr id="${row.id}" class="${lk?"locked":""}"><td class="num">${lk?"✓":"No."+(i+1)}</td>`+
@@ -1769,6 +1774,12 @@ function closeDoor(){
 }
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&$("#door").classList.contains("on")){ e.preventDefault(); closeDoor(); return; }
+  if(e.key==="Tab"&&$("#door").classList.contains("on")){ // the end screen is aria-modal: Tab cycles inside it
+    const f=[...$("#door .card").querySelectorAll('a[href],button,summary,[tabindex="0"],input,select')].filter(x=>!x.disabled&&x.getClientRects().length);
+    const i=f.indexOf(document.activeElement);
+    if(f.length&&(i<0||(e.shiftKey?i===0:i===f.length-1))){ e.preventDefault(); f[e.shiftKey?f.length-1:0].focus(); }
+    return;
+  }
   const t=e.target;
   if((e.key==="Enter"||e.key===" ")&&t&&t.getAttribute&&t.getAttribute("role")==="button"&&!/^(BUTTON|A)$/.test(t.tagName)){
     e.preventDefault();
@@ -1809,6 +1820,7 @@ if(resumed){
 }
 if(resumed==="done"){ finishedView(); openDoor(); }
 saveOn=true;
+document.body.classList.remove("boot");
 </script>
 </body>
 </html>

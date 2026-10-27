@@ -67,7 +67,11 @@ function commentary(d){
     out.push(r.sold.length ? `${r.short} was caught holding ${fmt(r.atCrash)} and lost ${fmt(lost(r))} of it.` : `${r.short} rode it to the end and lost ${fmt(lost(r))} of paper.`);
   } else {
     const sellers = rivals.filter(p => p.sold.length).sort((a, b) => b.sold[b.sold.length - 1].e - a.sold[a.sold.length - 1].e);
-    if (sellers.length) out.push(`Every rival got out in time; ${sellers[0].short} was the last, at evening ${ROMAN[sellers[0].sold[sellers[0].sold.length - 1].e]}.`);
+    if (sellers.length){ // everyone who sold on that same last evening is named, not just the first of them
+      const lastE = p => p.sold[p.sold.length - 1].e, e = lastE(sellers[0]), names = sellers.filter(p => lastE(p) === e).map(p => p.short);
+      const who = names.length === 1 ? names[0] + ' was' : names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1] + ' were';
+      out.push(`Every rival got out in time; ${who} the last, at evening ${ROMAN[e]}.`);
+    }
   }
   return out.join(' ');
 }

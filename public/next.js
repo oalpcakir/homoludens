@@ -58,6 +58,22 @@ margin:18px 0 0;font-family:var(--hl-font);color:inherit;text-align:left}\
 @media (max-width:520px){.hln-card img{width:72px;height:72px}.hln-go{display:none}}\
 @media (prefers-reduced-motion:reduce){.hln-card{transition:none}.hln-card:hover{transform:none}}';
 
+  // games.json is English only: Turkish pages (Kantar) get the length and the one-line description from here.
+  var TR_SHORT = {
+    borderlines: 'Bir yıl ve bir devlet adı alırsın. Hükmettiği toprakları boya, sonra ne kadar yaklaştığını gör. Her gün yeni bir bulmaca.',
+    retourvloot: 'Hollanda Doğu Hindistan Şirketi’ni 1602’den 1799’a Amsterdam’dan yönet. Batavia’dan mektuplar bir yılda gelir.',
+    cupoftea: 'Doğu Londra’da bir bakkal fişi, 1850. Dönemin gazetelerini oku, hesabı yap ve her kuruşun kime gittiğini bul.',
+    polder: 'Set çek, denizi kurut ve yedi yüzyıllık Hollanda fırtınalarına dayan: 1200’ün höyüklerinden 1953 seline.',
+    kantar: 'İstanbul Kapalıçarşı’da iki kişilik bir düello. Üç malı iki kefeye bölersin, rakibin seçer.',
+    tulip: 'Amsterdam, 1636 kışı. Bir meyhane masasında yedi farklı lale topla, kazancını kâğıda yaz ve çöküşten önce paraya çevir.'
+  };
+  function trLength(t) {
+    var m;
+    if ((m = /^(\d+(?:[–-]\d+)?) minutes a region$/.exec(t))) return 'bölge başına ' + m[1] + ' dakika';
+    if ((m = /^(\d+(?:[–-]\d+)?) minutes?$/.exec(t))) return m[1] + ' dakika';
+    if ((m = /^(\d+) scenes?$/.exec(t))) return m[1] + ' sahne';
+    return t;
+  }
   var gamesP = null;
   function games() {
     if (!gamesP) gamesP = fetch(BASE + '/games.json').then(function (r) { return r.json(); }).catch(function () { gamesP = null; return []; });
@@ -95,12 +111,13 @@ margin:18px 0 0;font-family:var(--hl-font);color:inherit;text-align:left}\
     games().then(function (list) {
       var p = pick(list || []);
       if (!p || !el.isConnected) return;
-      var g = p.g, meta = [g.length, g.devices === 'any' ? L.any : L.desk];
+      var g = p.g, tr = L === T.tr, meta = [tr ? trLength(g.length || '') : g.length, g.devices === 'any' ? L.any : L.desk];
+      var short = tr && TR_SHORT[g.id] ? TR_SHORT[g.id] : g.short;
       if (p.fresh) meta.unshift(L.fresh);
       el.className = (el.className ? el.className + ' ' : '') + 'hln';
       el.innerHTML = '<a class="hln-card" href="' + esc(BASE + g.url) + '"' + TARGET + '>' +
         (g.image ? '<img src="' + esc(BASE + g.image) + '" alt="" loading="lazy">' : '') +
-        '<span class="hln-t"><span class="hln-k">' + esc(L.kicker) + '</span><b>' + esc(g.title) + '</b><span class="hln-s">' + esc(g.short) + '</span>' +
+        '<span class="hln-t"><span class="hln-k">' + esc(L.kicker) + '</span><b>' + esc(g.title) + '</b><span class="hln-s">' + esc(short) + '</span>' +
         '<span class="hln-m">' + esc(meta.filter(Boolean).join(' · ')) + '</span></span><span class="hln-go">' + esc(L.play) + ' →</span></a>' +
         '<span class="hln-links"><a class="hln-all" href="' + esc(BASE + '/') + '"' + TARGET + '>' + esc(L.all) + '</a>' +
         '<a class="hln-dc" href="' + DISCORD + '" target="_blank" rel="noopener">' + DC_SVG + esc(L.dc) + '</a></span>';

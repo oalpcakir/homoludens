@@ -20,11 +20,12 @@
 .hlfb-game:hover,.hlfb-game:focus-visible{opacity:1}\
 .hlfb-game svg{width:17px;height:17px;fill:currentColor}\
 .hlfb-away,.hlfb-game.hlfb-away{transform:translateY(70px);opacity:0;pointer-events:none}\
-@media (max-width:699px){.hlfb-game.hlfb-dc{display:none!important}.hlfb-game.hlfb-btn{left:0;bottom:auto;top:58%;width:26px;height:44px;border-radius:0 10px 10px 0;border-left:0;opacity:.5}.hlfb-game.hlfb-btn svg{width:14px;height:14px}.hlfb-game.hlfb-away{transform:translateX(-30px)}}\
+@media (max-width:699px){.hlfb-game.hlfb-dc{display:none!important}.hlfb-game.hlfb-btn:not(.hlfb-corner){left:0;bottom:auto;top:58%;width:26px;height:44px;border-radius:0 10px 10px 0;border-left:0;opacity:.5}.hlfb-game.hlfb-btn:not(.hlfb-corner) svg{width:14px;height:14px}.hlfb-game.hlfb-away:not(.hlfb-corner){transform:translateX(-30px)}.hlfb-game.hlfb-btn.hlfb-corner{left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));width:32px;height:32px}}\
 .hlfb-dc svg{width:16px;height:16px;fill:currentColor}\
 .hlfb-btn:focus-visible,.hlfb-dc:focus-visible,.hlfb-box :focus-visible{outline:2px solid var(--hl-focus);outline-offset:2px}\
 .hlfb-ov{position:fixed;inset:0;z-index:9001;background:rgba(10,14,22,.5);display:flex;align-items:center;justify-content:center;padding:16px}\
 .hlfb-ov[hidden]{display:none}\
+.hlfb-dlg{width:100%;max-width:440px}\
 .hlfb-box{background:var(--hl-paper);color:var(--hl-ink);width:100%;max-width:440px;border-radius:var(--hl-radius);box-shadow:0 20px 60px rgba(0,0,0,.35);padding:22px 22px 18px;font:15px/1.45 var(--hl-font)}\
 .hlfb-box h2{font:400 26px/1.1 "Libre Caslon Display",Georgia,"Times New Roman",serif;margin:0 0 6px}\
 .hlfb-box p{margin:0 0 14px;font-size:14px;color:#4a5468}\
@@ -43,14 +44,16 @@
 .hlfb-send{background:var(--hl-ink);color:var(--hl-paper)}.hlfb-send:disabled{opacity:.5;cursor:default}\
 .hlfb-cancel{background:transparent;color:var(--hl-ink)}\
 @media (prefers-reduced-motion:reduce){.hlfb-btn,.hlfb-dc{transition:none!important}.hlfb-away,.hlfb-game.hlfb-away{transform:none!important}}\
-@media (prefers-color-scheme:dark){.hlfb-box{background:#171e2b;color:#e7e2d4}.hlfb-box p,.hlfb-st{color:#aab0bd}.hlfb-box textarea,.hlfb-box input[type=email]{background:#121721;border-color:rgba(231,226,212,.2)}.hlfb-kinds label{border-color:rgba(231,226,212,.25)}.hlfb-kinds label:has(input:checked){background:#e7e2d4;color:#121721;border-color:#e7e2d4}.hlfb-cancel{color:#e7e2d4;border-color:#e7e2d4}.hlfb-send{background:#e7e2d4;color:#121721;border-color:#e7e2d4}}';
+/* dark: follows the system, or the theme the visitor picked on the portal (data-theme on <html>) */\
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .hlfb-box{background:#171e2b;color:#e7e2d4;--hl-focus:#e58a9c}:root:not([data-theme=light]) .hlfb-box p,:root:not([data-theme=light]) .hlfb-st{color:#aab0bd}:root:not([data-theme=light]) .hlfb-box textarea,:root:not([data-theme=light]) .hlfb-box input[type=email]{background:#121721;border-color:rgba(231,226,212,.2)}:root:not([data-theme=light]) .hlfb-kinds label{border-color:rgba(231,226,212,.25)}:root:not([data-theme=light]) .hlfb-kinds label:has(input:checked){background:#e7e2d4;color:#121721;border-color:#e7e2d4}:root:not([data-theme=light]) .hlfb-cancel{color:#e7e2d4;border-color:#e7e2d4}:root:not([data-theme=light]) .hlfb-send{background:#e7e2d4;color:#121721;border-color:#e7e2d4}:root:not([data-theme=light]) .hlfb-st.err{color:#f08a80}:root:not([data-theme=light]) .hlfb-st.ok{color:#7fc79d}:root:not([data-theme=light]) .hlfb-box a{color:#e7e2d4}:root:not([data-theme=light]) .hlfb-btn,:root:not([data-theme=light]) .hlfb-dc{border-color:rgba(231,226,212,.34)}}\
+:root[data-theme=dark] .hlfb-box{background:#171e2b;color:#e7e2d4;--hl-focus:#e58a9c}:root[data-theme=dark] .hlfb-box p,:root[data-theme=dark] .hlfb-st{color:#aab0bd}:root[data-theme=dark] .hlfb-box textarea,:root[data-theme=dark] .hlfb-box input[type=email]{background:#121721;border-color:rgba(231,226,212,.2)}:root[data-theme=dark] .hlfb-kinds label{border-color:rgba(231,226,212,.25)}:root[data-theme=dark] .hlfb-kinds label:has(input:checked){background:#e7e2d4;color:#121721;border-color:#e7e2d4}:root[data-theme=dark] .hlfb-cancel{color:#e7e2d4;border-color:#e7e2d4}:root[data-theme=dark] .hlfb-send{background:#e7e2d4;color:#121721;border-color:#e7e2d4}:root[data-theme=dark] .hlfb-st.err{color:#f08a80}:root[data-theme=dark] .hlfb-st.ok{color:#7fc79d}:root[data-theme=dark] .hlfb-box a{color:#e7e2d4}:root[data-theme=dark] .hlfb-btn,:root[data-theme=dark] .hlfb-dc{border-color:rgba(231,226,212,.34)}';
 
   function el(html) { var d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstChild; }
 
   function init() {
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
     var btn = el('<button type="button" class="hlfb-btn" aria-haspopup="dialog">Feedback</button>');
-    var ov = el('<div class="hlfb-ov" hidden><form class="hlfb-box" role="dialog" aria-modal="true" aria-labelledby="hlfb-t" novalidate>' +
+    var ov = el('<div class="hlfb-ov" hidden><div class="hlfb-dlg" role="dialog" aria-modal="true" aria-labelledby="hlfb-t"><form class="hlfb-box" novalidate>' +
       '<h2 id="hlfb-t">Send feedback</h2>' +
       '<p id="hlfb-intro">Ideas, bugs, a historical mistake? This goes straight to the person who makes these games.</p>' +
       '<p style="margin-top:-8px">Or chat with other players on the <a href="https://discord.gg/7PcDfAMdr5" target="_blank" rel="noopener">Homo Ludens Discord</a>.</p>' +
@@ -67,7 +70,7 @@
       '<div class="hlfb-ts" id="hlfb-ts"></div>' +
       '<div class="hlfb-st" id="hlfb-st" role="status"></div>' +
       '<div class="hlfb-act"><button type="button" class="hlfb-cancel">Cancel</button><button type="submit" class="hlfb-send">Send</button></div>' +
-      '</form></div>');
+      '</form></div></div>');
     var dc = el('<a class="hlfb-dc" href="https://discord.gg/7PcDfAMdr5" target="_blank" rel="noopener" aria-label="Join the Homo Ludens Discord"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18.3 18.3 0 0 0-5.6 0L8.6 3a19.5 19.5 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1A19.7 19.7 0 0 0 6.1 21l1.3-2a12.8 12.8 0 0 1-2-1l.5-.4a14 14 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2a19.6 19.6 0 0 0 6-3c.5-5.2-.9-9.7-3.6-13.6zM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4z"/></svg>Discord</a>');
     dc.addEventListener('click', function () { try { if (window.posthog && window.posthog.capture) window.posthog.capture('discord_click', { game: GAME, page: location.pathname }); } catch (e) {} });
     document.body.appendChild(dc); document.body.appendChild(btn); document.body.appendChild(ov);
@@ -87,11 +90,21 @@
       if (y < lastY - 4 || atEnd || y < 80) away = false;
       if (Math.abs(y - lastY) > 4) { btn.classList.toggle('hlfb-away', away); dc.classList.toggle('hlfb-away', away); lastY = y; }
     }, { passive: true });
-    // on a phone, step aside while one of the game's own dialogs (aria-modal) is open, so they never cover its buttons
+    // On a phone (portrait or landscape), step aside while one of the game's own dialogs or end screens is open, so the
+    // pills never cover its buttons: anything visible with role="dialog"/"alertdialog" or aria-modal="true", or marked
+    // data-hl-hide-pills. A page can also set <html data-hl-pills="hide"> (never show them) or "corner" (in a game,
+    // keep the two small round icons in the bottom-left corner on phones too, instead of the tab on the left edge).
+    function shown(d) {
+      if (d === ov || d.closest('.hlfb-ov') || d.offsetParent === null && getComputedStyle(d).position !== 'fixed') return false;
+      var cs = getComputedStyle(d), r = d.getBoundingClientRect();
+      return cs.display !== 'none' && cs.visibility !== 'hidden' && +cs.opacity > 0.05 && r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < window.innerHeight;
+    }
     setInterval(function () {
-      var small = window.innerWidth < 700, open = false;
-      if (small) [].forEach.call(document.querySelectorAll('[aria-modal="true"]'), function (d) { if (d !== ov && !d.closest('.hlfb-ov') && d.offsetParent !== null && getComputedStyle(d).visibility !== 'hidden') open = true; });
+      var mode = document.documentElement.getAttribute('data-hl-pills') || '';
+      var small = window.innerWidth < 700 || window.innerHeight < 500, open = mode === 'hide';
+      if (!open && small) open = [].some.call(document.querySelectorAll('[aria-modal="true"], [role="dialog"], [role="alertdialog"], [data-hl-hide-pills]'), shown);
       dc.style.display = btn.style.display = open ? 'none' : '';
+      btn.classList.toggle('hlfb-corner', mode === 'corner'); dc.classList.toggle('hlfb-corner', mode === 'corner');
     }, 400);
     var form = ov.querySelector('form'), msg = ov.querySelector('#hlfb-msg'), status = ov.querySelector('#hlfb-st'), send = ov.querySelector('.hlfb-send');
     var lastFocus = null, extraContext = '';
@@ -136,7 +149,18 @@
     btn.addEventListener('click', function () { open(); });
     ov.querySelector('.hlfb-cancel').addEventListener('click', close);
     ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !ov.hidden) close(); });
+    document.addEventListener('keydown', function (e) {
+      if (ov.hidden) return;
+      if (e.key === 'Escape') { close(); return; }
+      // a modal dialog: Tab and Shift+Tab stay inside it
+      if (e.key === 'Tab') {
+        var f = [].filter.call(form.querySelectorAll('a[href], button, textarea, input:not([type=hidden]):not([tabindex="-1"]), iframe'), function (x) { return !x.disabled && x.offsetParent !== null && !x.closest('.hlfb-hp'); });
+        if (!f.length) return;
+        var a = f[0], z = f[f.length - 1], cur = document.activeElement;
+        if (e.shiftKey && (cur === a || !form.contains(cur))) { e.preventDefault(); z.focus(); }
+        else if (!e.shiftKey && (cur === z || !form.contains(cur))) { e.preventDefault(); a.focus(); }
+      }
+    });
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var text = msg.value.trim();

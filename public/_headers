@@ -1,8 +1,47 @@
-/borderlines/days/*
-  Access-Control-Allow-Origin: *
+# Cloudflare static-asset headers. One splat (*) per rule; :name matches one path segment.
+# A request matching several rules gets all their headers (the same header twice is joined with a comma),
+# so no two Cache-Control rules below match the same path.
+
+# Read by the itch.io / CrazyGames packages from another origin
 /borderlines/tiers.json
   Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=300, must-revalidate
 /games.json
   Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=300, must-revalidate
+
+# A daily's realms never change once published (the monthly updater only adds new day files),
+# but a reported mistake can still be fixed by hand: a week, then refreshed in the background.
+/borderlines/days/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
 /borderlines/lapse/*
   Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
+# The base map (land, lakes, rivers, practice pool), fetched at start; rebuilt only when the pool changes
+/borderlines/map.json
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# Pictures: game art, screenshots, share images
+/:game/img/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=2592000
+/shots/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=2592000
+/og-*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=2592000
+/borderlines/og/*
+  Cache-Control: public, max-age=2592000, stale-while-revalidate=2592000
+
+# Shared scripts and the pages: short, so a fix reaches everyone within minutes
+/hl.js
+  Cache-Control: public, max-age=300, must-revalidate
+/next.js
+  Cache-Control: public, max-age=300, must-revalidate
+/feedback.js
+  Cache-Control: public, max-age=300, must-revalidate
+/
+  Cache-Control: public, max-age=300, must-revalidate
+/:page/
+  Cache-Control: public, max-age=300, must-revalidate
+/:page/:sub/
+  Cache-Control: public, max-age=300, must-revalidate

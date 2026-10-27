@@ -33,8 +33,8 @@
   var CG = !!(P && P.id === 'crazygames');
   var URLS = { borderlines: '/borderlines/', retourvloot: '/retourvloot/', cupoftea: '/cupoftea/', polder: '/polder/', kantar: '/kantar/', tulip: '/tulip7/' };
   var T = {
-    en: { share: 'Share', save: 'Save image', copy: 'Copy text', copied: 'Copied', close: 'Close', title: 'Share your result', stamp: 'Stamped in your Homo Ludens passport', made: 'Made the image' },
-    tr: { share: 'Paylaş', save: 'Görseli kaydet', copy: 'Metni kopyala', copied: 'Kopyalandı', close: 'Kapat', title: 'Sonucunu paylaş', stamp: 'Homo Ludens pasaportuna mühür basıldı', made: 'Görsel hazır' }
+    en: { share: 'Share', save: 'Save image', copy: 'Copy text', copied: 'Copied', close: 'Close', title: 'Share your result', stamp: 'Stamped in your passport', made: 'Made the image' },
+    tr: { share: 'Paylaş', save: 'Görseli kaydet', copy: 'Metni kopyala', copied: 'Kopyalandı', close: 'Kapat', title: 'Sonucunu paylaş', stamp: 'Pasaportuna mühür basıldı', made: 'Görsel hazır' }
   };
 
   function capture(name, props) { try { if (window.posthog && posthog.capture) posthog.capture(name, props); } catch (e) {} }
@@ -52,7 +52,9 @@
     g.last = d; g.plays = (g.plays | 0) + 1;
     if (info.result === 'win') g.wins = (g.wins | 0) + 1;
     if (info.label) g.label = String(info.label).slice(0, 80);
-    if (typeof info.score === 'number' && isFinite(info.score) && (g.best == null || info.score > g.best)) { g.best = info.score; if (info.label) g.bestLabel = g.label; }
+    // "best" is the best finished or won game: a loss (or a draw) never becomes the best, however high its score
+    var counts = info.result === 'win' || info.result === 'done' || !info.result;
+    if (counts && typeof info.score === 'number' && isFinite(info.score) && (g.best == null || info.score > g.best)) { g.best = info.score; if (info.label) g.bestLabel = g.label; }
     try { localStorage.setItem(KEY, JSON.stringify(p)); } catch (e) { return p; }
     capture('passport_stamp', { game: game, first: first });
     if (first && !CG) toast(T[lang()].stamp);
@@ -79,7 +81,9 @@ font:15px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;color:#1f2b4a}\
 .hlx-row button.pri{background:#1f2b4a;color:#f7f6f2}\
 .hlx-row button:focus-visible{outline:3px solid #9c2f45;outline-offset:2px}\
 .hlx-row .sp{flex:1}\
-@media (prefers-reduced-motion:reduce){.hlx-toast{transition:opacity .2s;transform:translate(-50%,0)}.hlx-seal{animation:none}}';
+/* phones: at the top, clear of the game toasts, end cards and toolbars at the bottom */\
+@media (max-width:699px),(max-height:499px){.hlx-toast{top:calc(10px + env(safe-area-inset-top,0px));bottom:auto;transform:translate(-50%,-20px);font-size:13px;padding:6px 12px 6px 6px}.hlx-toast.on{transform:translate(-50%,0)}.hlx-seal{width:24px;height:24px;font-size:11px}}\
+@media (prefers-reduced-motion:reduce){.hlx-toast,.hlx-toast.on{transition:opacity .2s;transform:translate(-50%,0)}.hlx-seal{animation:none}}';
   var styled = false;
   function style() { if (styled) return; styled = true; var s = document.createElement('style'); s.textContent = css; document.head.appendChild(s); }
 
@@ -89,7 +93,7 @@ font:15px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;color:#1f2b4a}\
     t.innerHTML = '<span class="hlx-seal">HL</span><span></span>'; t.lastChild.textContent = msg;
     document.body.appendChild(t);
     requestAnimationFrame(function () { requestAnimationFrame(function () { t.classList.add('on'); }); });
-    setTimeout(function () { t.classList.remove('on'); setTimeout(function () { t.remove(); }, 400); }, 3200);
+    setTimeout(function () { t.classList.remove('on'); setTimeout(function () { t.remove(); }, 400); }, 2600);
   }
 
   /* ---------------------------------------------------------------- the card */
@@ -153,6 +157,7 @@ font:15px/1.4 system-ui,-apple-system,Segoe UI,sans-serif;color:#1f2b4a}\
   function link(o) { return o.url || (P && P.site ? P.site : SITE) + (URLS[o.game || GAME] || '/'); }
   function share(o) {
     if (!api.canShare) return Promise.resolve(false);
+    if (document.querySelector('.hlx-ov')) return Promise.resolve(false); // already open (a double click)
     o = o || {}; style();
     var L = T[o.lang === 'tr' ? 'tr' : 'en'], url = link(o), text = o.text || o.title || '';
     if (text.indexOf(url) < 0) text = text + '\n' + url;
