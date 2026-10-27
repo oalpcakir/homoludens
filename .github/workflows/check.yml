@@ -40,7 +40,26 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
       - name: Smoke tests (site)
-        run: npm run smoke
+        run: |
+          set -o pipefail
+          npm run smoke 2>&1 | tee smoke.log
+      # failing tests become annotations on the run, so they can be read without downloading the log
+      - name: Report failing smoke tests
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import re
+          s = open("smoke.log", encoding="utf-8", errors="replace").read()
+          for m in re.finditer(r"^not ok \d+ - (.*)$\n((?:[ \t].*\n){0,60})", s, re.M):
+              keep = [l.strip() for l in m.group(2).splitlines() if re.search(r"error|Error|expected|actual|location|message|Timeout|at file", l)]
+              body = " | ".join(keep)[:1500].replace("%", "%25").replace("\n", " ")
+              print(f"::error title=smoke failed: {m.group(1)[:150]}::{body}")
+          PY
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: smoke-log
+          path: smoke.log
       - name: Build and test the platform packages
         run: |
           python3 src/platform/build_platforms.py
