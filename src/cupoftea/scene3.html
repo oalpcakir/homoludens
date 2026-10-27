@@ -132,6 +132,17 @@ tr.labour{animation:inkin 1.8s ease-out}
 #door h2{font-size:30px;margin:0 0 6px}
 #door p{line-height:1.5}
 #door button{font:inherit;font-size:17px;padding:8px 18px;border:1px solid var(--ink);background:none;cursor:pointer;margin:6px}
+#door button.pri{background:var(--ink);color:var(--paper)}
+/* the end screen with its Sankeys */
+#door{padding:12px}
+#door .card{max-width:760px;width:100%}
+#door .card>p{max-width:600px;margin-left:auto;margin-right:auto}
+.skwrap{margin:6px 0 10px;padding:14px 16px 10px;background:#f6eedb;border:1px solid var(--line);box-shadow:inset 0 0 0 4px #f6eedb,inset 0 0 0 5px rgba(201,183,143,.7)}
+.rule{font-size:22px;color:var(--gold);margin:18px 0 4px;line-height:1}
+.skin{font-style:italic;color:var(--ink2);font-size:15px;margin:2px auto 8px}
+.voc{font-size:16px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);padding:10px 4px}
+.voc a{color:var(--red)}
+@media (max-width:700px){#door{padding:6px}#door .card{padding:22px 14px}.skwrap{padding:12px 8px 8px}}
 #qs{display:flex;flex-direction:column;gap:2px;margin:0 0 8px;font-size:15px;font-style:italic;color:var(--ink2)}
 #qs .done{color:var(--green);font-style:normal;text-decoration:line-through}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:3px;
@@ -273,16 +284,24 @@ canvas.rc{display:block;width:100%;max-width:420px;height:auto;margin:10px auto 
   <h2>Dearer than the tea</h2>
   <p>Of her 5d, more than 3¼d went to the Crown before the tea left the docks. The tea itself, grown, picked, fired, carried to the coast and shipped round the Cape, was worth about 1¼d by the time it lay in a London warehouse.</p>
   <p>The duty was the same on every pound, fine or coarse. On the dearer teas it came to less than Staunton's 200 per cent. On the cheapest, the tea she buys, it came to <b>269 per cent</b>. The poorer the cup, the heavier the tax.</p>
+  <div class="rhead">Where the farthings went</div>
+  <div class="skwrap" id="skTea"></div>
   <div class="rhead">The receipt, reprinted</div>
   <canvas class="rc" id="rcpt" role="img" aria-label="The grocer's receipt for two ounces of Congou, reprinted with every share of the 5d"></canvas>
-  <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button></div>
+  <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button><button id="rShare" class="pri">Share</button></div>
   <p>At home she pours boiling water over the leaves a second time. There is nothing left in them for a third.</p>
   <p>Five of her twenty farthings went to China. Nobody in these papers says who picked the leaves, or what they were paid.</p>
+  <div class="rule" aria-hidden="true">❦</div>
+  <div class="rhead">The whole receipt: 9½d</div>
+  <p class="skin" id="skWholeNote">Sugar and tea together: every farthing she put on the counter, as you traced it through the ledgers.</p>
+  <div class="skwrap" id="skWhole"></div>
+  <p id="vocLine" class="voc"></p>
   <p style="font-style:italic;color:var(--ink2)">Scene 4, Canton and the Wuyi hills, is still being written.</p><div data-hl-next></div><a class="nextbtn" href="/">Back to Homo Ludens</a>
   <button onclick="closeDoor()">Back to the ledger</button>
   <button class="replayBtn">Replay scene</button>
 </div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script data-inline="sankey.js"></script>
 <script>
 /* ===== INTRO ===== */
 const INTRO = [
@@ -777,6 +796,7 @@ function checkFinal(){
   if(id==="p269"){
     S.done=true; $("#msg").textContent=""; toast("Two hundred and sixty-nine per cent.");
     stamp(); hush(2.5); showReceipt(); saveDone(SCENE); $("#replay").classList.add("on"); saveScene();
+    try{ window.HL && HL.stamp('cupoftea',{result:'done', label:`Scene 3 solved · ${blots} blot${blots===1?"":"s"}`, score:-blots}); }catch(e){}
     setTimeout(openDoor,1500);
   } else {
     if(!S.tried.has("f1|"+id)) blots++; // the same wrong answer twice is one blot
@@ -907,6 +927,40 @@ $("#rSave").addEventListener("click",()=>{
     const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=R.file; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),3000); });
 });
+/* ===== WHERE THE FARTHINGS WENT (Sankeys), THE VOC, AND SHARING ===== */
+const havanaKnown=()=>(teaStore().done||[]).includes(2); // Scene 2 split the 1.75d left in Havana
+function drawSankeys(){
+  if(!window.TeaSankey) return;
+  const tea=$("#skTea"), whole=$("#skWhole");
+  if(!(tea._sk&&tea._sk.W)){
+    const order=S.lockOrder.map(rid=>ROWS[S.lockAns[rid]].ans.who);
+    TeaSankey.render(tea,TeaSankey.tea(),{order,onStep:()=>clink(0,.1)});
+  }
+  if(!(whole._sk&&whole._sk.W)) TeaSankey.render(whole,TeaSankey.whole(havanaKnown()),{order:["shipowner","planter","merchant","havana","grocer","crown","china"]});
+  vocLine();
+}
+function vocLine(){
+  // Tea and the Dutch: the VOC brought the first tea to Europe, early in the 1600s; the English East India Company came to dominate the trade later.
+  const cg=!!(window.HL_PLATFORM&&HL_PLATFORM.id==="crazygames");
+  let played=false; try{ played=!!(localStorage.getItem("retourvloot.v1")||localStorage.getItem("retourvloot.runs")); }catch(e){}
+  const link='<a href="/retourvloot/">Retourvloot</a>';
+  $("#vocLine").innerHTML = cg
+    ? "Her tea came by a long road. It was the Dutch East India Company that first brought tea to Europe, early in the seventeenth century, before the English East India Company came to dominate the trade."
+    : played
+    ? `Her tea came by a long road. Your ${link} company, the Dutch East India Company, brought the first tea to Europe early in the seventeenth century, before the English East India Company came to dominate the trade.`
+    : `Her tea came by a long road. It was the Dutch East India Company that first brought tea to Europe, early in the seventeenth century, before the English East India Company came to dominate the trade. Run the VOC yourself in ${link}.`;
+}
+function topThree(sp){ // the three biggest recipients, a shared recipient's flows summed
+  const by={}; sp.flows.forEach(f=>{ by[f.key]=by[f.key]||{who:f.who,v:0}; by[f.key].v+=f.v; });
+  return Object.values(by).sort((a,b)=>b.v-a.v).slice(0,3).map(r=>`${r.who}: ${r.v.toFixed(2)}d`);
+}
+function shareOpts(){
+  const sp=window.TeaSankey?TeaSankey.whole(havanaKnown()):{flows:[]};
+  return {game:"cupoftea", kicker:"A Cup of Tea · London 1850", title:"Who got every farthing", big:"9½d",
+    sub:`Solved with ${blots} blot${blots===1?"":"s"}`, lines:topThree(sp),
+    art:"/cupoftea/img/tea_intro_3.webp", text:receiptText(receiptData()), url:"{{SITE}}/cupoftea/3/"};
+}
+document.addEventListener("DOMContentLoaded",()=>{ if(window.HL) HL.on($("#rShare"),shareOpts); else $("#rShare").hidden=true; });
 $("#rCopy").addEventListener("click",()=>{
   const t=receiptText(receiptData());
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copied to the clipboard."),()=>toast("Could not copy. Your browser blocked the clipboard."));
@@ -1108,7 +1162,7 @@ document.querySelectorAll(".replayBtn").forEach(b=>b.addEventListener("click",re
    Pick a note with Enter, then press Enter on a box. Escape closes the end screen. */
 let doorFrom=null;
 function openDoor(){
-  doorFrom=document.activeElement; $("#door").classList.add("on");
+  doorFrom=document.activeElement; $("#door").classList.add("on"); drawSankeys();
   setTimeout(()=>$("#door .card").focus({preventScroll:true}),30);
 }
 function closeDoor(){

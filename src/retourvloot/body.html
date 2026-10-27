@@ -1,175 +1,207 @@
+<div class="app">
 <header class="top">
-  <div class="brand"><span class="mark">VOC</span><h1>Retourvloot</h1><span class="sub">Kamer Amsterdam · bewindhebber</span></div>
-  <div class="clock"><div class="d" id="date">20 March 1602</div><div class="w" id="season"></div></div>
-  <div class="speed" role="group" aria-label="Game speed">
-    <button type="button" data-speed="0" aria-pressed="true" title="Pause">❚❚</button>
-    <button type="button" data-speed="5" aria-pressed="false">1×</button>
-    <button type="button" data-speed="15" aria-pressed="false">3×</button>
-    <button type="button" data-speed="50" aria-pressed="false">10×</button>
+  <div class="brand"><span class="mark">VOC</span><div><h1>Retourvloot</h1><span class="sub">Kamer Amsterdam · bewindhebber</span></div></div>
+  <section class="kpis" aria-label="Company at a glance">
+    <div class="kpi"><span class="kl">Treasury</span><b id="s-cash" class="num">ƒ6.42M</b><small id="s-cash2"></small></div>
+    <div class="kpi"><span class="kl">Debt</span><b id="s-debt" class="num">ƒ0</b><small id="s-debt2">4% a year</small></div>
+    <div class="kpi"><span class="kl">Dividend</span><b id="s-div" class="num">—</b><small id="s-div2"></small></div>
+    <div class="kpi"><span class="kl">Shareholders</span><div class="moodrow"><b id="s-mood">Content</b><div class="meter" id="s-moodbar" aria-hidden="true"><i></i></div></div><small id="s-mood2"></small></div>
+  </section>
+  <div class="when-box">
+    <div class="clock"><div class="d" id="date">20 March 1602</div><div class="w" id="season"></div></div>
+    <div class="speed" role="group" aria-label="Game speed">
+      <button type="button" data-speed="0" aria-pressed="true" title="Pause (Space)" aria-label="Pause">❚❚</button>
+      <button type="button" data-speed="5" aria-pressed="false">1×</button>
+      <button type="button" data-speed="15" aria-pressed="false">3×</button>
+      <button type="button" data-speed="50" aria-pressed="false">10×</button>
+    </div>
   </div>
 </header>
 
-<section class="stats" aria-label="Company at a glance">
-  <div class="stat"><span>Treasury</span><b id="s-cash">ƒ6.42M</b><small id="s-cash2"></small></div>
-  <div class="stat"><span>Debt</span><b id="s-debt">ƒ0</b><small id="s-debt2">4% a year</small></div>
-  <div class="stat"><span>Share price</span><b id="s-share">100%</b><small id="s-share2">of face value</small></div>
-  <div class="stat"><span>Shareholders expect</span><b id="s-exp">—</b><small id="s-exp2"></small></div>
-  <div class="stat"><span>Monopolies</span><b id="s-mono">0 of 5</b><small id="s-mono2"></small></div>
-</section>
-
-<main class="grid">
-  <div class="col">
-    <section class="card" aria-labelledby="h-equip">
-      <h2 id="h-equip">Equip ships <small id="equip-cap"></small></h2>
-      <details class="help"><summary>How shipping works</summary>
-        <p>A ship costs its hull, crew and stores, plus the silver you put aboard. Europe has little Asia wants to buy, so silver is what pays for cargo.</p>
-        <p>Ships leave only in the sailing seasons, reach Batavia 8 to 11 months later, wait for the return season (November to January) and come home loaded with whatever Batavia has bought. A round trip takes about two years.</p>
-        <p>More ships only help if Batavia has goods to fill them. Watch "Goods waiting for ships" in the letter from Batavia.</p>
-      </details>
-      <div class="stack">
-        <div>
-          <div class="row between"><label for="silver">Silver aboard each ship</label><output id="silver-out" class="num"></output></div>
-          <input type="range" id="silver" min="0" max="400000" step="25000" value="250000">
-          <p class="eff" id="silver-eff"></p>
-        </div>
-        <button type="button" class="btn" id="equip">Equip a ship</button>
-        <div class="note" id="harbour"></div>
-        <div class="row between">
-          <label for="auto">Standing orders</label>
-          <select id="auto"><option value="0">None</option><option value="1">1 ship each season</option><option value="2">2 ships each season</option><option value="3">3 ships each season</option><option value="4">4 ships each season</option><option value="6">6 ships each season</option></select>
-        </div>
-        <label class="row"><input type="checkbox" id="autoborrow"> Borrow when the treasury is short</label>
+<main class="desk">
+  <section class="mapcol">
+    <div class="card mapcard" id="mapcard" aria-labelledby="h-map">
+      <div class="mapbar">
+        <h2 id="h-map">The route east <small>presumed positions</small></h2>
+        <div class="mapchips" id="mapchips"></div>
+        <button type="button" class="keybtn" id="keybtn" aria-expanded="false" aria-controls="mapkey">Key</button>
       </div>
-    </section>
-
-    <section class="card" aria-labelledby="h-auction">
-      <h2 id="h-auction">Warehouse &amp; auction <small id="next-auction"></small></h2>
-      <details class="help"><summary>How prices are set</summary>
-        <p>Auctions are held on 1 April and 1 October. The slider sets what share of each good in the warehouse you put up for sale.</p>
-        <p>The price depends on three things: how much you sell against what Europe wants in half a year, how much the English bring, and how much you keep back. Buyers know what is left in your warehouse, so a big stock pulls the price down too.</p>
-        <p>Fine spices are the clearest case: demand barely grows, so selling more can earn you less. The Company sometimes burned spices to hold the price.</p>
-      </details>
-      <div class="tablewrap">
-        <table>
-          <thead><tr><th>Goods</th><th class="r">In store</th><th>Sell</th><th class="r">Est. price</th></tr></thead>
-          <tbody id="wh"></tbody>
-        </table>
-      </div>
-      <div class="row between" style="margin-top:10px">
-        <span class="note" id="auction-est"></span>
-        <button type="button" class="btn ghost small" id="burn">Burn surplus spice</button>
-      </div>
-    </section>
-
-    <section class="card" aria-labelledby="h-books">
-      <h2 id="h-books">Accounts <small>Amsterdam chamber</small></h2>
-      <details class="help"><summary>What these numbers mean</summary>
-        <p>This is the Amsterdam side only: auction sales coming in, ships, silver, interest and dividends going out.</p>
-        <p>Silver sent east is not lost. It sits in Batavia and buys the cargo that comes home a year or two later. That is why a busy year can look like a loss. Batavia's own books arrive with each letter, a year late.</p>
-        <p>The VOC never added the two sets of books together.</p>
-      </details>
-      <div class="tablewrap"><table class="books"><thead><tr><th></th><th class="r" id="bk-y1"></th><th class="r" id="bk-y0"></th></tr></thead><tbody id="books"></tbody></table></div>
-      <canvas class="bars" id="bars" aria-label="Trading result per year"></canvas>
-      <p class="note" id="bars-cap"></p>
-      <p class="eff" id="perShip"></p>
-    </section>
-
-    <section class="card" aria-labelledby="h-share">
-      <h2 id="h-share">Shareholders <small>meeting each May</small></h2>
-      <details class="help"><summary>How shareholders react</summary>
-        <p>Each May you pay the dividend you set here, as a share of the ƒ6.4 million original capital. If the treasury cannot cover it, the rest is borrowed.</p>
-        <p>Shareholders expect roughly what you paid over the last five years. Paying less raises discontent; high discontent brings pamphlets. The share price follows the dividend, not the real health of the Company.</p>
-      </details>
-      <div class="stack">
-        <div>
-          <div class="row between"><label for="div">Dividend on ƒ6.4M capital</label><output id="div-out" class="num"></output></div>
-          <input type="range" id="div" min="0" max="40" step="1" value="0">
-          <p class="eff" id="div-eff"></p>
+      <div class="mapwrap" id="mapwrap">
+        <svg id="map" role="img" aria-label="Chart of the route from Texel by the Cape of Good Hope to Batavia, with the Company's posts in Asia and every ship at its presumed position" xmlns="http://www.w3.org/2000/svg"></svg>
+        <div class="mapkey" id="mapkey" hidden>
+          <span><i class="lg-out"></i>Outbound ship</span><span><i class="lg-home"></i>Homebound ship</span><span><i class="lg-letter"></i>Letter at sea</span>
+          <span><i class="lg-post"></i>Company post</span><span><i class="lg-mono"></i>Post holding a monopoly</span><span><i class="lg-can"></i>Post you could order</span><span><i class="lg-ord"></i>Ordered in your letter</span><span><i class="lg-lost"></i>Post lost</span>
+          <p>Amsterdam sees only the schedule: a ship that sank keeps sailing on this chart until word arrives. Click a ship, letter or post for details.</p>
         </div>
-        <div>
-          <div class="row between"><label>Discontent</label><span class="note" id="disc-txt"></span></div>
-          <div class="meter" id="disc"><i></i></div>
-        </div>
-        <div>
-          <div class="row between"><label>Share price, last 30 years</label><span class="note" id="share-range"></span></div>
-          <canvas class="spark" id="spark" aria-label="Share price chart"></canvas>
-        </div>
-        <div class="row">
-          <button type="button" class="btn ghost small" id="borrow">Borrow ƒ1M</button>
-          <button type="button" class="btn ghost small" id="repay">Repay ƒ1M</button>
-          <button type="button" class="btn ghost small" id="audit">Commission an audit</button>
-        </div>
+        <div class="pop" id="pop" role="dialog" aria-label="Details" hidden></div>
       </div>
-    </section>
-  </div>
+    </div>
+    <div class="strip">
+      <section class="card notes-card" aria-labelledby="h-notes">
+        <h2 id="h-notes">The bookkeeper's notes</h2>
+        <ul class="notes" id="notes"></ul>
+      </section>
+      <section class="card log-card" aria-labelledby="h-log">
+        <h2 id="h-log">Chronicle</h2>
+        <ul class="log" id="log"></ul>
+      </section>
+    </div>
+  </section>
 
-  <div class="col mid">
-    <section class="card" aria-labelledby="h-notes">
-      <h2 id="h-notes">The bookkeeper's notes</h2>
-      <ul class="notes" id="notes"></ul>
-    </section>
-    <section class="card" aria-labelledby="h-map">
-      <h2 id="h-map">The route east <small>presumed positions</small></h2>
-      <div class="mapwrap"><canvas id="map" aria-label="Map of the route from Texel via the Cape to Batavia and the Company posts in Asia"></canvas></div>
-      <div class="legend"><span class="lo">Outbound</span><span class="lh">Homebound</span><span class="lp">Post you could order</span></div>
-      <p class="note" style="margin-top:6px">Amsterdam sees only the schedule. A ship that sank keeps sailing on this map until word arrives.</p>
-    </section>
-    <section class="card" aria-labelledby="h-fleet">
-      <h2 id="h-fleet">Fleet <small id="fleet-count"></small></h2>
-      <div class="tablewrap"><table class="fleet"><thead><tr><th>Ship</th><th>Status</th><th class="r">Silver</th></tr></thead><tbody id="fleet"></tbody></table></div>
-    </section>
-    <section class="card" aria-labelledby="h-log">
-      <h2 id="h-log">Chronicle</h2>
-      <ul class="log" id="log"></ul>
-    </section>
-  </div>
-
-  <div class="col">
-    <section class="card" aria-labelledby="h-aims">
-      <h2 id="h-aims">The Seventeen's aims <small>monopoly</small></h2>
-      <details class="help"><summary>Why monopoly</summary>
-        <p>The Heeren XVII wanted to be the only sellers of the fine spices in Europe, so they could set the price. Each monopoly here was won by force or by forced contracts. When you secure one, its cost is entered in the other ledger.</p>
-        <p>Each one cuts the rivals' supply at auction. They are counted once a letter from Batavia confirms them.</p>
-      </details>
-      <div class="row between"><label>Your share of Europe's fine spices</label><span class="num" id="fine-share"></span></div>
-      <div class="sharebar"><i id="fine-bar"></i></div>
-      <p class="note" id="fine-rivals"></p>
-      <ul class="aims" id="aims"></ul>
-    </section>
-    <section class="card" aria-labelledby="h-report">
-      <h2 id="h-report">Letter from Batavia</h2>
-      <div id="report"></div>
-    </section>
-    <section class="card" aria-labelledby="h-letter">
-      <h2 id="h-letter">Instructions to Asia</h2>
-      <details class="help"><summary>How orders reach Asia</summary>
-        <p>Your choices here are written into a letter. It sails with the next ship and takes effect only when that ship reaches Batavia. If the ship sinks, the letter is lost; every ship of the season carries a copy.</p>
-        <p>The Governor-General does not always obey.</p>
-      </details>
-      <fieldset><legend>What Batavia should buy first</legend><div class="seg" id="f-focus"></div><p class="eff" id="eff-focus"></p></fieldset>
-      <fieldset><legend>Pay for Company servants in Asia</legend><div class="seg" id="f-wages"></div><p class="eff" id="eff-wages"></p></fieldset>
-      <fieldset><legend>Expansion by the Governor-General</legend><div class="seg" id="f-exp"></div><p class="eff" id="eff-exp"></p></fieldset>
-      <fieldset><legend><label for="f-found">Open or take a new post</label></legend><select id="f-found"></select><p class="eff" id="found-desc"></p></fieldset>
-      <div class="lstatus" id="lstatus"></div>
-    </section>
-    <section class="card other" aria-labelledby="h-other">
-      <h2 id="h-other">The other ledger</h2>
-      <div class="counts">
-        <div><span>Sailed east</span><b id="o-sent">0</b></div>
-        <div><span>Died at sea</span><b id="o-sea">0</b></div>
-        <div><span>Died in Asia</span><b id="o-asia">0</b></div>
-        <div><span>Came home</span><b id="o-home">0</b></div>
+  <aside class="side">
+    <nav class="tabs" role="tablist" aria-label="Departments">
+      <button type="button" role="tab" data-tab="fleet" id="tab-fleet" aria-selected="true">Fleet</button>
+      <button type="button" role="tab" data-tab="market" id="tab-market" aria-selected="false">Auction</button>
+      <button type="button" role="tab" data-tab="asia" id="tab-asia" aria-selected="false">Asia</button>
+      <button type="button" role="tab" data-tab="shares" id="tab-shares" aria-selected="false">Shares</button>
+      <button type="button" role="tab" data-tab="books" id="tab-books" aria-selected="false">Books</button>
+      <button type="button" role="tab" data-tab="aims" id="tab-aims" aria-selected="false">Aims</button>
+    </nav>
+    <div class="panes">
+      <div class="pane" role="tabpanel" data-pane="fleet" aria-labelledby="tab-fleet">
+        <section class="card" aria-labelledby="h-equip">
+          <h2 id="h-equip">Equip ships</h2>
+          <p class="meta" id="equip-cap"></p>
+          <div class="stack">
+            <div>
+              <div class="row between"><label for="silver">Silver aboard each ship</label><output id="silver-out" class="num big-out"></output></div>
+              <input type="range" id="silver" min="0" max="400000" step="25000" value="250000">
+              <p class="eff" id="silver-eff"></p>
+            </div>
+            <button type="button" class="btn wide" id="equip">Equip a ship</button>
+            <p class="note" id="harbour"></p>
+            <div class="row between">
+              <label for="auto">Standing orders</label>
+              <select id="auto"><option value="0">None</option><option value="1">1 ship each season</option><option value="2">2 ships each season</option><option value="3">3 ships each season</option><option value="4">4 ships each season</option><option value="6">6 ships each season</option></select>
+            </div>
+            <label class="row check"><input type="checkbox" id="autoborrow"> Borrow when the treasury is short</label>
+          </div>
+          <details class="help"><summary>How shipping works</summary>
+            <p>A ship costs its hull, crew and stores, plus the silver you put aboard. Europe has little Asia wants to buy, so silver is what pays for cargo.</p>
+            <p>Ships leave only in the sailing seasons, reach Batavia 8 to 11 months later, wait for the return season (November to January) and come home loaded with whatever Batavia has bought. A round trip takes about two years.</p>
+            <p>More ships only help if Batavia has goods to fill them. Watch "Goods waiting for ships" in the letter from Batavia.</p>
+          </details>
+        </section>
+        <section class="card" aria-labelledby="h-fleet">
+          <h2 id="h-fleet">Fleet <small id="fleet-count"></small></h2>
+          <ul class="fleet" id="fleet"></ul>
+        </section>
       </div>
-      <ul id="o-lines"></ul>
-    </section>
-  </div>
+
+      <div class="pane" role="tabpanel" data-pane="market" aria-labelledby="tab-market" hidden>
+        <section class="card" aria-labelledby="h-auction">
+          <h2 id="h-auction">Warehouse &amp; auction <small id="next-auction"></small></h2>
+          <div class="wh" id="wh"></div>
+          <div class="row between" style="margin-top:12px">
+            <span class="note" id="auction-est"></span>
+            <button type="button" class="btn ghost small" id="burn">Burn surplus spice</button>
+          </div>
+          <details class="help"><summary>How prices are set</summary>
+            <p>Auctions are held on 1 April and 1 October. The slider sets what share of each good in the warehouse you put up for sale.</p>
+            <p>The price depends on three things: how much you sell against what Europe wants in half a year, how much the English bring, and how much you keep back. Buyers know what is left in your warehouse, so a big stock pulls the price down too.</p>
+            <p>Fine spices are the clearest case: demand barely grows, so selling more can earn you less. The Company sometimes burned spices to hold the price.</p>
+          </details>
+        </section>
+      </div>
+
+      <div class="pane" role="tabpanel" data-pane="asia" aria-labelledby="tab-asia" hidden>
+        <section class="card" aria-labelledby="h-letter">
+          <h2 id="h-letter">Instructions to Asia</h2>
+          <div class="lstatus" id="lstatus"></div>
+          <fieldset><legend>What Batavia should buy first</legend><div class="seg" id="f-focus"></div><p class="eff" id="eff-focus"></p></fieldset>
+          <fieldset><legend>Pay for Company servants in Asia</legend><div class="seg" id="f-wages"></div><p class="eff" id="eff-wages"></p></fieldset>
+          <fieldset><legend>Expansion by the Governor-General</legend><div class="seg" id="f-exp"></div><p class="eff" id="eff-exp"></p></fieldset>
+          <fieldset><legend><label for="f-found">Open or take a new post</label></legend><select id="f-found"></select><p class="eff" id="found-desc"></p></fieldset>
+          <details class="help"><summary>How orders reach Asia</summary>
+            <p>Your choices here are written into a letter. It sails with the next ship and takes effect only when that ship reaches Batavia. If the ship sinks, the letter is lost; every ship of the season carries a copy.</p>
+            <p>The Governor-General does not always obey.</p>
+          </details>
+        </section>
+        <section class="card" aria-labelledby="h-report">
+          <h2 id="h-report">Letter from Batavia</h2>
+          <div id="report"></div>
+        </section>
+      </div>
+
+      <div class="pane" role="tabpanel" data-pane="shares" aria-labelledby="tab-shares" hidden>
+        <section class="card" aria-labelledby="h-share">
+          <h2 id="h-share">Shareholders <small>meeting each May</small></h2>
+          <div class="stack">
+            <div>
+              <div class="row between"><label for="div">Dividend on ƒ6.4M capital</label><output id="div-out" class="num big-out"></output></div>
+              <input type="range" id="div" min="0" max="40" step="1" value="0">
+              <p class="eff" id="div-eff"></p>
+            </div>
+            <div>
+              <div class="row between"><span class="lab">Discontent</span><span class="note" id="disc-txt"></span></div>
+              <div class="meter" id="disc"><i></i></div>
+            </div>
+            <div>
+              <div class="row between"><span class="lab">Share price, last 30 years</span><span class="num" id="s-share"></span></div>
+              <canvas class="spark" id="spark" aria-label="Share price chart"></canvas>
+              <p class="note" id="share-range"></p>
+            </div>
+            <div class="row">
+              <button type="button" class="btn ghost small" id="borrow">Borrow ƒ1M</button>
+              <button type="button" class="btn ghost small" id="repay">Repay ƒ1M</button>
+              <button type="button" class="btn ghost small" id="audit">Commission an audit</button>
+            </div>
+          </div>
+          <details class="help"><summary>How shareholders react</summary>
+            <p>Each May you pay the dividend you set here, as a share of the ƒ6.4 million original capital. If the treasury cannot cover it, the rest is borrowed.</p>
+            <p>Shareholders expect roughly what you paid over the last five years. Paying less raises discontent; high discontent brings pamphlets. The share price follows the dividend, not the real health of the Company.</p>
+          </details>
+        </section>
+      </div>
+
+      <div class="pane" role="tabpanel" data-pane="books" aria-labelledby="tab-books" hidden>
+        <section class="card" aria-labelledby="h-books">
+          <h2 id="h-books">Accounts <small>Amsterdam chamber</small></h2>
+          <canvas class="bars" id="bars" aria-label="Trading result per year"></canvas>
+          <p class="note" id="bars-cap"></p>
+          <p class="eff" id="perShip"></p>
+          <details class="help" open><summary>This year and last, line by line</summary>
+            <div class="tablewrap"><table class="books"><thead><tr><th></th><th class="r" id="bk-y1"></th><th class="r" id="bk-y0"></th></tr></thead><tbody id="books"></tbody></table></div>
+          </details>
+          <details class="help"><summary>What these numbers mean</summary>
+            <p>This is the Amsterdam side only: auction sales coming in, ships, silver, interest and dividends going out.</p>
+            <p>Silver sent east is not lost. It sits in Batavia and buys the cargo that comes home a year or two later. That is why a busy year can look like a loss. Batavia's own books arrive with each letter, a year late.</p>
+            <p>The VOC never added the two sets of books together.</p>
+          </details>
+        </section>
+      </div>
+
+      <div class="pane" role="tabpanel" data-pane="aims" aria-labelledby="tab-aims" hidden>
+        <section class="card" aria-labelledby="h-aims">
+          <h2 id="h-aims">The Seventeen's aims <small id="s-mono"></small></h2>
+          <div class="row between"><span class="lab">Your share of Europe's fine spices</span><b class="num" id="fine-share"></b></div>
+          <div class="sharebar"><i id="fine-bar"></i></div>
+          <p class="note" id="fine-rivals"></p>
+          <ul class="aims" id="aims"></ul>
+          <details class="help"><summary>Why monopoly</summary>
+            <p>The Heeren XVII wanted to be the only sellers of the fine spices in Europe, so they could set the price. Each monopoly here was won by force or by forced contracts. When you secure one, its cost is entered in the other ledger.</p>
+            <p>Each one cuts the rivals' supply at auction. They are counted once a letter from Batavia confirms them.</p>
+          </details>
+        </section>
+        <section class="card other" aria-labelledby="h-other">
+          <h2 id="h-other">The other ledger</h2>
+          <div class="counts">
+            <div><span>Sailed east</span><b id="o-sent">0</b></div>
+            <div><span>Died at sea</span><b id="o-sea">0</b></div>
+            <div><span>Died in Asia</span><b id="o-asia">0</b></div>
+            <div><span>Came home</span><b id="o-home">0</b></div>
+          </div>
+          <ul id="o-lines"></ul>
+        </section>
+      </div>
+    </div>
+    <footer class="sidefoot">
+      <span class="row"><button type="button" class="btn ghost small" id="credits">Sources</button><button type="button" class="btn ghost small" id="newgame">New game</button></span>
+    </footer>
+  </aside>
 </main>
-
-<footer>
-  <span>Prototype · Homo Ludens. Prices and costs are simplified for play; dates, events and human costs follow the historical record.</span>
-  <span class="row"><button type="button" class="btn ghost small" id="credits">Sources</button><button type="button" class="btn ghost small" id="newgame">New game</button></span>
-</footer>
+</div>
 
 <div class="modal" id="modal" hidden><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title" id="sheet"></div></div>
 <div class="coach" id="coach" role="dialog" aria-live="polite" hidden></div>
-<div class="small-screen" id="small-screen" hidden><div><h3>Best on a bigger screen</h3><p>Retourvloot is a desk full of ledgers, letters and a map. It is made for a laptop or desktop.</p><button type="button" class="btn" id="small-go">Play anyway</button></div></div>
+<div class="small-screen" id="small-screen" hidden><div><h3>Best on a bigger screen</h3><p>Retourvloot is a desk full of ledgers, letters and a chart of the route east. It is made for a laptop or desktop.</p><button type="button" class="btn" id="small-go">Play anyway</button></div></div>

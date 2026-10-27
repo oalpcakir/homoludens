@@ -117,3 +117,224 @@ test('Polder: Wider sluices are not offered when there is no drainage limit left
   assert.deepEqual(t.problems, []);
   await t.close();
 });
+
+// ---------- "Your dikes vs. history", passport stamp, image share ----------
+const FACTS = {
+  friesland: ['955', '3,181', 'Middelzee', 'Oudebildtdijk'],
+  zeeland: ['1,365 km²', '67', '1,836', 'Oosterschelde'],
+  holland: ['1612', '1622', '1635', '7,208 ha', '16,850 ha'],
+  zuiderzee: ['1932', '28 May 1932', '19 people', '1,600 km²'],
+};
+test('Polder: every region ends with "Your dikes vs. history": the real map with a hatched layer, sourced numbers, a passport stamp and an image share', async () => {
+  const t = await open();
+  for (const id of Object.keys(FACTS)) {
+    await startRegion(t.page, id);
+    await t.page.evaluate(() => { window.__polder.S.stars = window.__polder.S.stars.map((v, k) => k < 4 ? 1 : -1); window.__polder.dbg.end(); });
+    await t.page.waitForSelector('#vsPanel');
+    const v = await t.page.evaluate(() => {
+      const p = document.getElementById('vsPanel');
+      return { text: p.innerText, hatch: p.querySelectorAll('svg path[fill^="url(#vs"]').length, links: [...p.querySelectorAll('.vsl a')].map(a => a.href), mini: p.querySelector('#vsMe').width, goals: /goals/.test(document.getElementById('mbox').innerText) };
+    });
+    assert.ok(v.hatch >= 1, id + ': no hatched layer');
+    assert.ok(v.mini > 0, id + ': mini map not drawn');
+    assert.ok(v.goals, id + ': the result is still on the same card');
+    assert.match(v.text, /Your dikes vs\. history/i);
+    assert.match(v.text, /approximate/);
+    for (const f of FACTS[id]) assert.ok(v.text.includes(f), `${id}: missing "${f}"`);
+    assert.ok(v.links.length >= 2 && v.links.every(h => h.startsWith('https://')), id + ': sources');
+    // stamped in the shared passport: 4 of 5 stars clears every region's bar
+    const pass = await t.page.evaluate(() => JSON.parse(localStorage.getItem('hl.passport.v1')).games.polder);
+    assert.equal(pass.label, `${await t.page.evaluate(() => window.__polder.S && document.querySelector('#mbox .yr').textContent.split('· ')[1])} · 4★`);
+    assert.ok(pass.wins >= 1 && pass.best >= 4);
+    assert.equal(await t.page.locator('#shareImg').isVisible(), true, id + ': image share button');
+    await t.page.locator('#mOk2').click(); // All regions
+    await t.page.waitForTimeout(200);
+  }
+  // the image share opens the shell's share sheet with a rendered card
+  await startRegion(t.page, 'zeeland');
+  await t.page.evaluate(() => window.__polder.dbg.end());
+  await t.page.locator('#shareImg').click();
+  await t.page.waitForSelector('.hlx-ov img[src^="blob:"], .hlx-ov img[src^="data:"]', { timeout: 10000 });
+  // every source is also listed in the Chronicle
+  const links = await t.page.evaluate(() => [...document.querySelectorAll('#vsPanel .vsl a')].map(a => a.href));
+  await t.page.evaluate(() => document.querySelector('.hlx-ov')?.remove());
+  await t.page.locator('#mOk2').click(); await t.page.waitForTimeout(200);
+  await t.page.locator('#bookBtn').click(); await t.page.locator('.tabs button[data-t="src"]').click();
+  const src = await t.page.evaluate(() => [...document.querySelectorAll('.src a')].map(a => a.href));
+  for (const l of links) assert.ok(src.includes(l), 'not in the Chronicle: ' + l);
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('Polder: a loss is stamped as a loss; free play has no history panel', async () => {
+  const t = await open();
+  await startRegion(t.page, 'friesland');
+  await t.page.evaluate(() => { window.__polder.S.stars = window.__polder.S.stars.map((v, k) => k < 2 ? 1 : -1); window.__polder.dbg.end(); });
+  await t.page.waitForSelector('#vsPanel');
+  const p = await t.page.evaluate(() => JSON.parse(localStorage.getItem('hl.passport.v1')).games.polder);
+  assert.equal(p.label, 'Friesland · 2★'); assert.equal(p.wins | 0, 0);
+  await t.page.locator('#mOk2').click(); await t.page.waitForTimeout(200);
+  await startRegion(t.page, 'free');
+  await t.page.evaluate(() => window.__polder.dbg.end());
+  await t.page.waitForFunction(() => /goals/.test(document.getElementById('mbox').innerText));
+  assert.equal(await t.page.locator('#vsPanel').count(), 0);
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+// ---------- touch ----------
+async function openPhone(size = { width: 390, height: 844 }, storage = { 'polder.settings.v1': JSON.stringify({ sfx: false, music: false }) }) {
+  const ctx = await browser.newContext({ viewport: size, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  await ctx.addInitScript(s => { if (!sessionStorage.getItem('seeded')) { for (const [k, v] of Object.entries(s)) localStorage.setItem(k, v); sessionStorage.setItem('seeded', '1'); } }, storage);
+  const page = await ctx.newPage();
+  const problems = [];
+  page.on('pageerror', e => problems.push('JS error: ' + e.message));
+  page.on('console', m => { if (m.type() === 'error' && !/status of 204/.test(m.text())) problems.push('console: ' + m.text()); });
+  await page.goto(srv.url + '/polder/');
+  await page.waitForTimeout(600);
+  return { page, problems, close: () => ctx.close() };
+}
+const snap = page => page.evaluate(() => window.__polderTest.snapshot());
+async function cellXY(page, x, y) {
+  const r = await page.locator('#cv').boundingBox(), cs = await page.evaluate(() => window.__polderTest.cell);
+  return [r.x + (x + .5) * cs, r.y + (y + .5) * cs];
+}
+async function tapCell(page, x, y) { const [px, py] = await cellXY(page, x, y); await page.touchscreen.tap(px, py); await page.waitForTimeout(90); }
+// a valid aim for the current piece, preferring squares next to the player's own dikes
+const findAim = page => page.evaluate(() => {
+  const P = window.__polder, ok = [];
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 26; x++) if (P.placement(x, y).ok) ok.push([x, y, P.placement(x, y).cells.some(([a, b]) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => P.G[(b + dy) * 26 + a + dx] === 5)) ? 1 : 0]);
+  ok.sort((a, b) => b[2] - a[2]); return ok.length ? ok[(P.S.piece * 7) % Math.min(ok.length, 6)] : null;
+});
+const cdp = new WeakMap(); // one session per page: the browser keeps the touch state per session
+async function cdpTouch(page, type, pts) {
+  if (!cdp.has(page)) cdp.set(page, await page.context().newCDPSession(page));
+  await cdp.get(page).send('Input.dispatchTouchEvent', { type, touchPoints: pts.map(([x, y], id) => ({ x, y, id })) });
+}
+
+test('Polder (touch): the phone note offers Play, and a whole Friesland region can be played by touch', async () => {
+  const t = await openPhone();
+  // the softer note, then the first-visit intro
+  await t.page.waitForSelector('#mbox h2');
+  assert.match(await t.page.locator('#mbox h2').innerText(), /Best with a mouse, but it works by touch/);
+  await t.page.getByRole('button', { name: 'Play', exact: true }).tap();
+  await t.page.getByRole('button', { name: 'Begin' }).tap();
+  await t.page.waitForFunction(() => { const s = window.__polderTest.snapshot(); return s && !s.busy; });
+  assert.equal(await t.page.evaluate(() => window.__polderTest.touch()), true);
+  assert.equal(await t.page.locator('#tbar').isVisible(), true);
+  // the touch bar is in thumb reach: at the bottom of a 390x844 screen, with a big Rotate button
+  const rb = await t.page.locator('#tRot').boundingBox();
+  assert.ok(rb.y > 844 - 120 && rb.height >= 48 && rb.width >= 64, 'Rotate: ' + JSON.stringify(rb));
+  let checks = { rotate: false, two: false, info: false, drag: false, plug: false, invalid: false };
+  let moves = 0;
+  for (let guard = 0; guard < 400; guard++) {
+    if (await t.page.locator('#vsPanel').count()) break;
+    if (await modalOpen(t.page)) {
+      if (await t.page.locator('#mbox .up').count()) await t.page.locator('#mbox .up').first().tap();
+      else await t.page.locator('#mOk').tap();
+      await t.page.waitForTimeout(150); continue;
+    }
+    const s = await snap(t.page);
+    if (!s || s.busy) { await t.page.waitForTimeout(150); continue; }
+    if (!checks.plug && await t.page.evaluate(() => window.__polder.S.fingers > 0 && window.__polder.G.includes(5))) {
+      // a cracked dike: a tap shows "Plug", a second tap plugs it with a finger
+      const i = await t.page.evaluate(() => { const i = window.__polder.G.indexOf(5); window.__polder.dbg.crack(i); return i; });
+      const f0 = await t.page.evaluate(() => window.__polder.S.fingers);
+      await tapCell(t.page, i % 26, Math.floor(i / 26));
+      assert.equal((await t.page.evaluate(() => window.__polderTest.aim())).finger, true);
+      assert.equal(await t.page.locator('#tBuildL').innerText(), 'Plug');
+      await tapCell(t.page, i % 26, Math.floor(i / 26)); await t.page.waitForTimeout(150);
+      assert.equal(await t.page.evaluate(() => window.__polder.S.fingers), f0 - 1);
+      checks.plug = true;
+      if (await modalOpen(t.page)) continue; // the "boy at the dike" aside
+    }
+    if (!checks.rotate) { // the Rotate button and a two-finger tap both turn the piece
+      const r0 = await t.page.evaluate(() => window.__polder.S.rot);
+      await t.page.locator('#tRot').tap(); await t.page.waitForTimeout(80);
+      assert.equal(await t.page.evaluate(() => window.__polder.S.rot), (r0 + 1) % 4);
+      const [ax, ay] = await cellXY(t.page, 5, 6), [bx, by] = await cellXY(t.page, 15, 6);
+      await cdpTouch(t.page, 'touchStart', [[ax, ay], [bx, by]]); await cdpTouch(t.page, 'touchEnd', []); await t.page.waitForTimeout(80);
+      assert.equal(await t.page.evaluate(() => window.__polder.S.rot), (r0 + 2) % 4, 'two-finger tap did not rotate');
+      assert.equal(await t.page.evaluate(() => window.__polder.S.piece), s.piece, 'two-finger tap built something');
+      checks.rotate = checks.two = true;
+    }
+    if (!checks.info) { // long press: what is this square? (no hover needed)
+      const [px, py] = await cellXY(t.page, 12, 14);
+      await cdpTouch(t.page, 'touchStart', [[px, py]]); await t.page.waitForTimeout(650); await cdpTouch(t.page, 'touchEnd', []);
+      await t.page.waitForSelector('#tip.show');
+      assert.match(await t.page.locator('#tip').innerText(), /Dry land/);
+      assert.equal(await t.page.evaluate(() => window.__polderTest.aim()), null, 'a long press aimed a piece');
+      checks.info = true;
+    }
+    const aim = await findAim(t.page);
+    if (!aim) { await t.page.locator('#tWait').tap(); moves++; await t.page.waitForTimeout(200); continue; }
+    const [x, y] = aim;
+    if (!checks.invalid) { // a tap on land aims a red ghost; tapping it again says why it cannot be built
+      await tapCell(t.page, 12, 14); assert.equal((await t.page.evaluate(() => window.__polderTest.aim())).ok, false);
+      await tapCell(t.page, 12, 14); assert.equal((await snap(t.page)).piece, s.piece);
+      assert.match(await t.page.locator('#toast').innerText(), /water|touch|land/);
+      checks.invalid = true;
+    }
+    if (!checks.drag) { // drag nudges the aimed piece like a trackpad, by whole squares
+      await tapCell(t.page, x, y);
+      const cs = await t.page.evaluate(() => window.__polderTest.cell), [px, py] = await cellXY(t.page, x, y);
+      await cdpTouch(t.page, 'touchStart', [[px, py]]);
+      for (let k = 1; k <= 4; k++) await cdpTouch(t.page, 'touchMove', [[px + k * cs * .5, py]]);
+      await cdpTouch(t.page, 'touchEnd', []); await t.page.waitForTimeout(80);
+      const a = await t.page.evaluate(() => window.__polderTest.aim());
+      assert.equal(a.x, Math.min(25, x + 2), 'drag nudge: ' + JSON.stringify(a)); assert.equal(a.y, y);
+      assert.equal((await snap(t.page)).piece, s.piece, 'a drag built something');
+      checks.drag = true;
+      if (a.ok) { // the Build button builds the nudged piece
+        await t.page.locator('#tBuild').tap();
+        await t.page.waitForFunction(p => window.__polderTest.snapshot().piece > p || window.__polder.S.busy, s.piece);
+        moves++; continue;
+      }
+      await t.page.locator('#tWait').tap(); moves++; await t.page.waitForTimeout(200); continue;
+    }
+    // tap to aim, tap again to build
+    await tapCell(t.page, x, y);
+    const a = await t.page.evaluate(() => window.__polderTest.aim());
+    assert.deepEqual([a.x, a.y, a.ok], [x, y, true]);
+    assert.equal((await snap(t.page)).piece, s.piece, 'one tap built');
+    assert.equal(await t.page.locator('#tBuild').isEnabled(), true);
+    await tapCell(t.page, x, y);
+    await t.page.waitForFunction(p => { const s = window.__polderTest.snapshot(); return !s || s.piece > p || window.__polder.S.busy || window.__polder.S.over; }, s.piece);
+    moves++;
+  }
+  assert.ok(await t.page.locator('#vsPanel').count(), 'the region did not end');
+  assert.ok(moves >= 20, 'moves: ' + moves);
+  assert.ok(Object.values(checks).every(Boolean), JSON.stringify(checks));
+  const st = await t.page.evaluate(() => window.__polder.S.stars.filter(v => v === 1).length);
+  const pass = await t.page.evaluate(() => JSON.parse(localStorage.getItem('hl.passport.v1')).games.polder);
+  assert.equal(pass.label, `Friesland · ${st}★`); assert.equal(pass.wins | 0, st >= 4 ? 1 : 0);
+  // the end card fits the phone: no sideways scroll, buttons reachable
+  assert.ok(await t.page.evaluate(() => document.getElementById('mbox').scrollWidth <= document.getElementById('mbox').clientWidth + 1));
+  assert.equal(await t.page.locator('#mOk').isVisible(), true);
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('Polder (touch): in landscape the touch bar sits in the sidebar, fully on screen', async () => {
+  const t = await openPhone({ width: 844, height: 390 });
+  await t.page.getByRole('button', { name: 'Play', exact: true }).tap();
+  await t.page.getByRole('button', { name: 'Begin' }).tap();
+  await t.page.waitForTimeout(300);
+  for (const id of ['#tRot', '#tBuild', '#tWait', '#tPc']) {
+    const b = await t.page.locator(id).boundingBox();
+    assert.ok(b && b.x >= 0 && b.x + b.width <= 844 && b.y + b.height <= 390 && b.height >= 44, id + ' ' + JSON.stringify(b));
+  }
+  assert.ok(await t.page.evaluate(() => document.documentElement.scrollWidth <= 844));
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('Polder: on a desktop the touch bar stays hidden and mouse play is unchanged', async () => {
+  const t = await open();
+  await startRegion(t.page, 'friesland');
+  assert.equal(await t.page.locator('#tbar').isVisible(), false);
+  assert.equal(await t.page.locator('#rotBtn').isVisible(), true);
+  assert.equal(await t.page.evaluate(() => window.__polderTest.touch()), false);
+  await t.close();
+});

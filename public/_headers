@@ -4,3 +4,5 @@
   Access-Control-Allow-Origin: *
 /games.json
   Access-Control-Allow-Origin: *
+/borderlines/lapse/*
+  Access-Control-Allow-Origin: *

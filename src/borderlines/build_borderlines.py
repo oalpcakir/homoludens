@@ -42,7 +42,12 @@ def build():
         day = json.load(open(os.path.join(DAYS, f"{i + 1}.json"), encoding="utf-8"))
         assert len(day) == 5 and [q["id"] for q in day] == [f"d{i + 1}-{j + 1}" for j in range(5)], f"day {i + 1} is malformed"
         tiers.append([q["tier"] for q in day])
-    data = dict(base, days=tiers)
+    # Which questions have a border time-lapse (public/borderlines/lapse/<id>.json, written by build_lapse.py).
+    # Only ids: the file itself is fetched when a player opens "See it change" after playing that realm.
+    ids = {q["id"] for q in base["pool"]} | {f"d{i + 1}-{j + 1}" for i in range(n) for j in range(5)}
+    lapse = sorted(os.path.basename(p)[:-5] for p in glob.glob(os.path.join(PUB, "borderlines", "lapse", "*.json")))
+    lapse = [x for x in lapse if x in ids]
+    data = dict(base, days=tiers, lapse=lapse)
     data_js = "window.GAME_DATA = " + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n"
 
     ph = analytics_head("borderlines")
@@ -60,12 +65,15 @@ def build():
     reportEndpoint: "",
     siteUrl: "{SITE}/borderlines/",
     portalUrl: "/",
-    daysUrl: "/borderlines/days/"
+    daysUrl: "/borderlines/days/",
+    lapseUrl: "/borderlines/lapse/",
+    scoreApi: "/api/borderlines/"
   }};
 </script>
 {ph}
 <script src="/feedback.js" defer data-game="borderlines"></script>
 <script src="/next.js" defer data-game="borderlines"></script>
+<script src="/hl.js" defer data-game="borderlines"></script>
 <style>html,body{{margin:0}}[hidden]{{display:none!important}}</style>
 '''
     i = g.index('<div id="app">')
@@ -87,7 +95,7 @@ def build():
         if t != s:
             with open(p, "w", encoding="utf-8", newline="\n") as fh:
                 fh.write(t)
-    print(f"built {out}: {n} dailies, page {os.path.getsize(out) // 1024} KB")
+    print(f"built {out}: {n} dailies, {len(lapse)} time-lapses, page {os.path.getsize(out) // 1024} KB")
     return n
 
 

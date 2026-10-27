@@ -63,6 +63,8 @@ class Game {
     this.dealer = Math.floor(this.r() * this.players.length);
     this.evening = 0; this.crashed = false; this.alkmaar = false; this.round = 0; this.over = false; this.roundOver = false;
     this.history = []; this.onSave = o.onSave || null; this.resumed = false;
+    // the winter's journey, for the price curve at the end: each trader's paper at the end of each evening, and every sale
+    this.paperLog = []; this.sales = [];
     // each rival reads the crash risk a little differently this game (greedy traders under-read it)
     for (const p of this.players) p.fear = p.style ? STYLES[p.style].fear * (0.8 + 0.4 * this.r()) : 1;
     if (o.snap) this.restore(o.snap);
@@ -71,7 +73,7 @@ class Game {
   snapshot(){
     const K = ['total','purse','units','cost','soldE','settled','atCrash','busts','books','sold','fear'];
     return {v:1, mode:this.mode, seed:this.seed, rs:this.r.s, dealer:this.dealer, evening:this.evening, crashed:this.crashed,
-      crashAfter:this.crashAfter ?? null, alkmaar:this.alkmaar, round:this.round, history:this.history,
+      crashAfter:this.crashAfter ?? null, alkmaar:this.alkmaar, round:this.round, history:this.history, paperLog:this.paperLog, sales:this.sales,
       draw:this.draw.map(c => c.uid), discard:this.discard.map(c => c.uid),
       players:this.players.map(p => Object.fromEntries(K.map(k => [k, p[k]]))), when:Date.now()};
   }
@@ -79,6 +81,7 @@ class Game {
     const deck = makeDeck(), byUid = Object.fromEntries(deck.map(c => [c.uid, c]));
     this.r.s = s.rs; this.dealer = s.dealer; this.evening = s.evening; this.crashed = s.crashed; this.crashAfter = s.crashAfter ?? undefined;
     this.alkmaar = s.alkmaar; this.round = s.round; this.history = s.history || [];
+    this.paperLog = s.paperLog || []; this.sales = s.sales || []; // saves from before the price curve have neither
     this.draw = s.draw.map(u => byUid[u]); this.discard = s.discard.map(u => byUid[u]);
     s.players.forEach((q, i) => {
       const p = Object.assign(this.players[i], q);
@@ -120,11 +123,13 @@ class Game {
         await this.emit('evening', {e});
         await this.playRound();
         // the evening's winnings are paper; now each trader decides to cash it all in or hold into the next evening
+        this.paperLog[e] = P.map(p => Math.round(p.units * IDX[e]));
         await this.emit('cashout', {e});
         for (const p of P){
           if (p.units > 0 && await p.agent.sell(this, p)){
             const v = p.units * IDX[e], fee = Math.round(v * FEE);
             p.purse += Math.round(v) - fee; p.sold += Math.round(v) - fee; p.units = 0; p.cost = 0; p.soldE = e;
+            this.sales.push({e, i:p.i, v:Math.round(v) - fee});
             await this.emit('sold', {p, v:Math.round(v), fee});
           } else if (p.units > 0) await this.emit('held', {p});
         }

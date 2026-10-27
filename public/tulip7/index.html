@@ -28,7 +28,7 @@
     } catch (e) {}
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     // Every page is tagged with its game and version (filled in by the builders from games.json).
-    var GAME = "tulip", VERSION = "2026.10.26";
+    var GAME = "tulip", VERSION = "2026.10.27";
     // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
     // the matching standard event is sent once next to it, with legacy_event naming the original.
     var STD = {
@@ -71,6 +71,7 @@
 </script>
 <script src="/feedback.js" defer data-game="tulip"></script>
 <script src="/next.js" defer data-game="tulip"></script>
+<script src="/hl.js" defer data-game="tulip"></script>
 <title>Tulip 7</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
@@ -342,6 +343,78 @@ html.tipping .ctrl .info{display:none}
 .foot{color:#fff6e2;font-size:12.5px;text-shadow:0 1px 2px rgba(0,0,0,.7);text-align:center}
 .foot a{color:#ffe08a}
 .mbox [data-hl-next]{margin-top:4px}
+/* the end of a winter: the price curve */
+.mbox.endw{max-width:720px}
+.curve{margin:14px 0 12px;padding:12px 14px 10px;background:#fffdf7;border:1px solid var(--line);border-radius:12px;box-shadow:inset 0 0 0 3px #fffaf0,inset 0 0 0 4px rgba(201,162,74,.45)}
+.curve .ck{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);font-weight:700}
+.curve .cline{font-family:"EB Garamond",serif;font-size:19px;line-height:1.3;margin:4px 0 6px;color:var(--ink)}
+.cbox{width:100%;min-height:120px}
+.cbox svg{display:block;width:100%;height:auto;overflow:visible;font-family:"Source Sans 3",system-ui,sans-serif;font-size:var(--fs)}
+.pc .tg{stroke:rgba(90,58,34,.13);stroke-width:1}
+.pc .ty,.pc .tm{fill:var(--muted);font-size:calc(var(--fs) - 1px)}
+.pc .tx{fill:var(--ink);font-weight:700;font-family:"EB Garamond",serif;font-size:calc(var(--fs) + 1px)}
+.pc .tx.off{fill:rgba(117,96,74,.45);font-weight:600}
+.pc .tx.crash{fill:var(--bad,#b3261e)}
+.pc .tx.td{font-family:"Source Sans 3",system-ui,sans-serif;font-size:calc(var(--fs) - 1.5px);font-weight:700}
+.pc .tl{fill:var(--muted);font-size:calc(var(--fs) - .5px)}
+.pc .tcl{fill:#a3262a;font-weight:700}
+.pc .tr{font-style:italic;fill:#7a6046}
+.pc .tset{fill:var(--delft)}
+.pc .tband{fill:var(--muted);font-size:calc(var(--fs) - .5px);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pc .tbv{fill:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.pc .tbrk{fill:none;stroke:var(--muted);stroke-width:1.3}
+.pc .tcrash{stroke:#a3262a;stroke-width:1.5;stroke-dasharray:4 3}
+.pc .tev{stroke:rgba(90,58,34,.35);stroke-width:1;stroke-dasharray:2 3}
+.pc .real polyline{fill:none;stroke:#9b7b55;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.pc .real.r1 polyline{stroke-dasharray:6 3}
+.pc .real.r2 polyline{stroke-dasharray:1.5 3}
+.pc .rd{fill:#9b7b55}
+.pc .rd.about{fill:#fffdf7;stroke:#9b7b55;stroke-width:1.2}
+.pc .gidx{fill:none;stroke:var(--delft);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.pc .gd{fill:var(--delft)}
+.pc .ghost{fill:none;stroke:rgba(31,78,156,.3);stroke-width:2;stroke-dasharray:2 4}
+.pc .gset{stroke:var(--delft);stroke-width:2;stroke-dasharray:1 4;stroke-linecap:round}
+.pc .mk text{font-weight:800;font-size:calc(var(--fs) - 1px);font-family:"Source Sans 3",system-ui,sans-serif}
+.pc .lead{stroke:var(--ink);stroke-width:1}
+.pc .tyou{fill:#a3191f;font-weight:800;font-size:calc(var(--fs) + .5px);paint-order:stroke;stroke:#fffdf7;stroke-width:3px}
+.pc .bar.held{fill:rgba(31,78,156,.35)}
+.pc .bar.sold{fill:#c0262d}
+.pc .bar.lost{fill:rgba(163,38,42,.12);stroke:#a3262a;stroke-width:1;stroke-dasharray:3 2}
+.pc .bar.settled{fill:#a3262a}
+.pc .bar.alk{fill:var(--gold)}
+.pc .draw{stroke-dasharray:1;stroke-dashoffset:1;animation:pcdraw 1.5s cubic-bezier(.45,.05,.3,1) .15s forwards}
+.pc .real .draw{animation-duration:1.1s;animation-delay:.05s}
+.pc .real.r1 polyline,.pc .real.r2 polyline{animation:pcfade .9s ease-out .5s both}
+.pc .rd{animation:pcfade .4s ease-out 1s both}
+.pc .gd,.pc .gset,.pc .tset{animation:pcfade .4s ease-out 1.4s both}
+.pc .mk{animation:pcpop .45s cubic-bezier(.2,1.5,.4,1) var(--d,1.4s) both;transform-box:fill-box;transform-origin:center}
+.pc .bar{animation:pcgrow .5s ease-out var(--d,.2s) both;transform-box:fill-box;transform-origin:bottom}
+@keyframes pcdraw{to{stroke-dashoffset:0}}
+@keyframes pcfade{from{opacity:0}}
+@keyframes pcpop{from{opacity:0;transform:scale(.3)}}
+@keyframes pcgrow{from{transform:scaleY(0)}}
+.ckey{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);margin-top:6px}
+.ckey span{display:inline-flex;align-items:center;gap:6px}
+.ckey .k{display:inline-block;width:20px;height:0;border-top:3px solid var(--delft)}
+.ckey .k.re{border-top:2px solid #9b7b55}
+.ckey .k.dot,.ckey .k.ring{width:15px;height:15px;border:0;border-radius:50%;background:var(--c);color:#fff;font:800 9.5px/15px "Source Sans 3",sans-serif;font-style:normal;text-align:center}
+.ckey .k.ring{background:#fffaf0;color:#c08a1e;box-shadow:inset 0 0 0 2px #c08a1e}
+.ctext{margin-top:6px;font-size:14px}
+.ctext summary{cursor:pointer;color:var(--delft);font-weight:700;font-size:13.5px;padding:4px 0}
+.ctext ul{margin:4px 0 4px 18px;padding:0}
+.ctext li{margin:3px 0}
+.mbox .facts li.nod,.nodp li{font-style:italic}
+.mbox .facts li.nod a,.nodp a{color:var(--delft);font-weight:700}
+.nodp{margin:10px 0 0;padding:0;list-style:none;font-size:14.5px;color:var(--muted)}
+.mbox .btn.share{justify-content:center}
+.mbox .btn.share::before{content:"";width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:var(--shareic) center/contain no-repeat;mask:var(--shareic) center/contain no-repeat}
+:root{--shareic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6'/%3E%3C/svg%3E")}
+@media (max-width:700px){
+  .curve{margin:12px -8px 10px;padding:10px 8px 8px;border-radius:10px}
+  .curve .cline{font-size:17.5px}
+  .ckey{font-size:12px;gap:3px 10px}
+}
+@media (prefers-reduced-motion:reduce){.pc .draw{stroke-dashoffset:0}}
 
 /* controls: an info block and the action buttons (a column on the desktop, a dock on phones and tablets) */
 .ctrl .info,.ctrl .acts{display:flex;flex-direction:column;gap:8px}
@@ -761,6 +834,8 @@ class Game {
     this.dealer = Math.floor(this.r() * this.players.length);
     this.evening = 0; this.crashed = false; this.alkmaar = false; this.round = 0; this.over = false; this.roundOver = false;
     this.history = []; this.onSave = o.onSave || null; this.resumed = false;
+    // the winter's journey, for the price curve at the end: each trader's paper at the end of each evening, and every sale
+    this.paperLog = []; this.sales = [];
     // each rival reads the crash risk a little differently this game (greedy traders under-read it)
     for (const p of this.players) p.fear = p.style ? STYLES[p.style].fear * (0.8 + 0.4 * this.r()) : 1;
     if (o.snap) this.restore(o.snap);
@@ -769,7 +844,7 @@ class Game {
   snapshot(){
     const K = ['total','purse','units','cost','soldE','settled','atCrash','busts','books','sold','fear'];
     return {v:1, mode:this.mode, seed:this.seed, rs:this.r.s, dealer:this.dealer, evening:this.evening, crashed:this.crashed,
-      crashAfter:this.crashAfter ?? null, alkmaar:this.alkmaar, round:this.round, history:this.history,
+      crashAfter:this.crashAfter ?? null, alkmaar:this.alkmaar, round:this.round, history:this.history, paperLog:this.paperLog, sales:this.sales,
       draw:this.draw.map(c => c.uid), discard:this.discard.map(c => c.uid),
       players:this.players.map(p => Object.fromEntries(K.map(k => [k, p[k]]))), when:Date.now()};
   }
@@ -777,6 +852,7 @@ class Game {
     const deck = makeDeck(), byUid = Object.fromEntries(deck.map(c => [c.uid, c]));
     this.r.s = s.rs; this.dealer = s.dealer; this.evening = s.evening; this.crashed = s.crashed; this.crashAfter = s.crashAfter ?? undefined;
     this.alkmaar = s.alkmaar; this.round = s.round; this.history = s.history || [];
+    this.paperLog = s.paperLog || []; this.sales = s.sales || []; // saves from before the price curve have neither
     this.draw = s.draw.map(u => byUid[u]); this.discard = s.discard.map(u => byUid[u]);
     s.players.forEach((q, i) => {
       const p = Object.assign(this.players[i], q);
@@ -818,11 +894,13 @@ class Game {
         await this.emit('evening', {e});
         await this.playRound();
         // the evening's winnings are paper; now each trader decides to cash it all in or hold into the next evening
+        this.paperLog[e] = P.map(p => Math.round(p.units * IDX[e]));
         await this.emit('cashout', {e});
         for (const p of P){
           if (p.units > 0 && await p.agent.sell(this, p)){
             const v = p.units * IDX[e], fee = Math.round(v * FEE);
             p.purse += Math.round(v) - fee; p.sold += Math.round(v) - fee; p.units = 0; p.cost = 0; p.soldE = e;
+            this.sales.push({e, i:p.i, v:Math.round(v) - fee});
             await this.emit('sold', {p, v:Math.round(v), fee});
           } else if (p.units > 0) await this.emit('held', {p});
         }
@@ -1057,6 +1135,188 @@ const AI = {
 return {VARIETIES, SPECIAL, IDX, RISK, EVENINGS, SETTLE, FEE, BONUS, GPP, TARGET, ROMAN, STYLES, PERSONAS, Game, AI, holdEV, makeDeck};
 })();
 if (typeof module !== 'undefined') module.exports = T7;
+</script>
+<script>/* Tulip 7: the price curve at the end of a winter. No DOM here (the unit tests load this file too).
+   chartData(game) turns a finished winter into the numbers the chart draws; commentary(data) writes the one line about
+   what happened; chartSVG(data, width) draws it as an inline SVG string; summaryHTML(data) is the same chart as text.
+
+   Two kinds of line share one log scale, each as a multiple of its own first price in the record:
+   - the game's index (IDX in engine.js: x1 in mid-November to x7 in early February). It is stylised: the shape follows
+     the January 1637 jump in Garber's prices, the numbers were set for play.
+   - REAL: prices of common bulbs sold by the pound, from Peter Garber, "Tulipmania", Journal of Political Economy 97
+     (1989), as summarised in the game's research notes (tulips/Lale cilginligi oyun analizi.md):
+       Gheele Croonen 0.41 guilders on 2 Jan 1637, 20.5 on 5 Feb 1637 (x50).
+       Switsers x1 on 2 Jan 1637 to x30 on 5 Feb 1637; per aas 0.17 guilders on 5 Feb, 0.11 in the notarial contracts of
+         6 and 9 Feb (so x30 * 0.11 / 0.17 = x19.4 on 9 Feb).
+       Witte Croonen (half pound) January 1637 average 64 guilders (drawn at mid-January), 1,668 on 5 Feb (x26.1), and
+         within a week about 1/20 of that peak (drawn at 12 Feb as x1.3, marked "about").
+     Dates: 3 Feb 1637 Haarlem sale with no bid; 5 Feb Alkmaar; 27 Apr 1637 the States of Holland suspend the contracts;
+     May 1638 Haarlem settles at 3.5% (Goldgar 2007; History Today). Nothing else is plotted as history. */
+const TC = (() => {
+const E = typeof T7 !== 'undefined' ? T7 : require('./engine.js');
+const {IDX, ROMAN, SETTLE} = E;
+// days after 1 November 1636 (Nov 30, Dec 31, Jan 31 days)
+const DAY = {nov: d => d - 1, dec: d => 29 + d, jan: d => 60 + d, feb: d => 91 + d, apr: d => 150 + d};
+// the game's evenings, on the dates EVENINGS gives them (mid-month = the 15th, early = the 5th / 1 Feb, late = the 24th / 27th)
+const EV_DAY = [DAY.nov(15), DAY.nov(22), DAY.dec(5), DAY.dec(24), DAY.jan(2), DAY.jan(15), DAY.jan(27), DAY.feb(1)];
+const CRASH_DAY = DAY.feb(3), ALK_DAY = DAY.feb(5), STATES_DAY = DAY.apr(27);
+const REAL = [
+  {id:'gheele', name:'Gheele Croonen', pts:[[DAY.jan(2), 1], [DAY.feb(5), 50]], note:'0.41 → 20.5 guilders a pound, 2 Jan to 5 Feb 1637'},
+  {id:'switsers', name:'Switsers', pts:[[DAY.jan(2), 1], [DAY.feb(5), 30], [DAY.feb(9), 30 * 0.11 / 0.17]], note:'×30 from 2 Jan to 5 Feb 1637; a third lower in the contracts of 6 and 9 Feb'},
+  {id:'witte', name:'Witte Croonen', pts:[[DAY.jan(15), 1], [DAY.feb(5), 1668 / 64], [DAY.feb(12), 1668 / 64 / 20]], about:2, note:'half a pound: 64 guilders on average in January, 1,668 on 5 Feb 1637, about a twentieth of that a week later'}
+];
+const COLORS = {you:'#c0262d', cuyck:'#2d3340', busscher:'#8a5a32', meeckeren:'#c08a1e', other:'#5a6b7d', index:'#1f4e9c'};
+const fmt = g => 'f' + Math.round(g).toLocaleString('en-US');
+const WORDS = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight'];
+
+/* ---------- data ---------- */
+function chartData(g){
+  const c = g.crashAfter ?? (IDX.length - 1);
+  const paper = g.paperLog || [], sales = g.sales || [];
+  const players = g.players.map(p => {
+    let sold = sales.filter(s => s.i === p.i).map(s => ({e:s.e, v:s.v}));
+    if (!sales.length && p.soldE >= 0) sold = [{e:p.soldE, v:null}]; // a save from before the journey was recorded
+    return {i:p.i, name:p.name, short:p.short || p.name, human:!!p.human, persona:p.persona || null,
+      color:p.human ? COLORS.you : COLORS[p.persona] || COLORS.other, sold, atCrash:p.atCrash || 0, settled:p.settled || 0,
+      paper:IDX.map((_, e) => e <= c && paper[e] ? paper[e][p.i] || 0 : null), alk:g.alkmaar ? (p.lastG || 0) : 0, worth:Math.round(g.standing(p))};
+  });
+  const game = [];
+  for (let e = 0; e <= c; e++) game.push({e, day:EV_DAY[e], v:IDX[e]});
+  return {crashAfter:c, early:c < IDX.length - 1, game, settle:IDX[c] * SETTLE, ghost:IDX.slice(c + 1).map((v, k) => ({e:c + 1 + k, day:EV_DAY[c + 1 + k], v})),
+    real:REAL, players, you:players.find(p => p.human) || players[0]};
+}
+
+/* ---------- the one line ---------- */
+function evWord(n){ return n === 1 ? 'one evening' : (WORDS[n] || n) + ' evenings'; }
+function commentary(d){
+  const you = d.you, c = d.crashAfter, out = [];
+  const last = you.sold.length ? you.sold[you.sold.length - 1].e : -1;
+  const lost = p => Math.max(0, p.atCrash - p.settled);
+  if (last >= 0 && you.atCrash === 0){
+    const gap = c - last;
+    out.push(gap === 0 ? `You sold at evening ${ROMAN[last]}, the very last evening before the crash.`
+      : `You sold at evening ${ROMAN[last]}, ${evWord(gap)} before the crash.`);
+  } else if (last >= 0) out.push(`You cashed in at evening ${ROMAN[last]}, but wrote more paper and lost ${fmt(lost(you))} of it in the crash.`);
+  else if (you.atCrash > 0) out.push(`You held to the end, and the crash took ${fmt(lost(you))} of your paper.`);
+  else out.push('You never held paper when it mattered: the crash took nothing from you.');
+  const rivals = d.players.filter(p => !p.human), caught = rivals.filter(p => lost(p) > 0).sort((a, b) => lost(b) - lost(a));
+  if (caught.length){
+    const r = caught[0];
+    out.push(r.sold.length ? `${r.short} was caught holding ${fmt(r.atCrash)} and lost ${fmt(lost(r))} of it.` : `${r.short} rode it to the end and lost ${fmt(lost(r))} of paper.`);
+  } else {
+    const sellers = rivals.filter(p => p.sold.length).sort((a, b) => b.sold[b.sold.length - 1].e - a.sold[a.sold.length - 1].e);
+    if (sellers.length) out.push(`Every rival got out in time; ${sellers[0].short} was the last, at evening ${ROMAN[sellers[0].sold[sellers[0].sold.length - 1].e]}.`);
+  }
+  return out.join(' ');
+}
+
+/* ---------- the SVG ---------- */
+const r1 = x => Math.round(x * 10) / 10;
+const escX = s => String(s).replace(/[&<>"]/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
+function chartSVG(d, W = 600, o = {}){
+  W = Math.max(300, Math.min(760, Math.round(W)));
+  const narrow = W < 460, fs = narrow ? 10.5 : 12;
+  const ml = narrow ? 30 : 36, mr = narrow ? 6 : 10, top = 12, ph = o.short ? 150 : narrow ? 178 : 220, gap = 30, bh = o.short ? 46 : narrow ? 56 : 66, axis = 34; // short: a phone held sideways
+  const H = top + ph + gap + bh + axis;
+  // the time axis runs evening by evening (evenly spaced), then the crash, Alkmaar and the spring, compressed after 5 Feb
+  const unit = [0, 1, 2, 3, 4, 5, 6, 7, 8.3, 9.7, 12.5], days = [...EV_DAY, CRASH_DAY, ALK_DAY, STATES_DAY];
+  const step = (W - ml - mr) / (unit[unit.length - 1] + 0.9), X0 = ml + step * 0.45;
+  const X = day => { // piecewise linear between the knots
+    if (day <= days[0]) return X0;
+    for (let k = 1; k < days.length; k++) if (day <= days[k]) return X0 + step * (unit[k - 1] + (unit[k] - unit[k - 1]) * (day - days[k - 1]) / (days[k] - days[k - 1]));
+    return X0 + step * unit[unit.length - 1];
+  };
+  const lo = Math.log(0.03), hi = Math.log(70), Y = v => top + ph * (1 - (Math.log(Math.max(v, 0.03)) - lo) / (hi - lo));
+  const xC = X(CRASH_DAY), xA = X(ALK_DAY), xS = X(STATES_DAY), xEnd = W - mr;
+  let s = '';
+  // grid + y ticks
+  for (const [v, l] of [[0.1, '1/10'], [1, '×1'], [10, '×10'], [50, '×50']]){
+    s += `<line class="tg" x1="${ml}" x2="${xEnd}" y1="${r1(Y(v))}" y2="${r1(Y(v))}"/><text class="ty" x="${ml - 4}" y="${r1(Y(v) + 3.5)}" text-anchor="end">${l}</text>`;
+  }
+  // events: crash, Alkmaar, States of Holland
+  s += `<line class="tcrash" x1="${r1(xC)}" x2="${r1(xC)}" y1="${top}" y2="${top + ph}"/>`;
+  s += `<text class="tl tcl" x="${r1(xC - 4)}" y="${top + ph - 6}" text-anchor="end">3 Feb · Haarlem: no bid</text>`;
+  s += `<line class="tev" x1="${r1(xS)}" x2="${r1(xS)}" y1="${r1(Y(4))}" y2="${top + ph}"/>`; // starts below the peak labels
+  // the real series
+  const real = d.real.map((ser, k) => {
+    const pts = ser.pts.map(([day, v]) => `${r1(X(day))},${r1(Y(v))}`).join(' ');
+    const dots = ser.pts.map(([day, v], j) => `<circle class="rd${ser.about === j ? ' about' : ''}" cx="${r1(X(day))}" cy="${r1(Y(v))}" r="2.6"/>`).join('');
+    return `<g class="real r${k}"><polyline${k === 0 ? ' class="draw" pathLength="1"' : ''} points="${pts}"/>${dots}</g>`;
+  }).join('');
+  s += real;
+  // peak labels at 5 Feb, to the right of the Alkmaar point (x50 at the top, then x30 and x26 below it)
+  const pk = d.real.map(ser => ({n:ser.name, v:ser.pts.find(p => p[0] === ALK_DAY)[1]})).sort((a, b) => b.v - a.v);
+  let ly = -1e9; const lx = xA + 9;
+  for (const p of pk){ let y = Math.max(Y(p.v) + 4, ly + fs + 1); ly = y; s += `<text class="tl tr" x="${r1(lx)}" y="${r1(y)}">${narrow ? p.n.split(' ')[0] : p.n} ×${Math.round(p.v)}</text>`; }
+  // the game's index: drawn to the last evening played, then on to the crash and down to 3½%
+  const gpts = d.game.map(p => [X(p.day), Y(p.v)]), lastG = gpts[gpts.length - 1];
+  if (d.ghost.length) s += `<polyline class="ghost" points="${[lastG, ...d.ghost.map(p => [X(p.day), Y(p.v)])].map(p => p.map(r1).join(',')).join(' ')}"/>`;
+  const gpath = gpts.map(p => p.map(r1).join(',')).join(' ') + ` ${r1(xC)},${r1(lastG[1])} ${r1(xC)},${r1(Y(d.settle))}`;
+  s += `<polyline class="gidx draw" pathLength="1" points="${gpath}"/>`;
+  s += `<polyline class="gset" points="${r1(xC)},${r1(Y(d.settle))} ${r1(xEnd)},${r1(Y(d.settle))}"/>`;
+  s += `<text class="tl tset" x="${r1(xC + 5)}" y="${r1(Y(d.settle) - 5)}">${narrow ? 'settles at 3½%' : 'paper settles at 3½%'}</text>`;
+  for (const p of gpts) s += `<circle class="gd" cx="${r1(p[0])}" cy="${r1(p[1])}" r="2.4"/>`;
+  // who cashed in where (initials in the portrait colour); who was caught by the crash (a ring on the drop)
+  const at = {}; let you = null;
+  const mark = (p, x, y, caught) => {
+    const k = `${r1(x)}`, n = at[k] = (at[k] || 0) + 1, yy = y + (n - 1) * (narrow ? 14.5 : 16.5);
+    const r = narrow ? 6.5 : 7.5, ini = p.human ? 'Y' : p.short.replace(/^(Van|De) /, '')[0];
+    return `<g class="mk${caught ? ' caught' : ''}" style="--d:${(1.3 + 0.12 * n).toFixed(2)}s"><title>${escX(p.human ? 'You' : p.name)} ${caught ? (p.human ? 'were' : 'was') + ' caught by the crash' : 'cashed in here'}</title><circle cx="${r1(x)}" cy="${r1(yy)}" r="${r}" fill="${caught ? '#fffaf0' : p.color}" stroke="${caught ? p.color : '#fffaf0'}" stroke-width="${caught ? 2.4 : 1.6}"/><text x="${r1(x)}" y="${r1(yy + fs * .36)}" text-anchor="middle" fill="${caught ? p.color : '#fff'}">${ini}</text></g>`;
+  };
+  const order = [...d.players.filter(p => p.human), ...d.players.filter(p => !p.human)]; // yours sits on the line, the rivals' hang below
+  for (const p of order){
+    for (const sl of p.sold){ const x = X(EV_DAY[sl.e]), y = Y(IDX[sl.e]); s += mark(p, x, y, false); if (p.human) you = {x, y}; }
+    if (p.atCrash > 0) s += mark(p, xC, Y(IDX[d.crashAfter]), true);
+  }
+  if (you){ // a callout above the line
+    const tw = (narrow ? 96 : 112), tx = Math.min(Math.max(you.x - 18, ml + tw / 2), xC - tw / 2 - 4), ty = Math.max(top + 12, you.y - 30);
+    s += `<g class="mk you" style="--d:1.9s"><line class="lead" x1="${r1(you.x)}" y1="${r1(you.y - 8)}" x2="${r1(tx)}" y2="${r1(ty + 3)}"/><text class="tyou" x="${r1(tx)}" y="${r1(ty)}" text-anchor="middle">You cashed in here</text></g>`;
+  }
+  // your paper, evening by evening (guilders), then what the crash left and Alkmaar's cash
+  const by = top + ph + gap, me = d.you, vals = [...me.paper.filter(v => v != null), me.atCrash, me.alk], mx = Math.max(1, ...vals) * 1.22; // room for the top label
+  s += `<text class="tband" x="${ml}" y="${by - 10}">Your paper each evening${narrow ? '' : ', in guilders'}</text>`;
+  s += `<line class="tg" x1="${ml}" x2="${xEnd}" y1="${by + bh}" y2="${by + bh}"/>`;
+  const bw = Math.min(14, step * 0.5), soldE = new Set(me.sold.map(x => x.e));
+  const bar = (x, v, cls, k, t) => { const h = Math.max(v > 0 ? 2 : 0, bh * v / mx); return `<rect class="bar ${cls}" style="--d:${(0.15 + k * 0.08).toFixed(2)}s" x="${r1(x - bw / 2)}" y="${r1(by + bh - h)}" width="${r1(bw)}" height="${r1(h)}"><title>${escX(t)}</title></rect>`; };
+  me.paper.forEach((v, e) => { if (v != null) s += bar(X(EV_DAY[e]), v, soldE.has(e) ? 'sold' : 'held', e, `Evening ${ROMAN[e]}: ${fmt(v)} of paper${soldE.has(e) ? ', cashed in' : ''}`); });
+  if (me.atCrash > 0){ s += bar(xC, me.atCrash, 'lost', 9, `At the crash: ${fmt(me.atCrash)} of paper, settled for ${fmt(me.settled)}`); s += bar(xC, me.settled, 'settled', 10, `Settled for ${fmt(me.settled)}`); }
+  if (me.alk > 0) s += bar(xA, me.alk, 'alk', 11, `Alkmaar: ${fmt(me.alk)} in cash`);
+  const big = me.paper.reduce((b, v, e) => v != null && v > (me.paper[b] || 0) ? e : b, 0);
+  if (me.paper[big] > 0) s += `<text class="tl tbv" x="${r1(X(EV_DAY[big]))}" y="${r1(by + bh - bh * me.paper[big] / mx - 3)}" text-anchor="middle">${fmt(me.paper[big])}</text>`;
+  // x axis: evenings, months, the crash and Alkmaar
+  const ay = by + bh + 14, xSl = xEnd; // the 27 Apr caption ends at the right edge
+  EV_DAY.forEach((day, e) => { s += `<text class="tx${e > d.crashAfter ? ' off' : ''}" x="${r1(X(day))}" y="${ay}" text-anchor="middle">${ROMAN[e]}</text>`; });
+  for (const [e, m] of [[0, 'Nov'], [2, 'Dec'], [4, 'Jan'], [7, 'Feb']]) s += `<text class="tm" x="${r1(X(EV_DAY[e]))}" y="${ay + fs + 2}" text-anchor="middle">${m}</text>`;
+  s += `<text class="tx crash td" x="${r1(xC)}" y="${ay}" text-anchor="middle">3 Feb</text><text class="tx td" x="${r1(xA)}" y="${ay}" text-anchor="middle">5 Feb</text><text class="tx td" x="${r1(xSl)}" y="${ay}" text-anchor="end">27 Apr</text>`;
+  s += `<text class="tm" x="${r1(xA)}" y="${ay + fs + 2}" text-anchor="middle">Alkmaar</text><text class="tm" x="${r1(xSl)}" y="${ay + fs + 2}" text-anchor="end">suspended</text>`;
+  // the axis break between 5 Feb and 27 Apr (the spring is squeezed)
+  const xb = (xA + xS) / 2;
+  const yb = by + bh;
+  s += `<rect x="${r1(xb - 4)}" y="${yb - 6}" width="8" height="12" fill="#fffdf7"/><path class="tbrk" d="M${r1(xb - 6)} ${yb + 5}l4 -10M${r1(xb + 2)} ${yb + 5}l4 -10"/>`;
+  const title = 'The winter of 1636–37: prices and your paper';
+  const desc = summaryText(d).join(' ');
+  return `<svg class="pc" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-labelledby="pcT pcD" style="--fs:${fs}px"><title id="pcT">${escX(title)}</title><desc id="pcD">${escX(desc)}</desc>${s}</svg>`;
+}
+
+/* ---------- the same as text ---------- */
+function summaryText(d){
+  const g = d.game, me = d.you, out = [];
+  out.push(`The game's index went from ×${g[0].v} at evening I to ×${g[g.length - 1].v} at evening ${ROMAN[d.crashAfter]}; then the crash, and all paper settled at 3½ per cent.`);
+  out.push('Real prices of common bulbs (Garber 1989) rose far more steeply, and later: Gheele Croonen fifty times and Switsers thirty times between 2 January and 5 February 1637, Witte Croonen twenty-six times from its January average.');
+  out.push('After the Haarlem sale of 3 February found no buyer, Switsers contracts were a third lower by 9 February and Witte Croonen fell to about a twentieth of its peak within a week. On 27 April the States of Holland suspended the contracts.');
+  const paper = me.paper.map((v, e) => v != null ? `${ROMAN[e]} ${fmt(v)}` : null).filter(Boolean).join(', ');
+  out.push(`Your paper each evening: ${paper || 'none'}.`);
+  for (const p of d.players){
+    const who = p.human ? 'You' : p.short, r = p.sold.map(x => ROMAN[x.e]), s = r.length > 1 ? `evenings ${r.slice(0, -1).join(', ')} and ${r[r.length - 1]}` : r.length ? `evening ${r[0]}` : '';
+    out.push(`${who}: ${s ? `cashed in at ${s}` : 'never cashed in'}${p.atCrash > 0 ? `; ${fmt(p.atCrash)} of paper at the crash, settled for ${fmt(p.settled)}` : ''}.`);
+  }
+  return out;
+}
+function summaryHTML(d){ return `<ul>${summaryText(d).map(t => `<li>${escX(t)}</li>`).join('')}</ul>`; }
+
+return {chartData, commentary, chartSVG, summaryText, summaryHTML, REAL, EV_DAY, CRASH_DAY, ALK_DAY, STATES_DAY, COLORS};
+})();
+if (typeof module !== 'undefined') module.exports = TC;
 </script>
 <script>
 const {VARIETIES:V, SPECIAL:SP, IDX, RISK, EVENINGS:EV, ROMAN, STYLES, PERSONAS, GPP, FEE, SETTLE, TARGET} = T7;
@@ -1688,7 +1948,7 @@ async function onEvent(t, d){
       else if (me.total === best) unlock('tavern');
       { const rank = 1 + G.players.filter(x => G.standing(x) > G.standing(me)).length, worth = G.standing(me);
         track('tulip_game_end', {result:rank === 1 ? 'win' : 'lose', rank, worth:Math.round(worth), rounds:G.round, crash_after:G.mode === 'winter' ? G.crashAfter + 1 : null, achievements:Object.keys(ACHS).length});
-        saveRecord(rank === 1, worth); }
+        saveRecord(rank === 1, worth); stampPassport(); }
       render(); await pace(1); await endScene(); break; }
     case 'resume': render(); await pace(.5); break;
   }
@@ -1735,21 +1995,87 @@ async function alkmaarScene(){
     <div class="row"><button class="btn primary" data-v="ok">Ride to Alkmaar</button></div>`);
   say('Cash tonight. The orphan masters are watching.'); render();
 }
+/* The end of the game: the standings, the price curve (winter) with one line on what happened, the history notes, a
+   share card and the Homo Ludens passport stamp. */
+const ORD = k => k + (k === 1 ? 'st' : k === 2 ? 'nd' : k === 3 ? 'rd' : 'th');
+const ON_CG = () => !!(window.HL_PLATFORM && HL_PLATFORM.id === 'crazygames');
+function retourvlootPlayed(){ try { return !!(localStorage.getItem('retourvloot.v1') || localStorage.getItem('retourvloot.runs')); } catch(e){ return false; } }
+/* One line in the history notes about the other Amsterdam game on the site (no link on CrazyGames). */
+function nodHTML(){
+  if (retourvlootPlayed()) return `<li class="nod">Your Retourvloot company was trading in Amsterdam that winter: VOC shares, not tulips, were the city's other paper market.</li>`;
+  if (ON_CG()) return '';
+  return `<li class="nod">The same city, the same years: <a href="/retourvloot/">Retourvloot</a> puts you in the VOC's boardroom.</li>`;
+}
+function endFacts(){
+  const P = [...G.players].sort((a, b) => G.standing(b) - G.standing(a)), me = G.players[0];
+  const rank = 1 + G.players.filter(x => G.standing(x) > G.standing(me)).length, worth = Math.round(G.standing(me));
+  return {P, me, rank, worth, win:rank === 1};
+}
+function shareOpts(){
+  const {P, me, rank, worth, win} = endFacts(), winter = G.mode === 'winter';
+  const rankLine = win ? 'Richest at the Menniste Bruyloft' : `${ORD(rank)} of 4 at the Menniste Bruyloft`;
+  let title, lines;
+  if (winter){
+    const d = TC.chartData(G), last = d.you.sold.length ? d.you.sold[d.you.sold.length - 1].e : -1;
+    const gap = last >= 0 ? G.crashAfter - last : -1;
+    title = d.you.atCrash > 0 ? 'Caught by the crash of 1637' : last >= 0 ? `Sold at evening ${ROMAN[last]}` : 'Kept out of the paper';
+    const caught = d.players.filter(p => !p.human && p.atCrash > p.settled).sort((a, b) => (b.atCrash - b.settled) - (a.atCrash - a.settled))[0];
+    lines = [d.you.atCrash > 0 ? `${fmt(d.you.atCrash)} of paper settled for ${fmt(d.you.settled)}`
+        : gap === 0 ? 'The last evening before the crash' : gap > 0 ? `${['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'][gap]} evening${gap === 1 ? '' : 's'} before the crash` : 'Never caught holding paper',
+      caught ? `${caught.short} lost ${fmt(caught.atCrash - caught.settled)} of paper` : `The crash came after evening ${ROMAN[G.crashAfter]}`];
+  } else {
+    title = win ? 'Won the tavern game' : `${P[0].short} won the tavern game`;
+    lines = [`${me.books} tulip book${me.books === 1 ? '' : 's'}, ${me.busts} evening${me.busts === 1 ? '' : 's'} up in smoke`, `${G.round} rounds to ${TARGET}`];
+  }
+  const big = winter ? fmt(worth) : `${me.total} points`;
+  return {game:'tulip', kicker:winter ? 'Tulip 7 · The winter of 1636' : 'Tulip 7 · The tavern game', title, big, sub:rankLine, lines,
+    art:'img/bg_cover.webp', dark:true, accent:'#e3b25a',
+    text:`Tulip 7, ${winter ? 'the winter of 1636' : 'the tavern game'}: ${title}. I finished ${win ? 'first' : ORD(rank)} of 4 with ${big}.`};
+}
+function stampPassport(){
+  const {rank, worth, win} = endFacts(), me = G.players[0];
+  const label = G.mode === 'winter' ? `Winter of 1636: ${fmt(worth)}, ${ORD(rank)} of 4` : `Tavern game: ${me.total} points, ${ORD(rank)} of 4`;
+  try { window.HL && HL.stamp('tulip', {result:win ? 'win' : 'loss', label, score:worth}); } catch(e){}
+}
+/* The chart is drawn for the width it gets (text stays legible on a phone) and redrawn if that changes. */
+function curveHTML(d){
+  return `<section class="curve" aria-label="The price curve"><div class="ck">The real price curve</div><p class="cline" id="cline">${esc(TC.commentary(d))}</p>
+    <div class="cbox" id="cbox"></div>
+    <div class="ckey"><span><i class="k gi"></i>The game's index (stylised from Garber's prices)</span><span><i class="k re"></i>Real prices of common bulbs, 1637</span><span><i class="k dot" style="--c:${TC.COLORS.you}">Y</i>Cashed in</span><span><i class="k ring">M</i>Caught by the crash</span></div>
+    <details class="ctext"><summary>The chart as text</summary>${TC.summaryHTML(d)}<p class="src">Each line is drawn as a multiple of its own first price in the record, on a log scale; the evenings are evenly spaced, the calendar is not. Prices: Peter Garber, "Tulipmania" (1989). Dates: Anne Goldgar, <i>Tulipmania</i> (2007).</p></details></section>`;
+}
+function drawCurve(d){
+  const box = $('#cbox'); if (!box) return;
+  const w = Math.round(box.clientWidth); if (!w || w === box._w) return; box._w = w;
+  box.innerHTML = TC.chartSVG(d, w, {short:innerHeight < 520});
+}
 async function endScene(){
-  const P = [...G.players].sort((a, b) => G.standing(b) - G.standing(a));
-  const me = G.players[0], win = P[0] === me;
+  const {P, me, win} = endFacts();
   const rows = P.map((p, k) => `<tr><td>${k + 1}. ${p.human ? '<b>You</b>' : esc(p.name)}</td><td class="n">${G.mode === 'classic' ? p.total : fmt(p.purse + p.settled)}</td></tr>`).join('');
   let mine = '';
   if (G.mode === 'winter') mine = me.atCrash > 0 ? `<p>Your paper at the crash was worth <b>${fmt(me.atCrash)}</b>. It settled for <b>${fmt(me.settled)}</b>.</p>` : `<p>You held no paper when the crash came.</p>`;
+  const d = G.mode === 'winter' ? TC.chartData(G) : null;
   const facts = G.mode === 'winter' ? `<div class="facts"><b>What really happened</b><ul>
     <li>Only a few hundred people traded: about 285 in Haarlem and 60 in Amsterdam. Only 37 spent more than 400 guilders.</li>
     <li>Most of the winter's prices were never paid. On 27 April 1637 the States of Holland suspended the contracts; in May 1638 Haarlem let buyers walk away for 3½ per cent: <i>rouwkoop</i>.</li>
     <li>Historians have found almost no bankruptcies caused by tulips, and nobody drowned in a canal. Those stories came from pamphlets, from Charles Mackay's 1841 book and from a novel.</li>
-    <li>The commonest bulbs swelled the most. That is why the 12s are the most valuable cards and the most dangerous.</li></ul>
-    <div class="src">Sources: Peter Garber, "Tulipmania" (1989); Anne Goldgar, <i>Tulipmania</i> (2007).</div></div>` : '';
+    <li>The commonest bulbs swelled the most. That is why the 12s are the most valuable cards and the most dangerous.</li>${nodHTML()}</ul>
+    <div class="src">Sources: Peter Garber, "Tulipmania" (1989); Anne Goldgar, <i>Tulipmania</i> (2007).</div></div>`
+    : (() => { const n = nodHTML(); return n ? `<ul class="nodp">${n}</ul>` : ''; })();
   const n = ACH.filter(a => ACHS[a.id]).length;
-  const v = await ask(`<div class="kick">${G.mode === 'winter' ? 'The winter of 1636–37' : 'Game over'}</div><h2>${win ? 'You finish richest.' : esc(P[0].name) + ' finishes richest.'}</h2>
-    <table>${rows}</table>${mine}${facts}<div data-hl-next></div><div class="row"><button class="btn primary" data-v="again">Play again</button><button class="btn" data-v="ach">Achievements (${n}/${ACH.length})</button><button class="btn" data-v="menu">Change mode</button></div>`);
+  const html = `<div class="kick">${G.mode === 'winter' ? 'The winter of 1636–37' : 'Game over'}</div><h2>${win ? 'You finish richest.' : esc(P[0].name) + ' finishes richest.'}</h2>
+    <table>${rows}</table>${mine}${d ? curveHTML(d) : ''}${facts}<div data-hl-next></div><div class="row"><button class="btn primary" data-v="again">Play again</button><button class="btn share" id="bShare" type="button">Share</button><button class="btn" data-v="ach">Achievements (${n}/${ACH.length})</button><button class="btn" data-v="menu">Change mode</button></div>`;
+  const pr = ask(html, d ? 'endw' : '');
+  for (let k = 0; k < 200 && !$('#bShare'); k++) await sleep(30);
+  if (d){
+    drawCurve(d);
+    const ro = window.ResizeObserver ? new ResizeObserver(() => drawCurve(d)) : null;
+    if (ro) ro.observe($('#cbox'));
+    pr.then(() => ro && ro.disconnect());
+  }
+  const sb = $('#bShare');
+  if (sb){ if (window.HL && HL.on) HL.on(sb, shareOpts); else { sb.hidden = true; sb.style.display = 'none'; } }
+  const v = await pr;
   if (v === 'again') start(G.mode); else if (v === 'ach'){ G = null; showAchievements(); } else showStart();
 }
 function legendHTML(){ return `<div class="legend">${V.slice().reverse().map(v => cardHTML({k:'num', v:v.n, uid:'L' + v.n})).join('')}</div>`; }
@@ -1774,6 +2100,7 @@ function showRules(){
   <li><b>Joost van Cuyck</b>, 29, of Amsterdam, bought a pound of Switsers here in February 1637 and backed out the next morning over the guarantor. <i>Plays it safe:</i> stands up at about a one-in-five chance of a duplicate (later if he holds a Rouwkoop), and sells his paper early, or as soon as someone else does.</li>
   <li><b>Andries de Busscher</b>, 31, a Haarlem cooper and tulip connoisseur, was the seller in that deal. <i>Collects:</i> plays for five different tulips and chances the seventh for the book; takes his profit once his paper has grown well past double.</li>
   <li><b>Abraham van Meeckeren</b>, a Haarlem brewer, was one of only 37 people Goldgar found who spent over 400 guilders on tulips. <i>Spends:</i> takes papers until his evening is worth about 30, calls the Seghsman on himself, and rides the index deep into the winter.</li></ul>
+  <h3>The price curve at the end of a winter</h3><p>The game's index (×1 to ×7) is stylised: its shape follows the January 1637 jump in Peter Garber's prices, its numbers were set for play. Beside it the chart draws real prices of bulbs sold by the pound, each as a multiple of its first price in the record (Garber 1989): Gheele Croonen from 0.41 to 20.5 guilders between 2 January and 5 February 1637; Switsers thirty times over the same weeks, then about a third lower in the notaries' contracts of 6 and 9 February; half a pound of Witte Croonen from a January average of 64 guilders to 1,668 on 5 February, and about a twentieth of that a week later. Dates: the Haarlem sale with no bid on 3 February, Alkmaar on the 5th, the States of Holland suspending the contracts on 27 April 1637 (Anne Goldgar, <i>Tulipmania</i>, 2007).</p>
   <h3>Reading a card</h3><p>The number in the corners is the card's value, and also how many of that tulip are in the deck: a 12 has twelve copies, so it is the likeliest to come twice. The number is how much that variety swelled on paper that winter: cheap bulbs sold by the pound swelled fifty times, the famous rarities hardly moved. Semper Augustus is 0: its owner would not sell.</p>
   ${legendHTML()}
   <div class="row"><button class="btn primary" data-v="x">${G ? 'Back to the table' : 'Close'}</button></div></div>`, 'wide', true);

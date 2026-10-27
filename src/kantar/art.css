@@ -20,10 +20,7 @@
 .ki.coin{background-image:var(--ka-coin)}.ki.light{background-image:var(--ka-light)}.ki.narh{background-image:var(--ka-narh)}.ki.burn{background-image:var(--ka-burn)}.ki.emblem{background-image:var(--ka-emblem)}
 /* each row is led by its object: the camel brings the incoming goods (it walks left, the goods follow),
    the brazier holds the burned ones */
-#caravan,#burned{align-items:center;min-height:58px}
-#caravan::before,#burned::before{content:"";flex:none;width:60px;height:58px;margin:0 4px 0 -4px;background:center/contain no-repeat;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4))}
-#caravan::before{background-image:var(--ka-caravan)}
-#burned::before{background-image:var(--ka-burn);width:52px}
+/* (the market panel icons, camel and brazier, are now buttons: .mk-ic in kantar.html) */
 .modeTag.narh::before{content:"";display:inline-block;width:16px;height:16px;margin:-3px 5px -3px -3px;vertical-align:middle;background:var(--ka-narh) center/contain no-repeat}
 .rp-ic{display:block;flex:none;width:44px;height:44px;background:center/contain no-repeat}
 .rp-ic.emblem{background-image:var(--ka-emblem)}.rp-ic.narh{background-image:var(--ka-narh)}

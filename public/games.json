@@ -2,73 +2,109 @@
   {
     "id": "borderlines",
     "no": 1,
-    "version": "2026.10.26",
+    "version": "2026.10.27",
     "title": "Borderlines",
     "url": "/borderlines/",
     "devices": "any",
     "length": "5 minutes",
     "image": "/og-borderlines.png",
     "short": "You get a year and a realm. Paint the land it ruled, then see how close you came. A new daily challenge every day.",
-    "announce": "You get a year and the name of a realm: the Ottoman Empire in 1530, the Inca in 1530, Aksum in 500. Paint the land you think it ruled on a world map with no modern borders, then see how close you came. Five new realms every day, from easy to hard."
+    "announce": "You get a year and the name of a realm: the Ottoman Empire in 1530, the Inca in 1530, Aksum in 500. Paint the land you think it ruled on a world map with no modern borders, then see how close you came. Five new realms every day, from easy to hard.",
+    "moment": false
   },
   {
     "id": "retourvloot",
     "no": 2,
-    "version": "2026.10.26",
+    "version": "2026.10.27",
     "title": "Retourvloot",
     "url": "/retourvloot/",
     "devices": "desktop",
     "length": "30–80 minutes",
     "image": "/og-retourvloot.jpg",
     "short": "Run the Dutch East India Company from Amsterdam, 1602 to 1799. Letters from Batavia take a year.",
-    "announce": "You are a director of the Dutch East India Company in Amsterdam, from its founding in 1602 to its end in 1799. Equip ships, send silver east and wait a year for letters from Batavia. Chase the spice monopolies and keep the shareholders paid, while the Company slowly hollows out. Every event card shows a real painting or print from the Rijksmuseum, and the other ledger keeps count of what the trade cost. Best on a laptop or desktop; 30 to 80 minutes."
+    "announce": "You are a director of the Dutch East India Company in Amsterdam, from its founding in 1602 to its end in 1799. Equip ships, send silver east and wait a year for letters from Batavia. Chase the spice monopolies and keep the shareholders paid, while the Company slowly hollows out. Every event card shows a real painting or print from the Rijksmuseum, and the other ledger keeps count of what the trade cost. Best on a laptop or desktop; 30 to 80 minutes.",
+    "moment": {
+      "year": 1602.2,
+      "when": "20 March 1602",
+      "place": "The Hague",
+      "title": "The VOC is chartered",
+      "text": "The States General give the United East India Company a 21-year monopoly on Dutch trade east of the Cape of Good Hope."
+    }
   },
   {
     "id": "cupoftea",
     "no": 3,
-    "version": "2026.10.26",
+    "version": "2026.10.27",
     "title": "A Cup of Tea",
     "url": "/cupoftea/",
     "devices": "desktop",
     "length": "3 scenes",
     "image": "/og-cupoftea.jpg",
     "short": "A grocer's receipt from East London, 1850. Read the papers of the day, do the sums, and find out who got every farthing.",
-    "announce": "East London, March 1850. A working family's grocer's receipt: one pound of brown sugar for 4½d, two ounces of Congou tea for 5d. You are a nameless detective with a desk of real papers: Parliamentary debates, newspaper letters, price lists. Fill the ledger, line by line, until every farthing is accounted for: the grocer, Her Majesty's Customs, the shipowner, and the money that never reached London. Three scenes, from a London shop to a sugar estate outside Havana and back to the tea. Every figure comes from a source of the time. Best on a laptop or desktop."
+    "announce": "East London, March 1850. A working family's grocer's receipt: one pound of brown sugar for 4½d, two ounces of Congou tea for 5d. You are a nameless detective with a desk of real papers: Parliamentary debates, newspaper letters, price lists. Fill the ledger, line by line, until every farthing is accounted for: the grocer, Her Majesty's Customs, the shipowner, and the money that never reached London. Three scenes, from a London shop to a sugar estate outside Havana and back to the tea. Every figure comes from a source of the time. Best on a laptop or desktop.",
+    "moment": {
+      "year": 1850.2,
+      "when": "March 1850",
+      "place": "East London",
+      "title": "A grocer's receipt",
+      "text": "A Saturday night: a pound of brown sugar and two ounces of tea, 9½d. Since 1846 Parliament has been cutting the duty on foreign sugar year by year."
+    }
   },
   {
     "id": "polder",
     "no": 4,
-    "version": "2026.10.26",
+    "version": "2026.10.27",
     "title": "Polder",
     "url": "/polder/",
     "devices": "desktop",
     "length": "15 minutes a region",
     "image": "/og-polder.jpg",
     "short": "Build dikes, drain the sea, and survive seven centuries of Dutch storms, from the terp mounds of 1200 to the flood of 1953.",
-    "announce": "Place dike pieces, close them into rings and watch the water drain away into fields, sheep and windmills. Then the real storms come: St. Elizabeth's Flood, the Christmas Flood, the North Sea Flood of 1953. Play four regions of the Netherlands, each with its own challenge: link the Frisian terps, win back Zeeland's drowned villages, tame North Holland's waterwolf and close off the Zuiderzee. Every turn brings a page of Dutch history for your Chronicle. Best on a laptop or desktop; about 15 minutes per region."
+    "announce": "Place dike pieces, close them into rings and watch the water drain away into fields, sheep and windmills. Then the real storms come: St. Elizabeth's Flood, the Christmas Flood, the North Sea Flood of 1953. Play four regions of the Netherlands, each with its own challenge: link the Frisian terps, win back Zeeland's drowned villages, tame North Holland's waterwolf and close off the Zuiderzee. Every turn brings a page of Dutch history for your Chronicle. Best on a laptop or desktop; about 15 minutes per region.",
+    "moment": {
+      "year": 1612.4,
+      "when": "1612",
+      "place": "North Holland",
+      "title": "The Beemster runs dry",
+      "text": "Forty-three windmills pump a whole lake dry north of Amsterdam: about 7,200 hectares of new farmland, the first great Dutch drainage."
+    }
   },
   {
     "id": "kantar",
     "no": 5,
-    "version": "2026.10.26",
+    "version": "2026.10.27",
     "title": "Kantar",
     "url": "/kantar/",
     "devices": "any",
     "length": "10 minutes",
     "image": "/og-kantar.jpg",
     "short": "A two-player duel in the Grand Bazaar of Istanbul. You divide three goods between two pans; your rival chooses.",
-    "announce": "Istanbul, the Grand Bazaar. Saffron, silk, coffee and copper come to the stall over six rounds, and you share them with a rival merchant. You put three goods into the pans of a brass scale; your rival takes one pan and leaves you the other. Win the majority in a good to earn its price, but carry too much and you lose the light-load bonus. Two wax seals, a narh price that moves with supply, a teacher that explains the best move at every step, and your own stats. Easy to learn, hard to master; about 10 minutes a game, in English or Turkish, on any screen."
+    "announce": "Istanbul, the Grand Bazaar. Saffron, silk, coffee and copper come to the stall over six rounds, and you share them with a rival merchant. You put three goods into the pans of a brass scale; your rival takes one pan and leaves you the other. Win the majority in a good to earn its price, but carry too much and you lose the light-load bonus. Two wax seals, a narh price that moves with supply, a teacher that explains the best move at every step, and your own stats. Easy to learn, hard to master; about 10 minutes a game, in English or Turkish, on any screen.",
+    "moment": {
+      "year": 1461,
+      "when": "1461",
+      "place": "Istanbul",
+      "title": "The Cevahir Bedesten opens",
+      "text": "Mehmed II completes a vaulted, lockable hall for the most valuable goods. The Grand Bazaar grows around it, street by street."
+    }
   },
   {
     "id": "tulip",
     "no": 6,
-    "version": "2026.10.26",
+    "version": "2026.10.27",
     "title": "Tulip 7",
     "url": "/tulip7/",
     "devices": "any",
     "length": "15 minutes",
     "image": "/og-tulip7.jpg",
     "short": "Amsterdam, winter 1636. Collect seven different tulips at a tavern table, write your winnings on paper and cash in before the crash.",
-    "announce": "Amsterdam, the winter of 1636, in the Menniste Bruyloft tavern. Take papers one at a time, each a promise for a tulip you have not seen: collect seven different ones for a full tulip book, but if the same tulip comes twice your whole evening goes up in smoke. Your winnings are written on paper and grow with a price index that rises every evening, until the crash of 3 February 1637 settles all paper at 3½ per cent. Cash in or hold? Three traders from the archives sit at the table with you, and fourteen achievements tell what really happened. About 15 minutes, on any screen."
+    "announce": "Amsterdam, the winter of 1636, in the Menniste Bruyloft tavern. Take papers one at a time, each a promise for a tulip you have not seen: collect seven different ones for a full tulip book, but if the same tulip comes twice your whole evening goes up in smoke. Your winnings are written on paper and grow with a price index that rises every evening, until the crash of 3 February 1637 settles all paper at 3½ per cent. Cash in or hold? Three traders from the archives sit at the table with you, and fourteen achievements tell what really happened. About 15 minutes, on any screen.",
+    "moment": {
+      "year": 1637.09,
+      "when": "3 February 1637",
+      "place": "Haarlem",
+      "title": "Nobody bids in Haarlem",
+      "text": "At a tavern sale the bulbs find no buyer. Within days the tulip trade collapses across the Republic."
+    }
   }
 ]

@@ -15,6 +15,10 @@
   // "kv_namespaces": [
   //   { "binding": "SUBSCRIBERS", "id": "PASTE_KV_NAMESPACE_ID" }
   // ],
+  // Borderlines "You beat N% of today's players" (optional; without it the line is simply not shown).
+  // Create a second KV namespace called "homoludens-stats" (Storage & Databases → KV), then add this line to the
+  // kv_namespaces list above (remove the // in front of that list's lines too if SUBSCRIBERS isn't set up yet):
+  //   { "binding": "STATS", "id": "PASTE_STATS_KV_NAMESPACE_ID" }
   // at most 3 feedback messages / sign-ups per visitor per minute
   "ratelimits": [
     { "name": "FEEDBACK_LIMIT", "namespace_id": "1001", "simple": { "limit": 3, "period": 60 } }

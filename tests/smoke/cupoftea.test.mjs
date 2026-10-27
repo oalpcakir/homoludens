@@ -173,3 +173,77 @@ test('Cup of Tea: the ledger can be filled with the keyboard alone', async () =>
   assert.deepEqual(t.problems, []);
   await t.close();
 });
+
+// "Where the farthings went": the Sankey diagrams on the end screens, the share sheet, the passport stamp.
+const flows = (page, spec) => page.evaluate(s => {
+  const svg = document.querySelector(`.sk svg[data-spec="${s}"]`);
+  if (!svg) return null;
+  const v = [...svg.querySelectorAll('.sk-flow')].map(p => +p.dataset.v);
+  return { total: +svg.dataset.total, sum: Math.round(v.reduce((a, b) => a + b, 0) * 1e6) / 1e6, n: v.length, layout: svg.dataset.layout,
+    rows: svg.closest('.sk').querySelectorAll('details table tbody tr').length, trace: svg.querySelectorAll('path.tr').length,
+    title: svg.querySelector('title')?.textContent, desc: svg.querySelector('desc')?.textContent };
+}, spec);
+
+test('Cup of Tea: Scene 1 ends with a Sankey of the 4½d, a passport stamp and a share sheet', async () => {
+  const t = await open('/cupoftea/');
+  await skipIntro(t.page);
+  await solveScene1(t.page);
+  await t.page.waitForSelector('#skSugar svg', { timeout: 4000 });
+  const f = await flows(t.page, 'sugar');
+  assert.equal(f.total, 4.5); assert.equal(f.sum, 4.5, 'the flows do not add up to the receipt');
+  assert.equal(f.n, 4); assert.equal(f.trace, 1, 'no labour line'); assert.equal(f.layout, 'horizontal');
+  assert.ok(f.rows >= 5, 'table fallback missing rows'); assert.match(f.desc, /HM Customs 1\.82d/);
+  const pass = await t.page.evaluate(() => JSON.parse(localStorage.getItem('hl.passport.v1')));
+  assert.equal(pass.games.cupoftea.plays, 1); assert.match(pass.games.cupoftea.label, /Scene 1 solved · \d+ blots?/);
+  await t.page.click('#rShare');
+  await t.page.waitForSelector('.hlx-ov', { timeout: 3000 });
+  assert.equal(await t.page.locator('.hlx-ov h2').count(), 1, 'share sheet has no heading');
+  assert.equal(await t.page.locator('#rCopy').isVisible(), true, 'Copy as text gone');
+  assert.deepEqual(t.problems, []);
+  await t.close();
+});
+
+test('Cup of Tea: the final ending draws the tea (5d) and the whole receipt (9½d), and fits a phone', async () => {
+  const storage = { 'cupoftea.v1': JSON.stringify({ done: [1, 2, 3], blots: { 3: 1 }, cur: 3 }) };
+  const t = await open('/cupoftea/3/', { storage });
+  await t.page.waitForSelector('#skWhole svg', { timeout: 4000 });
+  const tea = await flows(t.page, 'tea'), whole = await flows(t.page, 'whole');
+  assert.equal(tea.sum, 5); assert.equal(tea.total, 5);
+  assert.equal(whole.sum, 9.5); assert.equal(whole.total, 9.5);
+  assert.equal(whole.trace, 2, 'labour lines for the cane-cutter and the tea pickers');
+  assert.match(whole.desc, /The Cuban planter 1\.07d/, 'Scene 2 done: the Havana share should be split');
+  // the VOC line links Retourvloot
+  assert.equal(await t.page.locator('#vocLine a[href="/retourvloot/"]').count(), 1);
+  assert.match(await t.page.innerText('#vocLine'), /Dutch East India Company/);
+  await t.page.click('#rShare');
+  await t.page.waitForSelector('.hlx-ov', { timeout: 3000 });
+  assert.deepEqual(t.problems, []);
+  await t.close();
+
+  const p = await open('/cupoftea/3/', { viewport: { width: 390, height: 844 }, storage: { ...storage, 'retourvloot.runs': '[{"endYear":1700}]' } });
+  await p.page.waitForSelector('#skWhole svg', { timeout: 4000 });
+  assert.equal((await flows(p.page, 'whole')).layout, 'vertical');
+  assert.equal((await flows(p.page, 'tea')).layout, 'vertical');
+  assert.ok(await width(p.page) <= 390, `page is ${await width(p.page)}px wide on a 390px phone`);
+  const over = await p.page.evaluate(() => { const c = document.querySelector('#door .card'); return c.scrollWidth - c.clientWidth; });
+  assert.ok(over <= 0, 'the end screen scrolls sideways');
+  assert.match(await p.page.innerText('#vocLine'), /^Her tea came by a long road\. Your Retourvloot company/);
+  assert.deepEqual(p.problems, []);
+  await p.close();
+});
+
+test('Cup of Tea: on CrazyGames the VOC line has no link and there is no Share button', async () => {
+  const ctx = await browser.newContext({ viewport: { width: 1366, height: 768 } });
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+  await ctx.addInitScript(() => { window.HL_PLATFORM = { id: 'crazygames' }; localStorage.setItem('cupoftea.v1', JSON.stringify({ done: [1, 3], cur: 3 })); });
+  const page = await ctx.newPage();
+  const errs = []; page.on('pageerror', e => errs.push(e.message));
+  await page.goto(srv.url + '/cupoftea/3/'); await page.waitForSelector('#skWhole svg', { timeout: 4000 });
+  assert.equal(await page.locator('#vocLine a').count(), 0);
+  assert.equal(await page.locator('#rShare').isVisible(), false);
+  const whole = await flows(page, 'whole');
+  assert.equal(whole.sum, 9.5);
+  assert.match(whole.desc, /Stayed in Havana 1\.75d/, 'Scene 2 not done: the 1.75d stays in one piece');
+  assert.deepEqual(errs, []);
+  await ctx.close();
+});

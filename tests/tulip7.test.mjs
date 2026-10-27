@@ -157,3 +157,74 @@ test('balance: 3,000 winters and 3,000 tavern games, each trader wins 18-34%, th
     assert.ok(pct[0] >= 0.2 && pct[0] <= 0.36, `${mode} proxy ${pct[0]}`);
   }
 });
+
+/* ---- the price curve at the end of a winter (chart.js) ---- */
+const TC = createRequire(import.meta.url)('../src/tulip7/chart.js');
+const fakeWinter = ({ crashAfter, sales = [], at = {}, paper } = {}) => {
+  const names = [['You', 'You', null], ['Joost van Cuyck', 'Van Cuyck', 'cuyck'], ['Andries de Busscher', 'De Busscher', 'busscher'], ['Abraham van Meeckeren', 'Van Meeckeren', 'meeckeren']];
+  const players = names.map(([name, short, persona], i) => ({ i, name, short, persona, human: i === 0, soldE: -1, atCrash: at[i] || 0, settled: Math.round((at[i] || 0) * 0.035), lastG: 0 }));
+  return { crashAfter, alkmaar: true, sales, players, paperLog: paper || IDX.slice(0, crashAfter + 1).map((_, e) => [100 * (e + 1), 50, 50, 50]), standing: () => 0 };
+};
+
+test('price curve data: the game line, the cited real prices, every sale and every evening of paper', async () => {
+  const real = Object.fromEntries(TC.REAL.map(r => [r.id, r.pts.map(p => +p[1].toFixed(2))]));
+  assert.deepEqual(real, { gheele: [1, 50], switsers: [1, 30, 19.41], witte: [1, 26.06, 1.3] }); // Garber 1989, see chart.js
+  assert.ok(TC.CRASH_DAY < TC.ALK_DAY && TC.ALK_DAY < TC.STATES_DAY && TC.EV_DAY.every((d, i) => !i || d > TC.EV_DAY[i - 1]));
+  for (let s = 1; s <= 150; s++) {
+    const { g } = await play('winter', s);
+    const d = TC.chartData(g), c = g.crashAfter;
+    assert.deepEqual(d.game.map(p => p.v), IDX.slice(0, c + 1));
+    assert.equal(d.settle, IDX[c] * 0.035);
+    assert.equal(d.ghost.length, IDX.length - 1 - c);
+    assert.equal(g.paperLog.length, c + 1);
+    for (const p of d.players) {
+      assert.equal(p.paper.filter(v => v != null).length, c + 1);
+      assert.equal(p.sold.reduce((a, x) => a + x.v, 0), g.players[p.i].sold, 'sales add up to what was cashed in');
+      assert.ok(p.sold.every(x => x.e >= 0 && x.e <= c));
+      // what you held at the crash is the paper written on the last evening, minus nothing sold that evening
+      if (p.atCrash > 0) assert.equal(p.paper[c], p.atCrash);
+    }
+    assert.ok(d.you.human);
+    const svg = TC.chartSVG(d, 340);
+    assert.match(svg, /^<svg class="pc" viewBox="0 0 340 \d+"[^>]* role="img" aria-labelledby="pcT pcD"/);
+    assert.match(svg, /<title id="pcT">[^<]+<\/title><desc id="pcD">[^<]{200,}<\/desc>/);
+    assert.ok(!/NaN|undefined|Infinity/.test(svg), 'a broken number in the svg');
+    assert.equal(/You cashed in here/.test(svg), d.you.sold.length > 0);
+    assert.ok(TC.commentary(d).length > 30);
+  }
+});
+
+test('the journey survives a save: resuming gives the same paper log and sales', async () => {
+  for (let s = 1; s <= 30; s++) {
+    const { g, saves } = await play('winter', s);
+    for (const sv of saves) {
+      const h = new Game({ mode: 'winter', players: seats(), snap: JSON.parse(sv) });
+      await h.run();
+      assert.deepEqual([h.paperLog, h.sales], [g.paperLog, g.sales]);
+    }
+  }
+  // a save from before the price curve: no log, the chart still draws from soldE
+  const { saves } = await play('winter', 4);
+  const old = JSON.parse(saves[saves.length - 1]); delete old.paperLog; delete old.sales;
+  const h = new Game({ mode: 'winter', players: seats(), snap: old }); await h.run();
+  const svg = TC.chartSVG(TC.chartData(h), 600);
+  assert.ok(!/NaN|undefined/.test(svg));
+});
+
+test('the one line of commentary says what happened', () => {
+  const say = o => TC.commentary(TC.chartData(fakeWinter(o)));
+  assert.equal(say({ crashAfter: 7, sales: [{ e: 5, i: 0, v: 900 }, { e: 4, i: 1, v: 300 }], at: { 3: 1244 } }),
+    'You sold at evening VI, two evenings before the crash. Van Meeckeren rode it to the end and lost f1,200 of paper.');
+  assert.equal(say({ crashAfter: 4, sales: [{ e: 4, i: 0, v: 900 }, { e: 2, i: 1, v: 300 }, { e: 3, i: 2, v: 300 }, { e: 4, i: 3, v: 300 }] }),
+    'You sold at evening V, the very last evening before the crash. Every rival got out in time; Van Meeckeren was the last, at evening V.');
+  assert.equal(say({ crashAfter: 6, sales: [{ e: 5, i: 0, v: 900 }], at: { 0: 1000, 2: 500 } }),
+    'You cashed in at evening VI, but wrote more paper and lost f965 of it in the crash. De Busscher rode it to the end and lost f482 of paper.');
+  assert.equal(say({ crashAfter: 3, at: { 0: 2000, 1: 100 }, sales: [{ e: 1, i: 1, v: 50 }] }),
+    'You held to the end, and the crash took f1,930 of your paper. Van Cuyck was caught holding f100 and lost f96 of it.');
+  assert.equal(say({ crashAfter: 2, sales: [{ e: 0, i: 0, v: 10 }, { e: 1, i: 2, v: 10 }] }),
+    'You sold at evening I, two evenings before the crash. Every rival got out in time; De Busscher was the last, at evening II.');
+  assert.equal(say({ crashAfter: 5 }), 'You never held paper when it mattered: the crash took nothing from you.');
+  const txt = TC.summaryText(TC.chartData(fakeWinter({ crashAfter: 7, sales: [{ e: 3, i: 1, v: 1 }, { e: 5, i: 1, v: 1 }, { e: 6, i: 1, v: 1 }] }))).join(' ');
+  assert.match(txt, /Van Cuyck: cashed in at evenings IV, VI and VII\./);
+  assert.match(txt, /Your paper each evening: I f100, II f200/);
+});

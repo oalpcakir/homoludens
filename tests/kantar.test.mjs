@@ -119,3 +119,63 @@ test('Narh ties: the Saffron leader wins; no Saffron leader is a draw', () => {
   assert.deepEqual(r.slice(0, 2), [[4, 4], -1]);
   assert.equal(r[2][0], r[2][1]); assert.equal(r[3], 0);
 });
+
+// ---- match review: replay, judging and classification (deterministic positions) ----
+// A fixed deal: the stall is Coffee, Copper, Saffron, Silk, Coffee; the rival (seat 1) divides first and offers
+// Coffee+Copper / Saffron; the player chooses (Cut is open: no teaching round).
+const FIXED = `(()=>{const s=dealFrom('SIKBSIKBSIKBSIKBIKBKBKBB'.split(''),1,'classic',false);const a={idxs:[0,1,2],piles:[['K','B'],['S']]};return {s,a,c:doSplit(s,a.idxs,a.piles)}})()`;
+
+test('review thresholds: best < 0.1 ≤ good < 0.6 ≤ inaccuracy < 1.5 ≤ mistake < 3 ≤ blunder', () => {
+  assert.deepEqual(run(`[0,.099,.1,.599,.6,1.499,1.5,2.999,3,9].map(rvClass)`),
+    ['best', 'best', 'good', 'good', 'inacc', 'inacc', 'mistake', 'mistake', 'blunder', 'blunder']);
+});
+
+test('review: every choice in a fixed position is classified by its loss against the best (all five classes)', () => {
+  const r = run(`(()=>{const {c}=${FIXED};return chooseOpts(c).map(o=>{const j=judgeMove(c,o,0);return [JSON.stringify(o),j.cls,+j.loss.toFixed(3),j.cls===rvClass(j.loss),j.best]})})()`);
+  const cls = Object.fromEntries(r.map(([o, c]) => [o, c]));
+  assert.equal(cls['{"cut":null,"pick":0}'], 'blunder');     // Coffee+Copper, leaving the Saffron
+  assert.equal(cls['{"cut":null,"pick":1}'], 'good');        // the Saffron without the Cut
+  assert.equal(cls['{"cut":[0,0],"pick":1}'], 'best');       // cut a Coffee, take the Saffron
+  assert.equal(cls['{"cut":[0,1],"pick":1}'], 'inacc');
+  assert.equal(cls['{"cut":[1,0],"pick":0}'], 'mistake');
+  assert.ok(r.every(x => x[3]), 'class does not follow the loss');
+  const best = r.find(x => x[1] === 'best');
+  assert.equal(best[2], 0); assert.deepEqual(best[4], { cut: [0, 0], pick: 1 });
+  // deterministic: the same answer twice
+  assert.deepEqual(run(`(()=>{const {c}=${FIXED};return judgeMove(c,{cut:null,pick:0},0)})()`), run(`(()=>{const {c}=${FIXED};return judgeMove(c,{cut:null,pick:0},0)})()`));
+});
+
+test('review: the rival\'s seat is judged on the mirrored position; a division matches whatever stall order', () => {
+  const r = run(`(()=>{const {s,a,c}=${FIXED};const j1=judgeMove(s,a,1),j0=judgeMove(mirrorS(s),a,0);
+    const other={idxs:[4,1,2],piles:[['B','K'],['S']]};   // the other Coffee, piles listed the other way round
+    const j2=judgeMove(s,other,1);return [j1.loss,j0.loss,j1.cls,j2.loss,actKey(s,a)===actKey(s,other),j1.gain]})()`);
+  assert.equal(r[0], r[1]); assert.equal(r[2], 'mistake'); assert.equal(r[3], r[0]); assert.equal(r[4], true);
+  assert.equal(typeof r[5], 'number');
+});
+
+test('review: a match replays from its deal and every decision (cuts, Three Pans) can be judged', () => {
+  for (let g = 0; g < 8; g++) {
+    const r = run(`(()=>{let s=newGame(${g % 2},'${g % 2 ? 'narh' : 'classic'}',${g % 3 === 0}),hist=[];
+      while(s.phase!=='end'){const w=s.phase==='choose'?1-s.splitter:s.splitter,k=children(s);
+        const pref=k.filter(x=>(x[0].piles&&x[0].piles.length===3)||x[0].cut);const pool=pref.length&&Math.random()<.5?pref:k,[a,n]=pool[Math.random()*pool.length|0];
+        hist.push({w,act:a});s=n}
+      const rp=replayHist(s.all,s.first,s.mode,s.tut,hist);
+      const js=rp.steps.map(st=>judgeMove(st.s,st.act,st.w));
+      let wrongSeat=false;try{replayHist(s.all,s.first,s.mode,s.tut,[{w:1-hist[0].w,act:hist[0].act}])}catch(e){wrongSeat=true}
+      return {same:JSON.stringify(rp.end)===JSON.stringify(s),n:hist.length,ok:js.every(j=>RV_CLASSES.includes(j.cls)&&j.loss>=0&&j.cls===rvClass(j.loss)),
+        bestIsBest:rp.steps.every(st=>judgeMove(st.s,judgeMove(st.s,st.act,st.w).best,st.w).loss===0),wrongSeat}})()`);
+    assert.equal(r.same, true, 'replay does not reach the final position');
+    assert.ok(r.n >= 12, `only ${r.n} decisions`);
+    assert.equal(r.ok, true); assert.equal(r.bestIsBest, true); assert.equal(r.wrongSeat, true);
+  }
+});
+
+test('review jobs run in the worker exactly as on the page', () => {
+  const W = fakeWorker();
+  const st = run(`(()=>{const {s,a,c}=${FIXED};return {s,a,c}})()`);
+  for (const [s, act, seat] of [[st.c, { cut: [0, 0], pick: 1 }, 0], [st.c, { cut: null, pick: 0 }, 0], [st.s, st.a, 1]]) {
+    const want = run(`runJob(${JSON.stringify({ type: 'judge', s, act, seat })})`);
+    const got = W.ask({ id: 7, type: 'judge', s, act, seat });
+    assert.equal(got.ok, true, got.err); assert.deepEqual(got.res, want);
+  }
+});

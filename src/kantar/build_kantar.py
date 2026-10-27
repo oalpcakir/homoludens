@@ -38,7 +38,8 @@ head = f'''<meta name="description" content="{desc}">
 {icon}
 {analytics_head("kantar")}
 <script src="/feedback.js" defer data-game="kantar"></script>
-<script src="/next.js" defer data-game="kantar"></script>'''
+<script src="/next.js" defer data-game="kantar"></script>
+<script src="/hl.js" defer data-game="kantar"></script>'''
 src = open(os.path.join(H, "kantar.html"), encoding="utf-8").read()
 # Painted art (art/*.webp at game size; full size in art/master/; prompts and review in art-studio.html).
 # Inlined as CSS variables + art.css so the page stays one file for the itch.io and CrazyGames packages.

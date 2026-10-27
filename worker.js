@@ -3,6 +3,7 @@
 //   /api/feedback            feedback and bug reports → Discord
 //   /api/newsletter/*        double opt-in email list (sign up, confirm, unsubscribe)
 //   /api/admin/*             your own tools: Borderlines stats, subscriber count, preview and send the new-game email
+//   /api/borderlines/*      Borderlines daily score histogram (POST score, GET dist) for "You beat N% of today's players"
 //   /borderlines/s/<score>   share link: a page with that score's preview image, which forwards players to the game
 //   /kantar/s/<you>-<rival>, /polder/s/<region>/<stars>   the same for Kantar and Polder results (text preview, game's own image)
 //
@@ -16,7 +17,8 @@
 //   ADMIN_EMAIL           your own address, for test sends
 //   POSTHOG_API_KEY       PostHog personal API key with "Query: Read" scope (Borderlines stats on /admin/)
 //   POSTHOG_PROJECT_ID    optional; the PostHog project number (default 652087, the Homo Ludens project)
-// Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT (rate limit), SUBSCRIBERS (KV namespace).
+// Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT (rate limit), SUBSCRIBERS (KV namespace), STATS (KV namespace,
+// optional: without it the Borderlines score endpoints answer 204 and the game leaves the percentile out).
 
 const KINDS = { idea: 'Idea', bug: 'Bug', history: 'Historical mistake', other: 'Other' };
 const GAMES = { portal: 'Portal', borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder', kantar: 'Kantar', tulip: 'Tulip 7' };
@@ -36,6 +38,8 @@ export default {
       if (p === '/api/newsletter/confirm') return await confirm(request, env, url);
       if (p === '/api/newsletter/unsubscribe') return await unsubscribe(request, env, url);
       if (p.startsWith('/api/admin/')) return await admin(request, env, url);
+      if (p === '/api/borderlines/score') return request.method === 'POST' ? await blScore(request, env, url) : json({ ok: false, error: 'method' }, 405);
+      if (p === '/api/borderlines/dist') return await blDist(env, url);
       if (p.startsWith('/api/')) return json({ ok: false, error: 'not-found' }, 404);
       if (p.startsWith('/borderlines/s/')) return shareCard(url);
       if (p.startsWith('/kantar/s/')) return kantarShare(url);
@@ -691,6 +695,45 @@ function polderShare(url) {
   const title = `Polder · ${POLDER_REGIONS[m[1]]}${hard ? ' (Hard)' : ''} ${'★'.repeat(stars)}${'☆'.repeat(n - stars)}${fields != null ? ` · ${fields} fields` : ''}`;
   const desc = 'Build dikes, drain the sea and survive seven centuries of Dutch storms, from the terps of 1200 to the flood of 1953. Can you hold the line?';
   return sharePage(url, { title, desc, image: '/og-polder.jpg', game: '/polder/', label: 'Play Polder' });
+}
+
+// ---------------------------------------------------------------- Borderlines daily score histogram
+// One KV record per daily: bl:h:<day> = { n, b: [101 counts] }, bucket = round(total / 5), so 0..500 → 0..100.
+// A player (the anonymous Homo Ludens player id the game already uses for analytics) counts once per day:
+// bl:p:<day>:<pid> marks the submission and expires after a few days. KV has no atomic increment, so two
+// submissions in the same instant can lose one count; for a "you beat N%" line that is fine.
+const BL_START = Date.UTC(2026, 8, 27); // Daily #1 (data/base.json dailyStart)
+const BL_BUCKETS = 101;
+const blToday = (now = Date.now()) => Math.floor((now - BL_START) / 864e5) + 1;
+const blHist = async (env, day) => {
+  const h = await env.STATS.get('bl:h:' + day, 'json');
+  return h && Array.isArray(h.b) && h.b.length === BL_BUCKETS ? h : { n: 0, b: new Array(BL_BUCKETS).fill(0) };
+};
+async function blScore(request, env, url) {
+  if (!env.STATS) return new Response(null, { status: 204 });
+  const { data: d, error } = await readJson(request, url);
+  if (error) return error;
+  const day = Number(d.day), total = Number(d.total), pid = String(d.pid || '');
+  const t = blToday();
+  // only today's daily counts (±1 for players whose local date differs from UTC); archive games are not "today's players"
+  if (!Number.isInteger(day) || day < Math.max(1, t - 1) || day > t + 1) return json({ ok: false, error: 'day' }, 400);
+  if (!Number.isInteger(total) || total < 0 || total > 500) return json({ ok: false, error: 'total' }, 400);
+  if (!/^[a-z0-9]{6,40}$/i.test(pid)) return json({ ok: false, error: 'pid' }, 400);
+  if (!(await rateOk(env, 'bls:' + ipOf(request)))) return json({ ok: false, error: 'rate' }, 429);
+  const mark = `bl:p:${day}:${pid}`;
+  if (await env.STATS.get(mark)) return json({ ok: true, dup: true, day, ...(await blHist(env, day)) });
+  await env.STATS.put(mark, String(total), { expirationTtl: 4 * 24 * 3600 });
+  const h = await blHist(env, day);
+  h.b[Math.round(total / 5)]++; h.n = (h.n | 0) + 1;
+  await env.STATS.put('bl:h:' + day, JSON.stringify({ n: h.n, b: h.b }));
+  return json({ ok: true, day, n: h.n, b: h.b });
+}
+async function blDist(env, url) {
+  if (!env.STATS) return new Response(null, { status: 204 });
+  const day = Number(url.searchParams.get('day'));
+  if (!Number.isInteger(day) || day < 1 || day > blToday() + 1) return json({ ok: false, error: 'day' }, 400);
+  const h = await blHist(env, day);
+  return new Response(JSON.stringify({ ok: true, day, n: h.n, b: h.b }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'public, max-age=60' } });
 }
 
 // ---------------------------------------------------------------- Borderlines share links

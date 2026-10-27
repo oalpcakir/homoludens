@@ -99,6 +99,7 @@ test('Borderlines: Enter in the feedback dialog does not submit or advance the r
   await paint(page);
   await page.locator('.hlfb-btn').click();
   await page.waitForSelector('.hlfb-ov:not([hidden])');
+  await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'hlfb-msg'); // the dialog focuses its text box itself, 30 ms after opening
   await page.locator('.hlfb-cancel').focus();
   await page.keyboard.press('Enter');
   await page.waitForFunction(() => !document.querySelector('.hlfb-ov:not([hidden])'), null, { timeout: 5000 }).catch(() => {});
@@ -110,6 +111,7 @@ test('Borderlines: Enter in the feedback dialog does not submit or advance the r
   await page.waitForFunction(() => window.__borderlines.state.phase === 'result');
   await page.locator('#btnReport').click();
   await page.waitForSelector('.hlfb-ov:not([hidden])');
+  await page.waitForFunction(() => document.activeElement && document.activeElement.id === 'hlfb-msg');
   await page.keyboard.press('Backspace'); // typed into the message box, not Undo
   await page.locator('.hlfb-cancel').focus();
   await page.keyboard.press('Enter');
@@ -126,6 +128,167 @@ test('Borderlines: Enter in the feedback dialog does not submit or advance the r
   assert.ok(await page.locator('#stats').isVisible(), 'Space did not activate the focused button');
   await page.keyboard.press('Escape');
   assert.ok(await page.locator('#intro').isVisible(), 'Escape did not close the statistics');
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+// ---------------------------------------------------------------- title screen, time-lapse, today's players
+const DAY30 = JSON.parse(readFileSync(ROOT + 'public/borderlines/days/30.json', 'utf8'));
+async function openWith(seed, routes = {}) {
+  const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }, timezoneId: 'Europe/Amsterdam' });
+  const fetched = [];
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r =>
+    r.request().url().includes('/d3.min.js') ? r.fulfill({ body: D3, contentType: 'text/javascript' }) : r.fulfill({ status: 204, body: '' }));
+  for (const [re, fn] of Object.entries(routes)) await ctx.route(new RegExp(re), fn);
+  await ctx.addInitScript((seed) => {
+    if (sessionStorage.getItem('seeded')) return;
+    sessionStorage.setItem('seeded', '1');
+    localStorage.setItem('borderlines:tutorialDone', 'true');
+    for (const [k, v] of Object.entries(seed)) localStorage.setItem(k, JSON.stringify(v));
+  }, seed);
+  const page = await ctx.newPage();
+  page.on('request', r => fetched.push(new URL(r.url()).pathname));
+  await page.clock.setFixedTime(NOW);
+  const problems = [];
+  page.on('pageerror', e => problems.push('JS error: ' + e.message));
+  await page.goto(srv.url + '/borderlines/');
+  await page.waitForFunction(() => !!window.__borderlines);
+  return { page, ctx, problems, fetched };
+}
+const done = (scores, late = false) => ({ scores, late });
+
+test('Borderlines title screen: today, streak, calendar and best score, with no spoilers', async () => {
+  const seed = { 'borderlines:day:27': done([90, 85, 88, 92, 81]), 'borderlines:day:28': done([50, 60, 40, 70, 30]), 'borderlines:day:25': done([10, 20, 30, 40, 50], true),
+    'borderlines:run:29': { scores: [70, 60], raw: [70, 60], hints: [], late: false } };
+  const { page, ctx, problems, fetched } = await openWith(seed);
+  assert.ok(await page.evaluate(() => document.body.classList.contains('home')), 'no title-screen backdrop');
+  assert.match(await page.textContent('#btnDaily'), /Daily #30[\s\S]*Continue Daily #30[\s\S]*Round 3 of 5/);
+  assert.equal(await page.locator('#dailyPips .pip').count(), 5);
+  assert.equal(await page.locator('#dailyPips .pip.done').count(), 2);
+  assert.equal(await page.textContent('#hStreak'), '2'); // days 28 and 29 (#29, #28) on time; #26 was late
+  assert.equal(await page.textContent('#hBest'), '436');
+  assert.equal(await page.textContent('#hPlayed'), '3');
+  assert.equal(await page.locator('#hCal i').count(), 35);
+  assert.equal(await page.locator('#hCal i.perfect').count(), 1);
+  assert.equal(await page.locator('#hCal i.played').count(), 1);
+  assert.equal(await page.locator('#hCal i.late').count(), 1);
+  assert.equal(await page.locator('#hCal i.miss').count(), 1); // #27, between the first daily played (#26) and today
+  assert.equal(await page.locator('#hCal i.open.now').count(), 1);
+  // nothing about today's realms on the page before they are played
+  const html = await page.content();
+  for (const q of DAY30) assert.ok(!html.includes(q.label), 'title screen mentions ' + q.label);
+  assert.ok(!fetched.some(p => p.includes('/lapse/')), 'a time-lapse was loaded before any round was played');
+  // keyboard: Tab reaches the daily button and Enter starts it
+  await page.locator('#btnDaily').focus();
+  await page.keyboard.press('Enter');
+  await page.locator('#btnSubmit').waitFor({ state: 'visible' });
+  assert.equal((await S(page)).round, 2);
+  assert.ok(!(await page.evaluate(() => document.body.classList.contains('home'))));
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+test('Borderlines time-lapse: hidden without data, loaded only when opened, scrubbable', async () => {
+  const { page, ctx, problems, fetched } = await openWith({});
+  const lapseIds = await page.evaluate(() => window.GAME_DATA.lapse);
+  assert.ok(!lapseIds.includes('d30-1') && lapseIds.includes('d30-2'), 'test assumes d30-1 has no lapse and d30-2 has one');
+  await page.locator('#btnDaily').click();
+  await page.locator('#btnSubmit').waitFor({ state: 'visible' });
+  await playRound(page);
+  assert.ok(await page.locator('#btnLapse').isHidden(), 'control shown for a realm without a time-lapse');
+  await next(page);
+  await playRound(page);
+  assert.ok(!fetched.some(p => p.includes('/lapse/')), 'loaded before it was opened');
+  await page.locator('#btnLapse').click();
+  await page.locator('#lapseBox').waitFor({ state: 'visible' });
+  assert.deepEqual(fetched.filter(p => p.includes('/lapse/')), ['/borderlines/lapse/d30-2.json']);
+  const L = JSON.parse(readFileSync(ROOT + 'public/borderlines/lapse/d30-2.json', 'utf8'));
+  assert.equal(await page.locator('#topG .lapse-ref').count(), 1);
+  await page.locator('#lapsePlay').click(); // pause the autoplay
+  await page.locator('#lapseRange').focus();
+  await page.keyboard.press('End');
+  assert.equal(await page.textContent('#lapseYear'), L.snaps.at(-1).label);
+  await page.keyboard.press('Home');
+  assert.equal(await page.textContent('#lapseYear'), L.snaps[0].label);
+  assert.equal(await page.locator('#lapseScrub .tick.round').count(), 1, "the round's year is not marked");
+  assert.equal(await page.evaluate(() => window.__borderlines.state.phase), 'result');
+  await page.keyboard.press('Escape');
+  assert.ok(await page.locator('#lapseBox').isHidden());
+  assert.equal(await page.locator('#topG .lapse-g').count(), 0);
+  assert.ok(await page.locator('#topG .truth').isVisible());
+  await next(page);
+  assert.ok(await page.locator('#lapseBox').isHidden());
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+test('Borderlines lapse files: valid, small, and listed in the page', async () => {
+  const { readdirSync, statSync } = await import('node:fs');
+  const dir = ROOT + 'public/borderlines/lapse/';
+  const files = readdirSync(dir).filter(f => f.endsWith('.json'));
+  const html = readFileSync(ROOT + 'public/borderlines/index.html', 'utf8');
+  const listed = JSON.parse(html.match(/"lapse":(\[[^\]]*\])/)[1]);
+  assert.deepEqual(listed, files.map(f => f.slice(0, -5)).sort());
+  let total = 0;
+  for (const f of files) {
+    const L = JSON.parse(readFileSync(dir + f, 'utf8'));
+    total += statSync(dir + f).size;
+    assert.equal(L.id + '.json', f);
+    assert.ok(L.snaps.length >= 3 && L.snaps.length <= 8, f);
+    const ys = L.snaps.map(s => s.year);
+    assert.deepEqual(ys, [...ys].sort((a, b) => a - b), f + ' years out of order');
+    assert.ok(ys.includes(L.year), f + " lacks the round's year");
+    assert.ok(Math.max(...ys.map(y => Math.abs(y - L.year))) <= 300, f + ' spans too far');
+    for (const s of L.snaps) assert.match(s.geometry.type, /^(Multi)?Polygon$/);
+  }
+  assert.ok(total < 4.5 * 1024 * 1024, `lapse folder is ${Math.round(total / 1024)} KB`);
+});
+
+test("Borderlines today's players: percentile and sparkline after a daily, passport stamp, share image", async () => {
+  const b = new Array(101).fill(0); b[40] = 3; b[50] = 4; b[60] = 2; b[90] = 1;
+  let posted = null;
+  const routes = { '/api/borderlines/': r => {
+    if (r.request().method() === 'POST') { posted = JSON.parse(r.request().postData()); const me = Math.round(posted.total / 5); const bb = b.slice(); bb[me]++; return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, day: posted.day, n: 11, b: bb }) }); }
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ ok: true, n: 10, b }) });
+  } };
+  const { page, ctx, problems } = await openWith({ 'borderlines:run:29': { scores: [80, 80, 80, 80], raw: [80, 80, 80, 80], hints: [], late: false } }, routes);
+  await page.locator('#btnDaily').click();
+  await page.locator('#btnSubmit').waitFor({ state: 'visible' });
+  await playRound(page);
+  await next(page);
+  await page.locator('#ePct').waitFor({ state: 'visible' });
+  const total = (await S(page)).scores.reduce((a, c) => a + c, 0);
+  assert.deepEqual({ day: posted.day, total: posted.total }, { day: 30, total });
+  assert.match(posted.pid, /^[a-z0-9]{6,40}$/);
+  assert.match(await page.textContent('#ePct'), /You beat \d+% of today's players/);
+  assert.equal(await page.locator('#ePct svg rect').count(), 25);
+  const pass = await page.evaluate(() => JSON.parse(localStorage.getItem('hl.passport.v1')));
+  assert.equal(pass.games.borderlines.label, `Daily #30 · ${total}/500`);
+  assert.equal(pass.games.borderlines.best, total);
+  assert.ok(await page.locator('#btnShareImg').isVisible());
+  await page.locator('#btnShareImg').click();
+  await page.waitForSelector('.hlx-box img[src^="data:image/png"]');
+  await page.keyboard.press('Escape');
+  // reopening the finished daily asks for the distribution (GET), it never posts again
+  posted = null;
+  await page.locator('#btnMenu').click();
+  await page.locator('#btnDaily').click();
+  await page.locator('#ePct').waitFor({ state: 'visible' });
+  assert.equal(posted, null);
+  assert.deepEqual(problems, []);
+  await ctx.close();
+});
+
+test("Borderlines today's players: the line stays hidden when the API is off (204)", async () => {
+  const { page, ctx, problems } = await openWith({ 'borderlines:run:29': { scores: [80, 80, 80, 80], raw: [80, 80, 80, 80], hints: [], late: false } },
+    { '/api/borderlines/': r => r.fulfill({ status: 204, body: '' }) });
+  await page.locator('#btnDaily').click();
+  await page.locator('#btnSubmit').waitFor({ state: 'visible' });
+  await playRound(page);
+  await next(page);
+  await page.locator('#end').waitFor({ state: 'visible' });
+  await page.waitForTimeout(300);
+  assert.ok(await page.locator('#ePct').isHidden());
   assert.deepEqual(problems, []);
   await ctx.close();
 });

@@ -72,8 +72,59 @@ test('Tulip 7: a whole winter on a 390x844 touch phone', { timeout: 420000 }, as
   const rec = await page.evaluate(() => [JSON.parse(localStorage.getItem('tulip7.record.v1')), localStorage.getItem('tulip7.save.v1')]);
   assert.equal(rec[0].played, 1); assert.equal(rec[0].winters, 1);
   assert.equal(rec[1], null, 'the save outlived the game');
+  // the end screen: the price curve, drawn in, with its line of commentary, the passport stamp and the share sheet
+  await page.waitForSelector('#cbox svg.pc', { timeout: 10000 });
+  await page.waitForTimeout(2600); // the lines draw in
+  const end = await page.evaluate(() => {
+    const svg = document.querySelector('#cbox svg.pc'), r = svg.getBoundingClientRect();
+    return { line: document.querySelector('#cline').textContent, w: r.width, right: r.right, vw: innerWidth, wide: document.documentElement.scrollWidth - innerWidth,
+      title: svg.querySelector('title').textContent, desc: svg.querySelector('desc').textContent.length, text: document.querySelectorAll('.ctext li').length,
+      ticks: [...svg.querySelectorAll('.tx')].map(t => t.textContent), marks: svg.querySelectorAll('.mk').length,
+      drawn: getComputedStyle(svg.querySelector('.gidx')).strokeDashoffset,
+      you: !!svg.querySelector('.tyou'), sold: G.sales.some(x => x.i === 0),
+      nod: document.querySelector('.facts li.nod')?.innerHTML || '', stamp: JSON.parse(localStorage.getItem('hl.passport.v1') || '{}').games?.tulip };
+  });
+  assert.match(end.line, /^You (sold at evening|cashed in at evening|held to the end|never held paper)/);
+  assert.ok(end.w >= 320 && end.right <= end.vw && end.wide <= 0, `chart does not fit: ${JSON.stringify(end)}`);
+  assert.ok(end.title && end.desc > 200 && end.text >= 5);
+  assert.deepEqual(end.ticks.slice(0, 8), ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII']);
+  assert.ok(end.marks >= 1 && parseFloat(end.drawn) === 0, 'the index line did not draw in');
+  assert.equal(end.you, end.sold);
+  assert.match(end.nod, /href="\/retourvloot\/"/);
+  assert.equal(end.stamp.plays, 1); assert.ok(/^Winter of 1636: f[\d,]+, \d(st|nd|rd|th) of 4$/.test(end.stamp.label), end.stamp.label);
+  await page.locator('#bShare').tap();
+  await page.waitForSelector('.hlx-ov img[src]', { timeout: 10000 });
+  const sheet = await page.evaluate(() => ({ h: document.querySelector('.hlx-ov h2').textContent, img: document.querySelector('.hlx-ov img').naturalWidth }));
+  assert.equal(sheet.h, 'Share your result'); assert.equal(sheet.img, 1200);
   assert.deepEqual(problems, []);
   await ctx.close();
+});
+
+// The end screen's cross-game line: a note about your Retourvloot company if you have one, and no share button or
+// Retourvloot link on CrazyGames.
+test('Tulip 7: end screen notes Retourvloot, and hides the share button and the link on CrazyGames', { timeout: 120000 }, async () => {
+  const finish = async (init) => {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+    await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
+    await ctx.addInitScript(init);
+    const page = await ctx.newPage(); const problems = []; page.on('pageerror', e => problems.push(e.message));
+    await page.goto(srv.url + '/tulip7/'); await page.waitForTimeout(500);
+    await page.evaluate(async () => { // a winter played by four bots, then the real end screen
+      closeModal();
+      const bot = { hitOrStay: (g, p) => T7.AI.hitOrStay(g, p), sell: (g, p) => T7.AI.sell(g, p), target: (g, p, c, cs) => T7.AI.target(g, p, c, cs), giveSecond: (g, p, cs) => T7.AI.giveSecond(g, p, cs) };
+      G = new T7.Game({ mode: 'winter', seed: 21, players: [{ name: 'You', short: 'You', human: true, style: 'balanced', agent: bot }, ...RIVALS.map(r => ({ ...r, agent: bot }))], emit: () => {} });
+      await G.run(); buildSeats(); render(); endScene();
+    });
+    await page.waitForSelector('#cbox svg.pc');
+    const r = await page.evaluate(() => ({ nod: document.querySelector('.facts li.nod')?.textContent || '', link: !!document.querySelector('.facts a[href="/retourvloot/"]'),
+      share: getComputedStyle(document.querySelector('#bShare')).display !== 'none' }));
+    await ctx.close(); return { ...r, problems };
+  };
+  const rv = await finish(() => localStorage.setItem('retourvloot.runs', '[]'));
+  assert.equal(rv.nod, "Your Retourvloot company was trading in Amsterdam that winter: VOC shares, not tulips, were the city's other paper market.");
+  assert.ok(!rv.link && rv.share); assert.deepEqual(rv.problems, []);
+  const cg = await finish(() => { window.HL_PLATFORM = { id: 'crazygames' }; });
+  assert.ok(!cg.nod && !cg.link && !cg.share, JSON.stringify(cg)); assert.deepEqual(cg.problems, []);
 });
 
 test('Tulip 7: a 740x360 landscape phone shows the whole hand and both buttons on your turn', { timeout: 180000 }, async () => {

@@ -480,6 +480,8 @@ function yearly(S) {
   A.lastYr = { ...A.yr, year: y - 1 }; A.yr = blankYr();
   S.booksLast = S.books; S.bookHist.push({ y: S.books.y, res: tradeResult(S.books), div: S.books.div, sales: salesTotal(S.books), shipsIn: S.books.shipsIn, shipsOut: S.books.shipsOut, cost: S.books.hulls + S.books.silver, interest: S.books.interest, debt: S.debt });
   if (S.bookHist.length > 40) S.bookHist.shift();
+  // full-length record for the end-of-game comparison (bookHist keeps only 40 years): dividend as % of capital, year-end debt
+  (S.yhist || (S.yhist = [])).push({ y: S.books.y, div: +(S.books.div / NOMINAL * 100).toFixed(2), debt: Math.round(S.debt) });
   S.books = blankBooks(y);
 }
 function auction(S) {
@@ -571,3 +573,65 @@ function checkEvents(S) {
     S.queue.push(e.id);
   }
 }
+
+// ---------- the real VOC, for the end-of-game comparison ----------
+// Only figures that can be cited; the Sources sheet lists the same works.
+//  avgDiv  ~18% of the nominal capital a year over the Company's life: F. S. Gaastra, The Dutch East India Company (2003);
+//          J. de Vries & A. van der Woude, The First Modern Economy (1997). Drawn as the lifetime average, not a yearly series.
+//  early   1610–12: dividends of 162.5% of capital in all, mostly paid in mace, pepper and cloves (Gaastra 2003).
+//  lastDiv no dividend was paid after 1782 (Gaastra 2003; B. Taylor, "The First and the Greatest", Global Financial Data, 2013).
+//  war     the Fourth Anglo-Dutch War (1780–84) cost the Company up to ƒ43 million and the loans that kept it going brought
+//          its net assets to zero (De Vries & Van der Woude 1997, pp. 454–455).
+//  endDebt debt taken over by the Batavian state at the end, usually put at roughly ƒ100–120 million; estimates vary with
+//          what is counted (Gaastra 2003; De Vries & Van der Woude 1997). Drawn as a range.
+const REAL_VOC = {
+  avgDiv: 18, firstDiv: 1610, lastDiv: 1782,
+  early: { from: 1610, to: 1612, total: 162.5 },
+  war: { y: 1780, loss: 43e6 },
+  endDebt: { y: 1799, lo: 100e6, hi: 120e6 },
+};
+// Player's company by decade: average dividend (% of capital a year, from 1610) and debt at the end of the decade.
+function compareData(S) {
+  let rows = (S.yhist && S.yhist.length) ? S.yhist.slice() : S.bookHist.map(b => ({ y: b.y, div: +(b.div / NOMINAL * 100).toFixed(2), debt: b.debt == null ? null : Math.round(b.debt) }));
+  const last = rows.length ? rows[rows.length - 1].y : 1601;
+  if (S.books && S.books.y > last && S.books.y <= 1799 && S.t < END_T) rows = rows.concat([{ y: S.books.y, div: +(S.books.div / NOMINAL * 100).toFixed(2), debt: Math.round(S.debt), part: true }]);
+  const dec = {};
+  for (const r of rows) {
+    const d = Math.floor(r.y / 10) * 10;
+    const o = dec[d] || (dec[d] = { decade: d, divSum: 0, divYears: 0, debt: null });
+    if (r.y >= REAL_VOC.firstDiv) { o.divSum += r.div; o.divYears++; }
+    if (r.debt != null) o.debt = r.debt;
+  }
+  const decades = Object.values(dec).sort((a, b) => a.decade - b.decade).map(o => ({ decade: o.decade, div: o.divYears ? +(o.divSum / o.divYears).toFixed(1) : null, debt: o.debt }));
+  const divYears = rows.filter(r => r.y >= REAL_VOC.firstDiv);
+  const avgDiv = divYears.length ? divYears.reduce((a, r) => a + r.div, 0) / divYears.length : 0;
+  return { decades, avgDiv: +avgDiv.toFixed(1), endYear: rows.length ? rows[rows.length - 1].y : yearOf(S.t), endDebt: S.debt, real: REAL_VOC };
+}
+// One line of commentary comparing the player's dividends and debt with the real Company.
+function compareLine(S, data) {
+  const D = data || compareData(S), R = D.real, avg = R.avgDiv;
+  const ds = D.decades.filter(d => d.div != null && d.decade >= 1620 && d.decade <= 1780); // the 1610s are skewed by the first payouts in kind
+  let a;
+  if (!ds.length) a = 'Your company never paid a dividend';
+  else {
+    const runs = [];
+    for (const d of ds) { const up = d.div >= avg; if (runs.length && runs[runs.length - 1].up === up) runs[runs.length - 1].to = d.decade; else runs.push({ up, from: d.decade, to: d.decade }); }
+    const word = up => up ? 'more' : 'less';
+    if (runs.length === 1) a = runs[0].up ? `Your company matched or beat the real VOC's ${avg}% a year in every decade` : `Your company never matched the real VOC's ${avg}% a year in any decade`;
+    else if (runs.length === 2) a = `Your company paid out ${word(runs[0].up)} than the real VOC's ${avg}% a year until the ${runs[0].to}s, then ${word(runs[1].up)}`;
+    else {
+      const n = ds.filter(d => d.div >= avg).length, top = ds.reduce((b, d) => d.div > b.div ? d : b, ds[0]);
+      a = `Your company matched or beat the real VOC's ${avg}% a year in ${n} of ${ds.length} decades, most of all in the ${top.decade}s (${top.div}%)`;
+    }
+  }
+  const debt = D.endDebt, yr = D.endYear;
+  let b;
+  if (S.endReason === 'bankrupt') b = `went under in ${yr} with ${money(debt)} of debt, a sum the real Company reached only at its very end`;
+  else if (debt > R.endDebt.hi) b = `left ${money(debt)} of debt, more than the real Company's roughly ƒ100–120 million`;
+  else if (debt >= R.endDebt.lo) b = `left ${money(debt)} of debt, about what the real Company left`;
+  else if (debt > 0) b = `left ${money(debt)} of debt, against the real Company's roughly ƒ100–120 million`;
+  else b = 'left no debt at all, where the real Company left roughly ƒ100–120 million';
+  return `${a}, and ${b}.`;
+}
+// Final score for the passport: millions of guilders paid to shareholders, less the debt left behind.
+function finalScore(S) { return Math.round((S.stats.divPaid - S.debt) / 1e6); }

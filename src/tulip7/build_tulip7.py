@@ -33,7 +33,8 @@ head = f'''<meta name="description" content="{desc}">
 <link rel="icon" type="image/png" href="data:image/png;base64,{fav}">
 {analytics_head("tulip")}
 <script src="/feedback.js" defer data-game="tulip"></script>
-<script src="/next.js" defer data-game="tulip"></script>'''
+<script src="/next.js" defer data-game="tulip"></script>
+<script src="/hl.js" defer data-game="tulip"></script>'''
 src = page()
 # Achievement tiles (only seen in the Achievements sheet and the unlock toast) and the three big backgrounds are
 # written to img/ instead of being inlined: the tiles load only when shown, and the backgrounds load in parallel

@@ -47,6 +47,15 @@ for g in games:
             err(f"games.json {g.get('id')}: field '{k}' missing or not {t.__name__}")
     if g.get("devices") not in ("any", "desktop"): err(f"games.json {g.get('id')}: devices must be 'any' or 'desktop' (next.js and the portal use it)")
     if not re.fullmatch(r"[a-z]+", str(g.get("id", ""))): err(f"games.json: id '{g.get('id')}' must be lowercase letters (admin URLs rely on it)")
+    # the portal timeline: one dated moment per game, or "moment": false for a game that has no single moment
+    m = g.get("moment", None)
+    if m is None:
+        err(f"games.json {g.get('id')}: add a 'moment' (the one historical moment the game is about, for the portal timeline) or \"moment\": false")
+    elif m is not False:
+        if not isinstance(m, dict) or not isinstance(m.get("year"), (int, float)) or not all(isinstance(m.get(k), str) and m[k].strip() for k in ("when", "place", "title", "text")):
+            err(f"games.json {g.get('id')}: moment needs year (number), when, place, title and text")
+        elif len(m["title"]) > 40 or len(m["text"]) > 220:
+            err(f"games.json {g.get('id')}: moment title ≤ 40 and text ≤ 220 characters (they sit on the timeline)")
     for k in ("url", "image"):
         p = local_path(str(g.get(k, "")), PUB)
         if p and not os.path.exists(p): err(f"games.json {g.get('id')}: {k} {g.get(k)} not found")

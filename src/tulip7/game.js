@@ -627,7 +627,7 @@ async function onEvent(t, d){
       else if (me.total === best) unlock('tavern');
       { const rank = 1 + G.players.filter(x => G.standing(x) > G.standing(me)).length, worth = G.standing(me);
         track('tulip_game_end', {result:rank === 1 ? 'win' : 'lose', rank, worth:Math.round(worth), rounds:G.round, crash_after:G.mode === 'winter' ? G.crashAfter + 1 : null, achievements:Object.keys(ACHS).length});
-        saveRecord(rank === 1, worth); }
+        saveRecord(rank === 1, worth); stampPassport(); }
       render(); await pace(1); await endScene(); break; }
     case 'resume': render(); await pace(.5); break;
   }
@@ -674,21 +674,87 @@ async function alkmaarScene(){
     <div class="row"><button class="btn primary" data-v="ok">Ride to Alkmaar</button></div>`);
   say('Cash tonight. The orphan masters are watching.'); render();
 }
+/* The end of the game: the standings, the price curve (winter) with one line on what happened, the history notes, a
+   share card and the Homo Ludens passport stamp. */
+const ORD = k => k + (k === 1 ? 'st' : k === 2 ? 'nd' : k === 3 ? 'rd' : 'th');
+const ON_CG = () => !!(window.HL_PLATFORM && HL_PLATFORM.id === 'crazygames');
+function retourvlootPlayed(){ try { return !!(localStorage.getItem('retourvloot.v1') || localStorage.getItem('retourvloot.runs')); } catch(e){ return false; } }
+/* One line in the history notes about the other Amsterdam game on the site (no link on CrazyGames). */
+function nodHTML(){
+  if (retourvlootPlayed()) return `<li class="nod">Your Retourvloot company was trading in Amsterdam that winter: VOC shares, not tulips, were the city's other paper market.</li>`;
+  if (ON_CG()) return '';
+  return `<li class="nod">The same city, the same years: <a href="/retourvloot/">Retourvloot</a> puts you in the VOC's boardroom.</li>`;
+}
+function endFacts(){
+  const P = [...G.players].sort((a, b) => G.standing(b) - G.standing(a)), me = G.players[0];
+  const rank = 1 + G.players.filter(x => G.standing(x) > G.standing(me)).length, worth = Math.round(G.standing(me));
+  return {P, me, rank, worth, win:rank === 1};
+}
+function shareOpts(){
+  const {P, me, rank, worth, win} = endFacts(), winter = G.mode === 'winter';
+  const rankLine = win ? 'Richest at the Menniste Bruyloft' : `${ORD(rank)} of 4 at the Menniste Bruyloft`;
+  let title, lines;
+  if (winter){
+    const d = TC.chartData(G), last = d.you.sold.length ? d.you.sold[d.you.sold.length - 1].e : -1;
+    const gap = last >= 0 ? G.crashAfter - last : -1;
+    title = d.you.atCrash > 0 ? 'Caught by the crash of 1637' : last >= 0 ? `Sold at evening ${ROMAN[last]}` : 'Kept out of the paper';
+    const caught = d.players.filter(p => !p.human && p.atCrash > p.settled).sort((a, b) => (b.atCrash - b.settled) - (a.atCrash - a.settled))[0];
+    lines = [d.you.atCrash > 0 ? `${fmt(d.you.atCrash)} of paper settled for ${fmt(d.you.settled)}`
+        : gap === 0 ? 'The last evening before the crash' : gap > 0 ? `${['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven'][gap]} evening${gap === 1 ? '' : 's'} before the crash` : 'Never caught holding paper',
+      caught ? `${caught.short} lost ${fmt(caught.atCrash - caught.settled)} of paper` : `The crash came after evening ${ROMAN[G.crashAfter]}`];
+  } else {
+    title = win ? 'Won the tavern game' : `${P[0].short} won the tavern game`;
+    lines = [`${me.books} tulip book${me.books === 1 ? '' : 's'}, ${me.busts} evening${me.busts === 1 ? '' : 's'} up in smoke`, `${G.round} rounds to ${TARGET}`];
+  }
+  const big = winter ? fmt(worth) : `${me.total} points`;
+  return {game:'tulip', kicker:winter ? 'Tulip 7 · The winter of 1636' : 'Tulip 7 · The tavern game', title, big, sub:rankLine, lines,
+    art:'img/bg_cover.webp', dark:true, accent:'#e3b25a',
+    text:`Tulip 7, ${winter ? 'the winter of 1636' : 'the tavern game'}: ${title}. I finished ${win ? 'first' : ORD(rank)} of 4 with ${big}.`};
+}
+function stampPassport(){
+  const {rank, worth, win} = endFacts(), me = G.players[0];
+  const label = G.mode === 'winter' ? `Winter of 1636: ${fmt(worth)}, ${ORD(rank)} of 4` : `Tavern game: ${me.total} points, ${ORD(rank)} of 4`;
+  try { window.HL && HL.stamp('tulip', {result:win ? 'win' : 'loss', label, score:worth}); } catch(e){}
+}
+/* The chart is drawn for the width it gets (text stays legible on a phone) and redrawn if that changes. */
+function curveHTML(d){
+  return `<section class="curve" aria-label="The price curve"><div class="ck">The real price curve</div><p class="cline" id="cline">${esc(TC.commentary(d))}</p>
+    <div class="cbox" id="cbox"></div>
+    <div class="ckey"><span><i class="k gi"></i>The game's index (stylised from Garber's prices)</span><span><i class="k re"></i>Real prices of common bulbs, 1637</span><span><i class="k dot" style="--c:${TC.COLORS.you}">Y</i>Cashed in</span><span><i class="k ring">M</i>Caught by the crash</span></div>
+    <details class="ctext"><summary>The chart as text</summary>${TC.summaryHTML(d)}<p class="src">Each line is drawn as a multiple of its own first price in the record, on a log scale; the evenings are evenly spaced, the calendar is not. Prices: Peter Garber, "Tulipmania" (1989). Dates: Anne Goldgar, <i>Tulipmania</i> (2007).</p></details></section>`;
+}
+function drawCurve(d){
+  const box = $('#cbox'); if (!box) return;
+  const w = Math.round(box.clientWidth); if (!w || w === box._w) return; box._w = w;
+  box.innerHTML = TC.chartSVG(d, w, {short:innerHeight < 520});
+}
 async function endScene(){
-  const P = [...G.players].sort((a, b) => G.standing(b) - G.standing(a));
-  const me = G.players[0], win = P[0] === me;
+  const {P, me, win} = endFacts();
   const rows = P.map((p, k) => `<tr><td>${k + 1}. ${p.human ? '<b>You</b>' : esc(p.name)}</td><td class="n">${G.mode === 'classic' ? p.total : fmt(p.purse + p.settled)}</td></tr>`).join('');
   let mine = '';
   if (G.mode === 'winter') mine = me.atCrash > 0 ? `<p>Your paper at the crash was worth <b>${fmt(me.atCrash)}</b>. It settled for <b>${fmt(me.settled)}</b>.</p>` : `<p>You held no paper when the crash came.</p>`;
+  const d = G.mode === 'winter' ? TC.chartData(G) : null;
   const facts = G.mode === 'winter' ? `<div class="facts"><b>What really happened</b><ul>
     <li>Only a few hundred people traded: about 285 in Haarlem and 60 in Amsterdam. Only 37 spent more than 400 guilders.</li>
     <li>Most of the winter's prices were never paid. On 27 April 1637 the States of Holland suspended the contracts; in May 1638 Haarlem let buyers walk away for 3½ per cent: <i>rouwkoop</i>.</li>
     <li>Historians have found almost no bankruptcies caused by tulips, and nobody drowned in a canal. Those stories came from pamphlets, from Charles Mackay's 1841 book and from a novel.</li>
-    <li>The commonest bulbs swelled the most. That is why the 12s are the most valuable cards and the most dangerous.</li></ul>
-    <div class="src">Sources: Peter Garber, "Tulipmania" (1989); Anne Goldgar, <i>Tulipmania</i> (2007).</div></div>` : '';
+    <li>The commonest bulbs swelled the most. That is why the 12s are the most valuable cards and the most dangerous.</li>${nodHTML()}</ul>
+    <div class="src">Sources: Peter Garber, "Tulipmania" (1989); Anne Goldgar, <i>Tulipmania</i> (2007).</div></div>`
+    : (() => { const n = nodHTML(); return n ? `<ul class="nodp">${n}</ul>` : ''; })();
   const n = ACH.filter(a => ACHS[a.id]).length;
-  const v = await ask(`<div class="kick">${G.mode === 'winter' ? 'The winter of 1636–37' : 'Game over'}</div><h2>${win ? 'You finish richest.' : esc(P[0].name) + ' finishes richest.'}</h2>
-    <table>${rows}</table>${mine}${facts}<div data-hl-next></div><div class="row"><button class="btn primary" data-v="again">Play again</button><button class="btn" data-v="ach">Achievements (${n}/${ACH.length})</button><button class="btn" data-v="menu">Change mode</button></div>`);
+  const html = `<div class="kick">${G.mode === 'winter' ? 'The winter of 1636–37' : 'Game over'}</div><h2>${win ? 'You finish richest.' : esc(P[0].name) + ' finishes richest.'}</h2>
+    <table>${rows}</table>${mine}${d ? curveHTML(d) : ''}${facts}<div data-hl-next></div><div class="row"><button class="btn primary" data-v="again">Play again</button><button class="btn share" id="bShare" type="button">Share</button><button class="btn" data-v="ach">Achievements (${n}/${ACH.length})</button><button class="btn" data-v="menu">Change mode</button></div>`;
+  const pr = ask(html, d ? 'endw' : '');
+  for (let k = 0; k < 200 && !$('#bShare'); k++) await sleep(30);
+  if (d){
+    drawCurve(d);
+    const ro = window.ResizeObserver ? new ResizeObserver(() => drawCurve(d)) : null;
+    if (ro) ro.observe($('#cbox'));
+    pr.then(() => ro && ro.disconnect());
+  }
+  const sb = $('#bShare');
+  if (sb){ if (window.HL && HL.on) HL.on(sb, shareOpts); else { sb.hidden = true; sb.style.display = 'none'; } }
+  const v = await pr;
   if (v === 'again') start(G.mode); else if (v === 'ach'){ G = null; showAchievements(); } else showStart();
 }
 function legendHTML(){ return `<div class="legend">${V.slice().reverse().map(v => cardHTML({k:'num', v:v.n, uid:'L' + v.n})).join('')}</div>`; }
@@ -713,6 +779,7 @@ function showRules(){
   <li><b>Joost van Cuyck</b>, 29, of Amsterdam, bought a pound of Switsers here in February 1637 and backed out the next morning over the guarantor. <i>Plays it safe:</i> stands up at about a one-in-five chance of a duplicate (later if he holds a Rouwkoop), and sells his paper early, or as soon as someone else does.</li>
   <li><b>Andries de Busscher</b>, 31, a Haarlem cooper and tulip connoisseur, was the seller in that deal. <i>Collects:</i> plays for five different tulips and chances the seventh for the book; takes his profit once his paper has grown well past double.</li>
   <li><b>Abraham van Meeckeren</b>, a Haarlem brewer, was one of only 37 people Goldgar found who spent over 400 guilders on tulips. <i>Spends:</i> takes papers until his evening is worth about 30, calls the Seghsman on himself, and rides the index deep into the winter.</li></ul>
+  <h3>The price curve at the end of a winter</h3><p>The game's index (×1 to ×7) is stylised: its shape follows the January 1637 jump in Peter Garber's prices, its numbers were set for play. Beside it the chart draws real prices of bulbs sold by the pound, each as a multiple of its first price in the record (Garber 1989): Gheele Croonen from 0.41 to 20.5 guilders between 2 January and 5 February 1637; Switsers thirty times over the same weeks, then about a third lower in the notaries' contracts of 6 and 9 February; half a pound of Witte Croonen from a January average of 64 guilders to 1,668 on 5 February, and about a twentieth of that a week later. Dates: the Haarlem sale with no bid on 3 February, Alkmaar on the 5th, the States of Holland suspending the contracts on 27 April 1637 (Anne Goldgar, <i>Tulipmania</i>, 2007).</p>
   <h3>Reading a card</h3><p>The number in the corners is the card's value, and also how many of that tulip are in the deck: a 12 has twelve copies, so it is the likeliest to come twice. The number is how much that variety swelled on paper that winter: cheap bulbs sold by the pound swelled fifty times, the famous rarities hardly moved. Semper Augustus is 0: its owner would not sell.</p>
   ${legendHTML()}
   <div class="row"><button class="btn primary" data-v="x">${G ? 'Back to the table' : 'Close'}</button></div></div>`, 'wide', true);

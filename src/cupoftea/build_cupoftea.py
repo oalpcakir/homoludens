@@ -24,8 +24,33 @@ icon = ("<link rel=\"icon\" href=\"data:image/svg+xml,%3Csvg xmlns='http://www.w
         "%3Cpath d='M22 14h2a3 3 0 0 1 0 6h-2' fill='none' stroke='%23efe5cc' stroke-width='2'/%3E"
         "%3Cpath d='M5 26h21' stroke='%23a7622f' stroke-width='2'/%3E%3C/svg%3E\">")
 
+import re, json
+
+
+def answer_key(n):
+    """Scene n's answer key, copied out of its own source: the CLUES, ROWS, NONAME and RETAIL statements.
+    The Sankey diagrams ("where the farthings went") read their figures from these, so nothing is typed twice."""
+    src = open(os.path.join(H, f"scene{n}.html"), encoding="utf-8").read()
+    parts, names = [], []
+    for name in ("CLUES", "ROWS", "NONAME"):
+        m = re.search(r"^const " + name + r" = [\[{].*?[\]}];$", src, re.S | re.M)
+        if m:
+            parts.append(m.group(0)); names.append(name)
+        else:
+            assert name == "NONAME", (n, name)
+    m = re.search(r"^const [^\n]*\bRETAIL = [\d.]+[^\n]*;$", src, re.M)
+    assert m, n
+    parts.append(m.group(0)); names.append("RETAIL")
+    return f"TEA_KEYS[{n}]=(function(){{\n" + "\n".join(parts) + f"\nreturn {{{', '.join(names)}}};\n}})();"
+
+
+KEYS = "<script>/* the three scenes' answer keys, for the Sankey diagrams (built by build_cupoftea.py) */\nwindow.TEA_KEYS={};\n" + \
+    "\n".join(answer_key(n) for n in SCENES) + "\n</script>"
+SANKEY = "<script>\n" + open(os.path.join(H, "sankey.js"), encoding="utf-8").read() + "</script>"
 for n, (path, title, desc) in SCENES.items():
     src = open(os.path.join(H, f"scene{n}.html"), encoding="utf-8").read()
+    marker = '<script data-inline="sankey.js"></script>'
+    src = src.replace(marker, KEYS + "\n" + SANKEY) if marker in src else src.replace("</head>", KEYS + "\n" + SANKEY + "\n</head>", 1)
     url = f"{SITE}/cupoftea/{path}"
     head = f'''<meta name="description" content="{desc}">
 <meta property="og:type" content="website">
@@ -41,7 +66,8 @@ for n, (path, title, desc) in SCENES.items():
 {icon}
 {ph}
 <script src="/feedback.js" defer data-game="cupoftea"></script>
-<script src="/next.js" defer data-game="cupoftea"></script>'''
+<script src="/next.js" defer data-game="cupoftea"></script>
+<script src="/hl.js" defer data-game="cupoftea"></script>'''
     anchor = '<meta name="viewport" content="width=device-width, initial-scale=1">'
     assert anchor in src, n
     html = src.replace(anchor, anchor + "\n" + head, 1).replace("{{SITE}}", SITE)

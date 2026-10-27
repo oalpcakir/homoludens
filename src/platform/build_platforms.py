@@ -146,6 +146,7 @@ def page_for(game, platform, cfg, rel_out, src_rel):
     # site services
     html = re.sub(r'<script src="/feedback\.js"[^>]*></script>\n?', "", html)
     nxt = re.search(r'<script src="/next\.js"[^>]*></script>', html)
+    html = html.replace('<script src="/hl.js"', f'<script src="{up}hl.js"')
     if nxt:
         html = html.replace(nxt.group(0), "" if platform == "crazygames" else
                             f'<script src="{up}next.js" defer data-game="{cfg.get("next_id", game)}" data-base="{SITE}"></script>')
@@ -205,6 +206,7 @@ def build(game, platform):
     shutil.copy(os.path.join(H, "platform.js"), os.path.join(d, "platform.js"))
     if platform == "itch":
         shutil.copy(os.path.join(PUB, "next.js"), os.path.join(d, "next.js"))
+    shutil.copy(os.path.join(PUB, "hl.js"), os.path.join(d, "hl.js"))  # passport + share (share is off on CrazyGames)
     if game == "borderlines":
         if not os.path.exists(D3_LOCAL):
             raise SystemExit("node_modules/d3 missing: run `npm ci` first (the package ships D3 instead of loading it from a CDN)")

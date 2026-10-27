@@ -5,6 +5,7 @@
    Choice: a game this browser has not played yet comes first; on a phone, games marked "devices": "desktop"
    in games.json come last; ties follow the hand-picked order in NEXT.
    data-base="https://…" (platform packages): load games.json from the site and open games there in a new tab.
+   Looks: shares the shell tokens of /feedback.js (--hl-ink, --hl-paper, --hl-font, --hl-radius, --hl-pill, --hl-focus).
    Events: next_game_shown (the card came into view), next_game_clicked {from, to, unplayed}. */
 (function () {
   var me = document.currentScript;
@@ -37,23 +38,25 @@
   };
 
   var css = '\
-.hln{margin:18px 0 0;font:inherit;color:inherit;text-align:left}\
+.hln{--hl-ink:#1f2b4a;--hl-paper:#f7f6f2;--hl-accent:#9c2f45;--hl-font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;--hl-radius:10px;--hl-radius-sm:6px;--hl-pill:999px;--hl-focus:#9c2f45;\
+margin:18px 0 0;font-family:var(--hl-font);color:inherit;text-align:left}\
 .hln a{color:inherit}\
-.hln-card{display:flex;gap:14px;align-items:center;padding:10px;border:1px solid rgba(128,128,128,.4);border-radius:4px;background:rgba(128,128,128,.08);text-decoration:none}\
-.hln-card:hover{background:rgba(128,128,128,.16)}\
-.hln-card:focus-visible{outline:2px solid currentColor;outline-offset:2px}\
-.hln-card img{flex:none;width:120px;height:63px;object-fit:cover;border-radius:2px;display:block}\
+.hln-card{display:flex;gap:14px;align-items:center;padding:10px;border:1px solid rgba(128,128,128,.4);border-radius:var(--hl-radius);background:rgba(128,128,128,.08);text-decoration:none;transition:background .15s,transform .15s}\
+.hln-card:hover{background:rgba(128,128,128,.16);transform:translateY(-1px)}\
+.hln-card:focus-visible,.hln-links a:focus-visible{outline:2px solid var(--hl-focus);outline-offset:2px}\
+.hln-card img{flex:none;width:120px;height:63px;object-fit:cover;border-radius:var(--hl-radius-sm);display:block}\
 .hln-t{display:grid;gap:3px;min-width:0;flex:1}\
-.hln-k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.7}\
+.hln-k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;opacity:.75}\
 .hln-t b{font-size:18px;line-height:1.15;font-weight:600}\
 .hln-s{font-size:13px;line-height:1.35;opacity:.85;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}\
 .hln-m{font-size:11.5px;opacity:.7}\
-.hln-go{flex:none;font-weight:600;font-size:14px;padding:8px 12px;border:1px solid currentColor;border-radius:3px}\
+.hln-go{flex:none;font-weight:500;font-size:13px;line-height:1;padding:10px 14px;border:1px solid rgba(255,255,255,.18);border-radius:var(--hl-pill);background:var(--hl-ink);color:var(--hl-paper);box-shadow:0 4px 14px rgba(0,0,0,.18)}\
 .hln-links{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px;font-size:12.5px}\
 .hln-all,.hln-dc{display:inline-flex;align-items:center;gap:5px;opacity:.75;min-height:24px}\
 .hln-all:hover,.hln-dc:hover{opacity:1}\
 .hln-dc svg{width:15px;height:15px;fill:currentColor;flex:none}\
-@media (max-width:520px){.hln-card img{width:72px;height:72px}.hln-go{display:none}}';
+@media (max-width:520px){.hln-card img{width:72px;height:72px}.hln-go{display:none}}\
+@media (prefers-reduced-motion:reduce){.hln-card{transition:none}.hln-card:hover{transform:none}}';
 
   var gamesP = null;
   function games() {

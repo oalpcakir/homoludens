@@ -5,7 +5,7 @@ Run by .github/workflows/borderlines-monthly.yml on the 1st of every month. It
   2. picks realms for them from catalog.py (plus every realm used before, for occasional reruns),
      checking each one against the historical-basemaps data (shape exists, big enough, capital inside),
   3. writes public/borderlines/days/<n>.json and records the picks in data/history.json,
-  4. rebuilds public/borderlines/index.html and the portal's daily count.
+  4. writes their border time-lapse files (build_lapse.py) and rebuilds public/borderlines/index.html and the portal's daily count.
 
 Picking rules: each day has 1 hard realm, 1–2 easy ones and the rest medium. A realm is chosen by
 least-recent use, so every realm comes round before any repeats; a realm + year pair is not reused
@@ -237,6 +237,9 @@ def main():
     hist["days"] = days
     with open(HIST, "w", encoding="utf-8", newline="\n") as fh:
         json.dump(hist, fh, ensure_ascii=False, indent=0)
+    # border time-lapse files for the new days (the older ones are already there)
+    import build_lapse
+    build_lapse.build(a.data, only={f"d{n + k + 1}-{j + 1}" for k in range(need) for j in range(5)})
     from build_borderlines import build
     build()
     return need

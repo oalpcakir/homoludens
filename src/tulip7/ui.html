@@ -274,6 +274,78 @@ html.tipping .ctrl .info{display:none}
 .foot{color:#fff6e2;font-size:12.5px;text-shadow:0 1px 2px rgba(0,0,0,.7);text-align:center}
 .foot a{color:#ffe08a}
 .mbox [data-hl-next]{margin-top:4px}
+/* the end of a winter: the price curve */
+.mbox.endw{max-width:720px}
+.curve{margin:14px 0 12px;padding:12px 14px 10px;background:#fffdf7;border:1px solid var(--line);border-radius:12px;box-shadow:inset 0 0 0 3px #fffaf0,inset 0 0 0 4px rgba(201,162,74,.45)}
+.curve .ck{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);font-weight:700}
+.curve .cline{font-family:"EB Garamond",serif;font-size:19px;line-height:1.3;margin:4px 0 6px;color:var(--ink)}
+.cbox{width:100%;min-height:120px}
+.cbox svg{display:block;width:100%;height:auto;overflow:visible;font-family:"Source Sans 3",system-ui,sans-serif;font-size:var(--fs)}
+.pc .tg{stroke:rgba(90,58,34,.13);stroke-width:1}
+.pc .ty,.pc .tm{fill:var(--muted);font-size:calc(var(--fs) - 1px)}
+.pc .tx{fill:var(--ink);font-weight:700;font-family:"EB Garamond",serif;font-size:calc(var(--fs) + 1px)}
+.pc .tx.off{fill:rgba(117,96,74,.45);font-weight:600}
+.pc .tx.crash{fill:var(--bad,#b3261e)}
+.pc .tx.td{font-family:"Source Sans 3",system-ui,sans-serif;font-size:calc(var(--fs) - 1.5px);font-weight:700}
+.pc .tl{fill:var(--muted);font-size:calc(var(--fs) - .5px)}
+.pc .tcl{fill:#a3262a;font-weight:700}
+.pc .tr{font-style:italic;fill:#7a6046}
+.pc .tset{fill:var(--delft)}
+.pc .tband{fill:var(--muted);font-size:calc(var(--fs) - .5px);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pc .tbv{fill:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.pc .tbrk{fill:none;stroke:var(--muted);stroke-width:1.3}
+.pc .tcrash{stroke:#a3262a;stroke-width:1.5;stroke-dasharray:4 3}
+.pc .tev{stroke:rgba(90,58,34,.35);stroke-width:1;stroke-dasharray:2 3}
+.pc .real polyline{fill:none;stroke:#9b7b55;stroke-width:1.6;stroke-linejoin:round;stroke-linecap:round}
+.pc .real.r1 polyline{stroke-dasharray:6 3}
+.pc .real.r2 polyline{stroke-dasharray:1.5 3}
+.pc .rd{fill:#9b7b55}
+.pc .rd.about{fill:#fffdf7;stroke:#9b7b55;stroke-width:1.2}
+.pc .gidx{fill:none;stroke:var(--delft);stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.pc .gd{fill:var(--delft)}
+.pc .ghost{fill:none;stroke:rgba(31,78,156,.3);stroke-width:2;stroke-dasharray:2 4}
+.pc .gset{stroke:var(--delft);stroke-width:2;stroke-dasharray:1 4;stroke-linecap:round}
+.pc .mk text{font-weight:800;font-size:calc(var(--fs) - 1px);font-family:"Source Sans 3",system-ui,sans-serif}
+.pc .lead{stroke:var(--ink);stroke-width:1}
+.pc .tyou{fill:#a3191f;font-weight:800;font-size:calc(var(--fs) + .5px);paint-order:stroke;stroke:#fffdf7;stroke-width:3px}
+.pc .bar.held{fill:rgba(31,78,156,.35)}
+.pc .bar.sold{fill:#c0262d}
+.pc .bar.lost{fill:rgba(163,38,42,.12);stroke:#a3262a;stroke-width:1;stroke-dasharray:3 2}
+.pc .bar.settled{fill:#a3262a}
+.pc .bar.alk{fill:var(--gold)}
+.pc .draw{stroke-dasharray:1;stroke-dashoffset:1;animation:pcdraw 1.5s cubic-bezier(.45,.05,.3,1) .15s forwards}
+.pc .real .draw{animation-duration:1.1s;animation-delay:.05s}
+.pc .real.r1 polyline,.pc .real.r2 polyline{animation:pcfade .9s ease-out .5s both}
+.pc .rd{animation:pcfade .4s ease-out 1s both}
+.pc .gd,.pc .gset,.pc .tset{animation:pcfade .4s ease-out 1.4s both}
+.pc .mk{animation:pcpop .45s cubic-bezier(.2,1.5,.4,1) var(--d,1.4s) both;transform-box:fill-box;transform-origin:center}
+.pc .bar{animation:pcgrow .5s ease-out var(--d,.2s) both;transform-box:fill-box;transform-origin:bottom}
+@keyframes pcdraw{to{stroke-dashoffset:0}}
+@keyframes pcfade{from{opacity:0}}
+@keyframes pcpop{from{opacity:0;transform:scale(.3)}}
+@keyframes pcgrow{from{transform:scaleY(0)}}
+.ckey{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);margin-top:6px}
+.ckey span{display:inline-flex;align-items:center;gap:6px}
+.ckey .k{display:inline-block;width:20px;height:0;border-top:3px solid var(--delft)}
+.ckey .k.re{border-top:2px solid #9b7b55}
+.ckey .k.dot,.ckey .k.ring{width:15px;height:15px;border:0;border-radius:50%;background:var(--c);color:#fff;font:800 9.5px/15px "Source Sans 3",sans-serif;font-style:normal;text-align:center}
+.ckey .k.ring{background:#fffaf0;color:#c08a1e;box-shadow:inset 0 0 0 2px #c08a1e}
+.ctext{margin-top:6px;font-size:14px}
+.ctext summary{cursor:pointer;color:var(--delft);font-weight:700;font-size:13.5px;padding:4px 0}
+.ctext ul{margin:4px 0 4px 18px;padding:0}
+.ctext li{margin:3px 0}
+.mbox .facts li.nod,.nodp li{font-style:italic}
+.mbox .facts li.nod a,.nodp a{color:var(--delft);font-weight:700}
+.nodp{margin:10px 0 0;padding:0;list-style:none;font-size:14.5px;color:var(--muted)}
+.mbox .btn.share{justify-content:center}
+.mbox .btn.share::before{content:"";width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:var(--shareic) center/contain no-repeat;mask:var(--shareic) center/contain no-repeat}
+:root{--shareic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6'/%3E%3C/svg%3E")}
+@media (max-width:700px){
+  .curve{margin:12px -8px 10px;padding:10px 8px 8px;border-radius:10px}
+  .curve .cline{font-size:17.5px}
+  .ckey{font-size:12px;gap:3px 10px}
+}
+@media (prefers-reduced-motion:reduce){.pc .draw{stroke-dashoffset:0}}
 
 /* controls: an info block and the action buttons (a column on the desktop, a dock on phones and tablets) */
 .ctrl .info,.ctrl .acts{display:flex;flex-direction:column;gap:8px}
@@ -628,6 +700,7 @@ button,.mode,.trader,.card,.cell,.seat,.ann{touch-action:manipulation}
 
 <script>/*ART*/</script>
 <script>/*ENGINE*/</script>
+<script>/*CHART*/</script>
 <script>
 /*GAME*/
 </script>

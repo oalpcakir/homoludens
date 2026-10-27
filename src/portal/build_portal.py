@@ -24,6 +24,9 @@ def build():
     sys.path.insert(0, H)
     import world_map  # noqa: E402
     vals.update(world_map.build())
+    # the timeline: each game's moment from games.json ("moment": false leaves a game off the line)
+    from site_config import games  # noqa: E402
+    vals["MOMENTS"] = json.dumps([dict(g["moment"], game=g["id"]) for g in games() if g.get("moment")], ensure_ascii=False).replace("</", "<\\/")
     out = re.sub(r"\{\{([A-Z]+)\}\}", lambda m: str(vals[m.group(1)]), tpl)
     left = re.findall(r"\{\{[A-Z]+\}\}", out)
     if left:

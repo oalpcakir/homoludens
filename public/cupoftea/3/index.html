@@ -28,7 +28,7 @@
     } catch (e) {}
     !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group get_distinct_id".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
     // Every page is tagged with its game and version (filled in by the builders from games.json).
-    var GAME = "cupoftea", VERSION = "2026.10.26";
+    var GAME = "cupoftea", VERSION = "2026.10.27";
     // Shared event names across all games. Each game keeps sending its own events (the admin stats read them);
     // the matching standard event is sent once next to it, with legacy_event naming the original.
     var STD = {
@@ -71,6 +71,7 @@
 </script>
 <script src="/feedback.js" defer data-game="cupoftea"></script>
 <script src="/next.js" defer data-game="cupoftea"></script>
+<script src="/hl.js" defer data-game="cupoftea"></script>
 <title>A Cup of Tea · Scene 3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
@@ -200,6 +201,17 @@ tr.labour{animation:inkin 1.8s ease-out}
 #door h2{font-size:30px;margin:0 0 6px}
 #door p{line-height:1.5}
 #door button{font:inherit;font-size:17px;padding:8px 18px;border:1px solid var(--ink);background:none;cursor:pointer;margin:6px}
+#door button.pri{background:var(--ink);color:var(--paper)}
+/* the end screen with its Sankeys */
+#door{padding:12px}
+#door .card{max-width:760px;width:100%}
+#door .card>p{max-width:600px;margin-left:auto;margin-right:auto}
+.skwrap{margin:6px 0 10px;padding:14px 16px 10px;background:#f6eedb;border:1px solid var(--line);box-shadow:inset 0 0 0 4px #f6eedb,inset 0 0 0 5px rgba(201,183,143,.7)}
+.rule{font-size:22px;color:var(--gold);margin:18px 0 4px;line-height:1}
+.skin{font-style:italic;color:var(--ink2);font-size:15px;margin:2px auto 8px}
+.voc{font-size:16px;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line);padding:10px 4px}
+.voc a{color:var(--red)}
+@media (max-width:700px){#door{padding:6px}#door .card{padding:22px 14px}.skwrap{padding:12px 8px 8px}}
 #qs{display:flex;flex-direction:column;gap:2px;margin:0 0 8px;font-size:15px;font-style:italic;color:var(--ink2)}
 #qs .done{color:var(--green);font-style:normal;text-decoration:line-through}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:3px;
@@ -341,16 +353,533 @@ canvas.rc{display:block;width:100%;max-width:420px;height:auto;margin:10px auto 
   <h2>Dearer than the tea</h2>
   <p>Of her 5d, more than 3¼d went to the Crown before the tea left the docks. The tea itself, grown, picked, fired, carried to the coast and shipped round the Cape, was worth about 1¼d by the time it lay in a London warehouse.</p>
   <p>The duty was the same on every pound, fine or coarse. On the dearer teas it came to less than Staunton's 200 per cent. On the cheapest, the tea she buys, it came to <b>269 per cent</b>. The poorer the cup, the heavier the tax.</p>
+  <div class="rhead">Where the farthings went</div>
+  <div class="skwrap" id="skTea"></div>
   <div class="rhead">The receipt, reprinted</div>
   <canvas class="rc" id="rcpt" role="img" aria-label="The grocer's receipt for two ounces of Congou, reprinted with every share of the 5d"></canvas>
-  <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button></div>
+  <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button><button id="rShare" class="pri">Share</button></div>
   <p>At home she pours boiling water over the leaves a second time. There is nothing left in them for a third.</p>
   <p>Five of her twenty farthings went to China. Nobody in these papers says who picked the leaves, or what they were paid.</p>
+  <div class="rule" aria-hidden="true">❦</div>
+  <div class="rhead">The whole receipt: 9½d</div>
+  <p class="skin" id="skWholeNote">Sugar and tea together: every farthing she put on the counter, as you traced it through the ledgers.</p>
+  <div class="skwrap" id="skWhole"></div>
+  <p id="vocLine" class="voc"></p>
   <p style="font-style:italic;color:var(--ink2)">Scene 4, Canton and the Wuyi hills, is still being written.</p><div data-hl-next></div><a class="nextbtn" href="/">Back to Homo Ludens</a>
   <button onclick="closeDoor()">Back to the ledger</button>
   <button class="replayBtn">Replay scene</button>
 </div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>/* the three scenes' answer keys, for the Sankey diagrams (built by build_cupoftea.py) */
+window.TEA_KEYS={};
+TEA_KEYS[1]=(function(){
+const CLUES = {
+  grocer:    {t:"Wholesaler and grocer", cat:"who", conf:"sourced"},
+  crown:     {t:"HM Customs", cat:"who", conf:"sourced"},
+  shipowner: {t:"The shipowner", cat:"who", conf:"sourced"},
+  planter:   {t:"The Cuban planter", cat:"who", conf:"sourced"},
+  w_margin:  {t:"Buying wholesale, selling retail", cat:"what", conf:"sourced"},
+  w_duty:    {t:"Duty on foreign sugar", cat:"what", conf:"sourced"},
+  w_freight: {t:"Freight across the Atlantic", cat:"what", conf:"sourced"},
+  w_grow:    {t:"Growing and boiling the cane", cat:"what", conf:"sourced"},
+  d35:  {t:"3½–4d", cat:"share", conf:"sourced", note:"Mayhew: what street sellers paid, buying in bulk"},
+  d239: {t:"2.39d", cat:"share", conf:"calc", note:"22s 4d per cwt"},
+  d182: {t:"1.82d", cat:"share", conf:"calc", note:"17s per cwt"},
+  d150: {t:"1.50d", cat:"share", conf:"calc", note:"14s per cwt"},
+  d107: {t:"1.07d", cat:"share", conf:"calc", note:"10s per cwt"},
+  d064: {t:"0.64d", cat:"share", conf:"calc", note:"6s per cwt"},
+  d029: {t:"0.29d", cat:"share", conf:"inference", note:"Detective's inference: 4½ − (2.39 + 1.82)"},
+  havana: {t:"Havana", cat:"place", conf:"sourced", note:"Where the sugar in the London warehouse came from"}
+};
+const ROWS = [
+  {id:"r1", q:"Who sold it to her?", ans:{who:"grocer", what:"w_margin", share:"d029"}, coins:1,
+   labour:"The family that keeps the shop. Their hours and earnings are not in these papers."},
+  {id:"r2", q:"Who taxed it at the dock?", ans:{who:"crown", what:"w_duty", share:"d182"}, coins:7,
+   labour:"No labour: a tax. Yet it is the thickest slice of the price."},
+  {id:"r3", q:"Who carried it across the sea?", ans:{who:"shipowner", what:"w_freight", share:"d064"}, coins:3,
+   labour:"The crew. Their wages are not in these papers."}
+];
+const NONAME = {who:"No name", whoNote:"An enslaved cane-cutter. No voice in the archive.", what:"Cutting cane, a Cuban plantation",
+  share:"~0.1–0.3d?", shareNote:"Nobody recorded it. A guess.", labour:"18–20 hours a day at harvest; 3–7% die each year (the owners' own figures)"};
+const RETAIL = 4.5;
+return {CLUES, ROWS, NONAME, RETAIL};
+})();
+TEA_KEYS[2]=(function(){
+const CLUES = {
+  // money page
+  planter:   {t:"The Cuban planter", cat:"who", conf:"sourced"},
+  merchant:  {t:"The Havana merchant", cat:"who", conf:"sourced"},
+  shipowner: {t:"The shipowner", cat:"who", conf:"sourced"},
+  w_grow:    {t:"Growing and boiling the cane", cat:"what", conf:"sourced"},
+  w_export:  {t:"Selling it on: export, commission, insurance, profit", cat:"what", conf:"sourced"},
+  w_freight: {t:"Freight across the Atlantic", cat:"what", conf:"sourced"},
+  d107: {t:"1.07d", cat:"share", conf:"calc", note:"10s per cwt"},
+  d064: {t:"0.64d", cat:"share", conf:"calc", note:"6s per cwt"},
+  d068: {t:"0.68d", cat:"share", conf:"inference", note:"Detective's inference: 1.75 − 1.07"},
+  // labour page
+  cutter:    {t:"An enslaved cane-cutter", cat:"who", conf:"sourced"},
+  shoemaker: {t:"A London shoemaker", cat:"who", conf:"sourced"},
+  widow:     {t:"A widowed shoe-binder", cat:"who", conf:"sourced"},
+  coal:      {t:"A coal-whipper", cat:"who", conf:"sourced"},
+  h12:   {t:"12 hours", cat:"hours", conf:"sourced"},
+  h1820: {t:"18–20 hours", cat:"hours", conf:"sourced"},
+  w9s:   {t:"9s a week", cat:"wage", conf:"sourced"},
+  w31:   {t:"3s 1½d a week", cat:"wage", conf:"sourced"},
+  wcoal: {t:"£39 6s 6d a year", cat:"wage", conf:"sourced"},
+  nowage:{t:"No wage: fed and clothed", cat:"wage", conf:"sourced"}
+};
+const ROWS = [
+  {id:"m1", g:"money", q:"Who grew and boiled it?", ans:{who:"planter", what:"w_grow", share:"d107"}, coins:4},
+  {id:"m2", g:"money", q:"Who sold it out of Havana?", ans:{who:"merchant", what:"w_export", share:"d068"}, coins:3},
+  {id:"l1", g:"labour", q:"Whose working hours in London can you measure?", ans:{who:"shoemaker", hours:"h12", wage:"w9s"}},
+  {id:"l2", g:"labour", q:"Who cut the cane?", ans:{who:"cutter", hours:"h1820", wage:"nowage"}}
+];
+const GAP = 1.75, RETAIL = 4.5, COUNTER = 7;
+return {CLUES, ROWS, RETAIL};
+})();
+TEA_KEYS[3]=(function(){
+const CLUES = {
+  crown:    {t:"HM Customs", cat:"who", conf:"sourced"},
+  grocer:   {t:"Wholesaler and grocer", cat:"who", conf:"sourced"},
+  china:    {t:"The China trade", cat:"who", conf:"sourced"},
+  stall:    {t:"A coffee-stall keeper", cat:"who", conf:"sourced"},
+  w_tduty:  {t:"Duty on tea", cat:"what", conf:"sourced"},
+  w_margin: {t:"Buying wholesale, selling retail", cat:"what", conf:"sourced"},
+  w_bond:   {t:"The tea itself, landed in bond", cat:"what", conf:"sourced"},
+  w_redry:  {t:"Re-drying used leaves", cat:"what", conf:"sourced"},
+  d500: {t:"5.00d", cat:"share", conf:"sourced", note:"Her receipt: 2 oz of Congou"},
+  d328: {t:"3.28d", cat:"share", conf:"calc", note:"26.25d a lb ÷ 8"},
+  d122: {t:"1.22d", cat:"share", conf:"calc", note:"9.75d a lb ÷ 8"},
+  d050: {t:"0.50d", cat:"share", conf:"inference", note:"Detective's inference: 5.00 − 3.28 − 1.22"},
+  p200: {t:"200%", cat:"pct", conf:"sourced", note:"Staunton: the duty's average weight on all teas"},
+  p269: {t:"269%", cat:"pct", conf:"calc", note:"duty ÷ value in bond, on the cheapest Congou"}
+};
+const ROWS = [
+  {id:"r1", q:"Who taxed it at the dock?", ans:{who:"crown", what:"w_tduty", share:"d328"}, coins:13,
+   labour:"No labour: a tax. Two-thirds of her 5d."},
+  {id:"r2", q:"Who sold it to her?", ans:{who:"grocer", what:"w_margin", share:"d050"}, coins:2,
+   labour:"The family that keeps the shop. Their hours are not in these papers."},
+  {id:"r3", q:"What was the tea itself worth?", ans:{who:"china", what:"w_bond", share:"d122"}, coins:5,
+   labour:"Pickers, firers, porters, sailors. Not one of their wages is in these papers."}
+];
+const RETAIL = 5, FARTHINGS = 20;
+return {CLUES, ROWS, RETAIL};
+})();
+</script>
+<script>
+/* A Cup of Tea: "where the farthings went", a hand-built Sankey diagram (inline SVG, no libraries).
+   Inlined into each scene page by build_cupoftea.py, which also puts the three scenes' answer keys in
+   window.TEA_KEYS[1..3] ({CLUES, ROWS, RETAIL, ...}, copied out of the scenes' own source). Every figure
+   drawn here is read from those keys: nothing is typed twice.
+
+   TeaSankey.sugar()           Scene 1: her 4½d for a pound of sugar
+   TeaSankey.tea()             Scene 3: her 5d for two ounces of Congou
+   TeaSankey.whole(havana)     the whole receipt, 9½d; havana=true splits the 1.75d as Scene 2 found it
+   TeaSankey.render(el, spec, {order:[recipient keys in the order the ledger lines locked], onStep})
+     Wide screens: receipt on the left, recipients on the right. Under 700px: the money pours down and
+     peels off to the right, one recipient per row. Flows draw in one by one when the figure comes into
+     view; the labour line is a hairline with its note. A table with the same figures sits under it. */
+(function () {
+  var K = window.TEA_KEYS || {};
+  var num = function (t) { return parseFloat(t); };
+  var r4 = function (x) { return Math.round(x * 1e4) / 1e4; };
+  var COL = { crown: '#2c4a6b', grocer: '#2f5d3a', shipowner: '#4d5761', havana: '#7b4a22', planter: '#7b4a22',
+    merchant: '#9a7428', china: '#5e6630', sugar: '#a7622f', tea: '#4f5a35' };
+  var RED = '#8b2a1f', INK = '#2a1f17', INK2 = '#5a4a3a', PAPER = '#efe5cc';
+  function pence(v) { // 4.5 -> 4½d, 0.29 -> 0.29d
+    var w = Math.floor(v + 1e-9), f = r4(v - w), fr = { 0.25: '¼', 0.5: '½', 0.75: '¾' }[f];
+    return f === 0 ? w + 'd' : fr ? (w || '') + fr + 'd' : v.toFixed(2) + 'd';
+  }
+  function row(KEY, r, from) {
+    return { key: r.ans.who, who: KEY.CLUES[r.ans.who].t, what: KEY.CLUES[r.ans.what].t, v: num(KEY.CLUES[r.ans.share].t), from: from };
+  }
+
+  /* ------------------------------------------------------------------ the ledgers, from the answer keys */
+  function sugarFlows(havana, from) {
+    var A = K[1], flows = A.ROWS.map(function (r) { return row(A, r, from); });
+    var traces = [];
+    if (havana && K[2]) { // Scene 2's money page: who took the 1.75d
+      var B = K[2];
+      B.ROWS.filter(function (r) { return r.g === 'money'; }).forEach(function (r) { flows.push(row(B, r, from)); });
+      var cut = B.ROWS.filter(function (r) { return r.ans.who === 'cutter'; })[0];
+      if (cut) traces.push({ to: 'planter', from: from, who: B.CLUES.cutter.t,
+        note: B.CLUES[cut.ans.hours].t + ' a day at harvest. ' + B.CLUES[cut.ans.wage].t + '. Her share is inside the planter’s; nobody wrote it down.' });
+    } else {
+      var known = flows.reduce(function (a, f) { return a + f.v; }, 0);
+      flows.push({ key: 'havana', who: 'Stayed in Havana', what: 'The rest of the bonded price: not freight, never in London', v: r4(A.RETAIL - known), from: from });
+      traces.push({ to: 'havana', from: from, who: A.NONAME.whoNote.split('. ')[0],
+        note: A.NONAME.share + ' ' + A.NONAME.shareNote + ' ' + A.NONAME.labour + '.' });
+    }
+    return { flows: flows, traces: traces, total: A.RETAIL };
+  }
+  function teaFlows(from) {
+    var C = K[3], flows = C.ROWS.map(function (r) { return row(C, r, from); });
+    var china = C.ROWS.filter(function (r) { return r.ans.who === 'china'; })[0];
+    return { flows: flows, total: C.RETAIL,
+      traces: china ? [{ to: 'china', from: from, who: 'The people who grew it', note: china.labour }] : [] };
+  }
+  var api = {
+    sugar: function () {
+      var s = sugarFlows(false, 'root');
+      return { id: 'sugar', total: s.total, source: 'Her ' + pence(s.total), item: 'a pound of sugar', flows: s.flows, traces: s.traces,
+        title: 'Where her ' + pence(s.total) + ' for a pound of sugar went' };
+    },
+    tea: function () {
+      var t = teaFlows('root');
+      return { id: 'tea', total: t.total, source: 'Her ' + pence(t.total), item: 'two ounces of Congou', flows: t.flows, traces: t.traces,
+        title: 'Where her ' + pence(t.total) + ' for two ounces of tea went' };
+    },
+    whole: function (havana) {
+      var s = sugarFlows(havana, 'sugar'), t = teaFlows('tea'), total = r4(s.total + t.total);
+      return { id: 'whole', total: total, source: 'Her ' + pence(total), item: 'the whole receipt',
+        mids: [{ key: 'sugar', label: 'Sugar', v: s.total }, { key: 'tea', label: 'Tea', v: t.total }],
+        flows: s.flows.concat(t.flows), traces: s.traces.concat(t.traces),
+        title: 'Where every farthing of her ' + pence(total) + ' went' };
+    },
+    pence: pence
+  };
+
+  /* ------------------------------------------------------------------ styles (once) */
+  var css = '\
+.sk{position:relative;margin:6px 0 4px;text-align:left}\
+.sk svg{display:block;width:100%;height:auto;overflow:visible}\
+.sk .lab{font-family:"IM Fell English",Georgia,serif;font-size:17px;fill:' + INK + '}\
+.sk .fig{font-family:"EB Garamond",Georgia,serif;font-weight:600;font-size:15px}\
+.sk .fig tspan.pc{font-weight:400;fill:' + INK2 + '}\
+.sk .wh{font-family:"EB Garamond",Georgia,serif;font-style:italic;font-size:13.5px;fill:' + INK2 + '}\
+.sk .tn{font-family:"EB Garamond",Georgia,serif;font-style:italic;font-size:13.5px;fill:' + RED + '}\
+.sk .tn tspan.tw{font-style:normal;font-weight:600}\
+.sk .halo{paint-order:stroke;stroke:' + PAPER + ';stroke-width:4px;stroke-linejoin:round}\
+.sk .src{font-family:"IM Fell English",Georgia,serif;font-size:19px;fill:' + INK + '}\
+.sk .lk{transition:opacity .25s}\
+.sk.hov .lk:not(.on){opacity:.28}\
+.sk .lbl{transition:opacity .6s ease-out}\
+.sk.pre .lbl{opacity:0}.sk.pre .lbl.in{opacity:1}\
+.sk .tr{fill:none;stroke:' + RED + ';stroke-width:1.3;stroke-dasharray:3 2.5}\
+.sk-tip{position:absolute;pointer-events:none;background:#fbf6e8;border:1px solid #c9b78f;box-shadow:2px 3px 0 rgba(0,0,0,.12);\
+padding:5px 9px;font:14px/1.35 "EB Garamond",Georgia,serif;color:' + INK + ';max-width:260px;opacity:0;transition:opacity .15s;z-index:2}\
+.sk-tip.on{opacity:1}.sk-tip b{font-family:"IM Fell English",Georgia,serif;font-weight:400;font-size:16px}\
+.sk details{margin:6px 0 0;font-size:14px}\
+.sk summary{cursor:pointer;color:' + INK2 + ';font-style:italic;font-size:14px;text-align:center}\
+.sk summary:focus-visible{outline:3px solid #2c4a6b;outline-offset:2px}\
+.sk table{border-collapse:collapse;width:100%;margin:6px 0 0;font-size:14px}\
+.sk th,.sk td{border-bottom:1px solid #c9b78f;padding:3px 5px;text-align:left;vertical-align:top}\
+.sk th{font-weight:600;color:' + INK2 + ';font-size:13px}\
+.sk td.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}\
+.sk tr.lab td{color:' + RED + ';font-style:italic}\
+.sk tr.tot td{border-bottom:2px solid ' + INK + ';font-weight:600}';
+  function style() { if (document.getElementById('sk-css')) return; var s = document.createElement('style'); s.id = 'sk-css'; s.textContent = css; document.head.appendChild(s); }
+
+  /* ------------------------------------------------------------------ helpers */
+  var NS = 'http://www.w3.org/2000/svg', uid = 0;
+  function el(tag, attrs, parent) {
+    var e = document.createElementNS(NS, tag);
+    for (var k in attrs) if (attrs[k] != null) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e); return e;
+  }
+  var mctx = null;
+  function measure(s, font) { if (!mctx) mctx = document.createElement('canvas').getContext('2d'); mctx.font = font; return mctx.measureText(s).width; }
+  function wrap(s, font, w) {
+    var out = [], line = '';
+    String(s).split(' ').forEach(function (word) { var t = line ? line + ' ' + word : word; if (line && measure(t, font) > w) { out.push(line); line = word; } else line = t; });
+    if (line) out.push(line); return out;
+  }
+  var F_LAB = '17px "IM Fell English",Georgia,serif', F_WH = 'italic 13.5px "EB Garamond",Georgia,serif';
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  function pct(v, t) { var p = v / t * 100; return (p < 10 ? Math.round(p * 10) / 10 : Math.round(p)) + '%'; }
+  function fx(v) { return v.toFixed(2) + 'd'; }
+  // recipients in the order they first appear, with their flows summed
+  function recipients(spec) {
+    var out = [], by = {};
+    spec.flows.forEach(function (f) {
+      var r = by[f.key];
+      if (!r) { r = by[f.key] = { key: f.key, who: f.who, what: f.what, v: 0, parts: [], traces: [] }; out.push(r); }
+      r.v = r4(r.v + f.v); r.parts.push(f);
+    });
+    (spec.traces || []).forEach(function (t) { if (by[t.to]) by[t.to].traces.push(t); });
+    return out;
+  }
+  // combined figure: order recipients so sugar-only come first, then the shared ones, then tea-only
+  function ordered(spec) {
+    var rs = recipients(spec);
+    if (!spec.mids) return rs;
+    var rank = function (r) { var s = r.parts.some(function (p) { return p.from === 'sugar'; }), t = r.parts.some(function (p) { return p.from === 'tea'; }); return s && t ? 1 : s ? 0 : 2; };
+    return rs.map(function (r, i) { return [rank(r), i, r]; }).sort(function (a, b) { return a[0] - b[0] || a[1] - b[1]; }).map(function (x) { return x[2]; });
+  }
+  // label block for a recipient: name, figure, what-for and any labour notes, wrapped to w
+  function labelLines(r, spec, w) {
+    var whatTxt = spec.mids && r.parts.length > 1 ? r.parts.map(function (p) { return p.from + ' ' + fx(p.v); }).join(' + ') : r.what;
+    var L = { what: wrap(whatTxt, F_WH, w), notes: [] };
+    r.traces.forEach(function (t) { L.notes.push(wrap(t.who + '. ' + t.note, F_WH, w - 6)); });
+    var h = 18 + 19 + L.what.length * 17;
+    L.noteY = h + 8; L.notes.forEach(function (n) { h += 8 + n.length * 17; });
+    L.h = h; return L;
+  }
+  function drawLabel(g, r, spec, L, x, y, cls) {
+    var col = COL[r.key] || INK;
+    var t = el('text', { x: x, y: y + 14, 'class': 'lab' }, g); t.textContent = r.who;
+    var f = el('text', { x: x, y: y + 33, 'class': 'fig', fill: col }, g);
+    f.appendChild(document.createTextNode(fx(r.v) + ' '));
+    var pc = el('tspan', { 'class': 'pc' }, f); pc.textContent = '· ' + pct(r.v, spec.total) + ' of ' + api.pence(spec.total);
+    L.what.forEach(function (s, i) { var w = el('text', { x: x, y: y + 51 + i * 17, 'class': 'wh' }, g); w.textContent = s; });
+    var ny = y + L.noteY;
+    L.notes.forEach(function (n) {
+      n.forEach(function (s, i) { var w = el('text', { x: x + 6, y: ny + 13 + i * 17, 'class': 'tn' }, g); w.textContent = s; });
+      ny += 8 + n.length * 17;
+    });
+  }
+  function hatch(defs, key) {
+    var id = 'skh-' + key + '-' + uid, c = COL[key] || INK;
+    var p = el('pattern', { id: id, width: 5, height: 5, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(' + (key === 'crown' ? -35 : 35) + ')' }, defs);
+    el('rect', { width: 5, height: 5, fill: c, 'fill-opacity': .38 }, p);
+    el('line', { x1: 0, y1: 0, x2: 0, y2: 5, stroke: c, 'stroke-width': 1.3, 'stroke-opacity': .55 }, p);
+    return 'url(#' + id + ')';
+  }
+
+  /* ------------------------------------------------------------------ layouts
+     Both return {W, H, steps:[{els, clip:{x,y,w,h, grow:'x'|'y'}}], ...} drawn into svg. */
+  function horizontal(svg, spec, W, steps) {
+    var defs = el('defs', {}, svg), rs = ordered(spec), mids = spec.mids;
+    var nodeW = 10, top = 40, gap = 16;
+    var xs = 0, xm = mids ? Math.round(W * 0.25) : null, xr = Math.round(W * (mids ? 0.5 : 0.4));
+    var lx = xr + nodeW + 14, lw = W - lx - 2;
+    var k = (mids ? 290 : 240) / spec.total;
+    rs.forEach(function (r) { r.h = Math.max(2, r.v * k); r.L = labelLines(r, spec, lw); r.slot = Math.max(r.h, r.L.h); });
+    var colH = rs.reduce(function (a, r) { return a + r.slot; }, 0) + gap * (rs.length - 1);
+    var y = top; rs.forEach(function (r) { r.y = y; r.yIn = y; y += r.slot + gap; });
+    var srcH = spec.total * k, sy = top;
+    var H = top + colH + 12;
+    // the source: her receipt
+    var gS = el('g', { 'class': 'lbl' }, svg);
+    el('rect', { x: xs, y: sy, width: nodeW, height: srcH, fill: INK }, gS);
+    var st = el('text', { x: xs, y: sy - 12, 'class': 'src' }, gS); st.textContent = spec.source;
+    var sub = el('text', { x: xs, y: sy - 12 + 0, dx: measure(spec.source, '19px "IM Fell English",Georgia,serif') + 8, 'class': 'wh' }, gS); sub.textContent = spec.item;
+    steps.push({ els: [gS] });
+    function ribbon(x1, a1, x2, a2, h, key, tip, cls) {
+      var xm2 = (x1 + x2) / 2, d = 'M' + x1 + ',' + a1 + 'C' + xm2 + ',' + a1 + ' ' + xm2 + ',' + a2 + ' ' + x2 + ',' + a2 +
+        'L' + x2 + ',' + (a2 + h) + 'C' + xm2 + ',' + (a2 + h) + ' ' + xm2 + ',' + (a1 + h) + ' ' + x1 + ',' + (a1 + h) + 'Z';
+      var p = el('path', { d: d, fill: hatch(defs, key), stroke: COL[key] || INK, 'stroke-opacity': .75, 'stroke-width': .8, 'class': 'lk ' + cls, 'data-tip': tip }, svg);
+      var tt = el('title', {}, p); tt.textContent = tip.replace(/<[^>]+>/g, '');
+      return p;
+    }
+    var srcOff = sy;
+    if (mids) {
+      var my = top + Math.max(0, Math.min(40, (colH - (spec.total * k + 28)) / 2));
+      mids.forEach(function (m) {
+        m.h = m.v * k; m.y = my; m.out = my; my += m.h + 28;
+        var p = ribbon(xs + nodeW, srcOff, xm, m.y, m.h, m.key, '<b>' + m.label + '</b><br>' + fx(m.v) + ' · ' + pct(m.v, spec.total) + ' of ' + api.pence(spec.total), 'sk-mid');
+        p.setAttribute('data-v', m.v); srcOff += m.h;
+        var g = el('g', { 'class': 'lbl' }, svg);
+        el('rect', { x: xm, y: m.y, width: nodeW, height: m.h, fill: COL[m.key] }, g);
+        // a small paper tag on the node: "Sugar 4½d"
+        var tw = measure(m.label, F_LAB) + 8 + measure(api.pence(m.v), '600 15px "EB Garamond",Georgia,serif') + 16, ty = m.y + m.h / 2 - 13;
+        el('rect', { x: xm - 6 - tw, y: ty, width: tw, height: 26, rx: 2, fill: '#fbf6e8', stroke: COL[m.key], 'stroke-width': 1 }, g);
+        var t = el('text', { x: xm - 6 - tw + 8, y: ty + 18, 'class': 'lab' }, g); t.textContent = m.label + ' ';
+        var t2 = el('tspan', { 'class': 'fig', fill: COL[m.key] }, t); t2.textContent = api.pence(m.v);
+        steps.push({ els: [p, g], clip: { x: xs + nodeW, y: 0, w: xm - xs, h: H, grow: 'x' } });
+      });
+    }
+    var midBy = {}; (mids || []).forEach(function (m) { midBy[m.key] = m; });
+    var traceAt = [];
+    rs.forEach(function (r) {
+      var els = [], x0 = mids ? xm + nodeW : xs + nodeW;
+      r.parts.forEach(function (f) {
+        var h = f.v * k, a1;
+        if (mids) { var m = midBy[f.from]; a1 = m.out; m.out += h; } else { a1 = srcOff; srcOff += h; }
+        var tip = '<b>' + f.who + '</b><br>' + f.what + '<br>' + fx(f.v) + ' · ' + pct(f.v, spec.total) + ' of ' + api.pence(spec.total) + (mids ? ' (' + f.from + ')' : '');
+        var p = ribbon(x0, a1, xr, r.yIn, h, r.key, tip, 'sk-flow');
+        p.setAttribute('data-v', f.v); p.setAttribute('data-key', r.key);
+        f._a1 = a1; f._a2 = r.yIn; f._h = h; r.yIn += h; els.push(p);
+      });
+      var g = el('g', { 'class': 'lbl' }, svg);
+      el('rect', { x: xr, y: r.y, width: nodeW, height: r.h, fill: COL[r.key] || INK }, g);
+      drawLabel(g, r, spec, r.L, lx, r.y - 2);
+      els.push(g);
+      steps.push({ key: r.key, els: els, clip: { x: x0, y: 0, w: xr - x0 + nodeW, h: H, grow: 'x' } });
+      r.traces.forEach(function (t) {
+        var f = r.parts.filter(function (p) { return p.from === t.from; })[0] || r.parts[0];
+        var b1 = f._a1 + f._h + 3, b2 = f._a2 + f._h + 3, xmm = (x0 + xr) / 2, ny = r.y - 2 + r.L.noteY + 9;
+        var d = 'M' + x0 + ',' + b1 + 'C' + xmm + ',' + b1 + ' ' + xmm + ',' + b2 + ' ' + (xr + nodeW) + ',' + b2 +
+          'C' + (xr + nodeW + 9) + ',' + b2 + ' ' + (lx - 6) + ',' + ny + ' ' + (lx + 2) + ',' + ny;
+        traceAt.push({ d: d, x0: x0 });
+      });
+    });
+    traceAt.forEach(function (t) {
+      var p = el('path', { d: t.d, 'class': 'tr' }, svg);
+      steps.push({ trace: true, els: [p], clip: { x: t.x0, y: 0, w: W - t.x0, h: H, grow: 'x' } });
+    });
+    return H;
+  }
+
+  function vertical(svg, spec, W, steps) {
+    var defs = el('defs', {}, svg), rs = ordered(spec);
+    var x0 = 6, T = Math.min(Math.round(W * 0.3), 120), k = T / spec.total, R = 9, nodeW = 7, topY = 46, gap = 14;
+    var Xe = x0 + T + R + 10, lx = Xe + nodeW + 10, lw = W - lx - 2;
+    rs.forEach(function (r) { r.w = r.v * k; r.L = labelLines(r, spec, lw); r.slot = Math.max(r.w, r.L.h); });
+    // slices: the first row peels off the right edge of the stream
+    var right = x0 + T, y = topY + R + 18;
+    rs.forEach(function (r) { r.right = right; right -= r.w; r.y = y; y += r.slot + gap; });
+    var H = y - gap + 10;
+    var gS = el('g', { 'class': 'lbl' }, svg);
+    el('rect', { x: x0, y: topY - 7, width: T, height: 7, fill: INK }, gS);
+    var st = el('text', { x: x0, y: topY - 16, 'class': 'src' }, gS); st.textContent = spec.source;
+    var sub = el('text', { x: x0, y: topY - 16, dx: measure(spec.source, '19px "IM Fell English",Georgia,serif') + 8, 'class': 'wh' }, gS); sub.textContent = spec.item;
+    steps.push({ els: [gS] });
+    var traces = [];
+    rs.forEach(function (r) {
+      var els = [], off = 0, yy = r.y;
+      r.parts.forEach(function (f) {
+        var w = f.v * k, lb = r.right - off, la = lb - w, ri = R + off, ro = ri + w, ya = yy, yb = yy + w;
+        var d = 'M' + la + ',' + topY + 'L' + la + ',' + (yb - ro) + 'Q' + la + ',' + yb + ' ' + (la + ro) + ',' + yb + 'L' + Xe + ',' + yb +
+          'L' + Xe + ',' + ya + 'L' + (lb + ri) + ',' + ya + 'Q' + lb + ',' + ya + ' ' + lb + ',' + (ya - ri) + 'L' + lb + ',' + topY + 'Z';
+        var tip = '<b>' + f.who + '</b><br>' + f.what + '<br>' + fx(f.v) + ' · ' + pct(f.v, spec.total) + ' of ' + api.pence(spec.total) + (spec.mids ? ' (' + f.from + ')' : '');
+        var p = el('path', { d: d, fill: hatch(defs, r.key), stroke: COL[r.key] || INK, 'stroke-opacity': .75, 'stroke-width': .8, 'class': 'lk sk-flow', 'data-tip': tip, 'data-v': f.v, 'data-key': r.key }, svg);
+        el('title', {}, p).textContent = tip.replace(/<br>/g, ' · ').replace(/<[^>]+>/g, '');
+        f._la = la; f._yb = yb; f._ro = ro; off += w; yy += w; els.push(p);
+      });
+      var g = el('g', { 'class': 'lbl' }, svg);
+      el('rect', { x: Xe, y: r.y, width: nodeW, height: Math.max(2, r.w), fill: COL[r.key] || INK }, g);
+      drawLabel(g, r, spec, r.L, lx, r.y - 3);
+      els.push(g);
+      steps.push({ key: r.key, els: els, clip: { x: 0, y: topY - 1, w: W, h: r.y + r.slot - topY + 2, grow: 'y' } });
+      r.traces.forEach(function (t) {
+        var f = r.parts.filter(function (p) { return p.from === t.from; })[0] || r.parts[0];
+        var x = f._la - 3, yb = f._yb + 3, ro = f._ro + 3, ny = r.y - 3 + r.L.noteY + 9;
+        traces.push({ d: 'M' + x + ',' + topY + 'L' + x + ',' + (yb - ro) + 'Q' + x + ',' + yb + ' ' + (x + ro) + ',' + yb + 'L' + (Xe + nodeW) + ',' + yb +
+          'C' + (Xe + nodeW + 6) + ',' + yb + ' ' + (lx - 4) + ',' + ny + ' ' + (lx + 3) + ',' + ny, bottom: ny + 4 });
+      });
+    });
+    traces.forEach(function (t) {
+      var p = el('path', { d: t.d, 'class': 'tr' }, svg);
+      steps.push({ trace: true, els: [p], clip: { x: 0, y: topY - 1, w: W, h: t.bottom - topY + 2, grow: 'y' } });
+    });
+    return H;
+  }
+
+  /* ------------------------------------------------------------------ render */
+  function table(spec) {
+    var rs = ordered(spec), cap = spec.title + '. Every figure is the one worked out in the ledger.';
+    var h = '<table><caption class="sk-cap" style="caption-side:bottom;font-size:12px;color:' + INK2 + ';font-style:italic;padding-top:4px">' + esc(cap) + '</caption>' +
+      '<thead><tr><th scope="col">Who</th><th scope="col">What for</th>' + (spec.mids ? '<th scope="col">From</th>' : '') + '<th scope="col" class="n">Pence</th><th scope="col" class="n">Share</th></tr></thead><tbody>';
+    rs.forEach(function (r) {
+      r.parts.forEach(function (f) {
+        h += '<tr><td>' + esc(f.who) + '</td><td>' + esc(f.what) + '</td>' + (spec.mids ? '<td>' + esc(f.from) + '</td>' : '') +
+          '<td class="n">' + fx(f.v) + '</td><td class="n">' + pct(f.v, spec.total) + '</td></tr>';
+      });
+      r.traces.forEach(function (t) {
+        h += '<tr class="lab"><td>' + esc(t.who) + '</td><td colspan="' + (spec.mids ? 2 : 1) + '">' + esc(t.note) + '</td><td class="n">?</td><td class="n">inside ' + esc(r.who.replace(/^The /, 'the ')) + '’s share</td></tr>';
+      });
+    });
+    var sum = r4(spec.flows.reduce(function (a, f) { return a + f.v; }, 0));
+    h += '<tr class="tot"><td>Total</td><td>Her receipt</td>' + (spec.mids ? '<td></td>' : '') + '<td class="n">' + fx(sum) + '</td><td class="n">100%</td></tr></tbody></table>';
+    return h;
+  }
+  function describe(spec) {
+    return spec.title + ': ' + ordered(spec).map(function (r) { return r.who + ' ' + fx(r.v) + ' (' + pct(r.v, spec.total) + ')'; }).join(', ') +
+      '. ' + (spec.traces || []).map(function (t) { return t.who + ': ' + t.note; }).join(' ');
+  }
+  function reduced() { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+  function tween(rect, attr, to, ms) {
+    var t0 = null;
+    function f(t) { if (t0 == null) t0 = t; var p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 3); rect.setAttribute(attr, to * e); if (p < 1) requestAnimationFrame(f); }
+    requestAnimationFrame(f);
+  }
+
+  function render(host, spec, opts) {
+    opts = opts || {}; style();
+    var state = host._sk || (host._sk = { played: false });
+    state.spec = spec; state.opts = opts;
+    host.classList.add('sk');
+    host.innerHTML = '';
+    var W = Math.floor(host.clientWidth);
+    if (!W) return host; // hidden: drawn when it becomes visible (see observe)
+    state.W = W;
+    var narrow = window.innerWidth < 700 || W < 520;
+    var id = 'sk' + (++uid);
+    var svg = el('svg', { role: 'img', 'aria-labelledby': id + 't ' + id + 'd', 'data-total': spec.total, 'data-layout': narrow ? 'vertical' : 'horizontal', 'data-spec': spec.id }, host);
+    el('title', { id: id + 't' }, svg).textContent = spec.title;
+    el('desc', { id: id + 'd' }, svg).textContent = describe(spec);
+    var steps = [];
+    var H = (narrow ? vertical : horizontal)(svg, spec, W, steps);
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + Math.ceil(H));
+    svg.setAttribute('width', W); svg.setAttribute('height', Math.ceil(H));
+    var tip = document.createElement('div'); tip.className = 'sk-tip'; tip.setAttribute('aria-hidden', 'true'); host.appendChild(tip);
+    var det = document.createElement('details'); det.innerHTML = '<summary>The same figures as a table</summary>' + table(spec); host.appendChild(det);
+    // tooltips and highlight
+    function show(e) {
+      var p = e.target.closest && e.target.closest('[data-tip]');
+      host.classList.toggle('hov', !!p);
+      svg.querySelectorAll('.lk.on').forEach(function (x) { x.classList.remove('on'); });
+      if (!p) { tip.classList.remove('on'); return; }
+      svg.querySelectorAll('.lk[data-key="' + p.getAttribute('data-key') + '"]').forEach(function (x) { x.classList.add('on'); });
+      p.classList.add('on');
+      tip.innerHTML = p.getAttribute('data-tip');
+      var b = host.getBoundingClientRect(), x = e.clientX - b.left, y = e.clientY - b.top;
+      tip.classList.add('on');
+      var tw = tip.offsetWidth;
+      tip.style.left = Math.max(0, Math.min(W - tw, x - tw / 2)) + 'px';
+      tip.style.top = Math.max(0, y - tip.offsetHeight - 14) + 'px';
+    }
+    svg.addEventListener('pointermove', show);
+    svg.addEventListener('pointerdown', show);
+    svg.addEventListener('pointerleave', function () { host.classList.remove('hov'); tip.classList.remove('on'); svg.querySelectorAll('.lk.on').forEach(function (x) { x.classList.remove('on'); }); });
+
+    // the animation: flows ink in one by one, in the order the ledger lines were locked
+    if (state.played || reduced() || opts.animate === false) { state.played = true; return host; }
+    host.classList.add('pre');
+    var defs = svg.querySelector('defs');
+    var order = (opts.order || []).slice();
+    var head = steps.filter(function (s) { return !s.key && !s.trace; }),
+        flows = steps.filter(function (s) { return s.key; }),
+        tr = steps.filter(function (s) { return s.trace; });
+    flows.sort(function (a, b) {
+      var ia = order.indexOf(a.key), ib = order.indexOf(b.key);
+      return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+    });
+    var seq = head.concat(flows, tr);
+    seq.forEach(function (s) {
+      if (!s.clip) return;
+      var cid = 'skc' + (++uid), cp = el('clipPath', { id: cid }, defs), c = s.clip;
+      s.rect = el('rect', { x: c.x, y: c.y, width: c.grow === 'x' ? 0 : c.w, height: c.grow === 'y' ? 0 : c.h }, cp);
+      s.els.forEach(function (e) { if (e.tagName !== 'g') e.setAttribute('clip-path', 'url(#' + cid + ')'); });
+    });
+    function play() {
+      if (state.played) return; state.played = true;
+      var clock = 0;
+    seq.forEach(function (s) {
+        var at = clock; clock += s.trace ? 450 : s.key ? 560 : 380; if (s.trace) at += 300;
+        setTimeout(function () {
+          if (s.rect) tween(s.rect, s.clip.grow === 'x' ? 'width' : 'height', s.clip.grow === 'x' ? s.clip.w : s.clip.h, s.trace ? 1600 : 850);
+          s.els.forEach(function (e) { if (e.tagName === 'g') setTimeout(function () { e.classList.add('in'); }, s.rect ? 420 : 0); });
+          if (opts.onStep && s.key) try { opts.onStep(s.key); } catch (e) {}
+        }, at);
+      });
+      setTimeout(function () { host.classList.remove('pre'); }, clock + 2600);
+    }
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (en) { if (en.some(function (x) { return x.isIntersecting; })) { io.disconnect(); play(); } }, { threshold: 0.25 });
+      io.observe(svg);
+    } else play();
+    return host;
+  }
+  // redraw (without animating again) when the width or the layout changes
+  var watched = [];
+  function observe(host) { if (watched.indexOf(host) < 0) watched.push(host); }
+  var rt = null;
+  function relayout() {
+    watched.forEach(function (h) {
+      var s = h._sk; if (!s || !s.spec) return;
+      var W = Math.floor(h.clientWidth); if (!W || W === s.W) return;
+      if (s.W) s.played = true; // already seen once: no second animation
+      render(h, s.spec, s.opts);
+    });
+  }
+  window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(relayout, 120); });
+  api.render = function (host, spec, opts) { observe(host); return render(host, spec, opts); };
+  api.relayout = relayout;
+  window.TeaSankey = api;
+})();
+</script>
 <script>
 /* ===== INTRO ===== */
 const INTRO = [
@@ -845,6 +1374,7 @@ function checkFinal(){
   if(id==="p269"){
     S.done=true; $("#msg").textContent=""; toast("Two hundred and sixty-nine per cent.");
     stamp(); hush(2.5); showReceipt(); saveDone(SCENE); $("#replay").classList.add("on"); saveScene();
+    try{ window.HL && HL.stamp('cupoftea',{result:'done', label:`Scene 3 solved · ${blots} blot${blots===1?"":"s"}`, score:-blots}); }catch(e){}
     setTimeout(openDoor,1500);
   } else {
     if(!S.tried.has("f1|"+id)) blots++; // the same wrong answer twice is one blot
@@ -975,6 +1505,40 @@ $("#rSave").addEventListener("click",()=>{
     const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=R.file; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),3000); });
 });
+/* ===== WHERE THE FARTHINGS WENT (Sankeys), THE VOC, AND SHARING ===== */
+const havanaKnown=()=>(teaStore().done||[]).includes(2); // Scene 2 split the 1.75d left in Havana
+function drawSankeys(){
+  if(!window.TeaSankey) return;
+  const tea=$("#skTea"), whole=$("#skWhole");
+  if(!(tea._sk&&tea._sk.W)){
+    const order=S.lockOrder.map(rid=>ROWS[S.lockAns[rid]].ans.who);
+    TeaSankey.render(tea,TeaSankey.tea(),{order,onStep:()=>clink(0,.1)});
+  }
+  if(!(whole._sk&&whole._sk.W)) TeaSankey.render(whole,TeaSankey.whole(havanaKnown()),{order:["shipowner","planter","merchant","havana","grocer","crown","china"]});
+  vocLine();
+}
+function vocLine(){
+  // Tea and the Dutch: the VOC brought the first tea to Europe, early in the 1600s; the English East India Company came to dominate the trade later.
+  const cg=!!(window.HL_PLATFORM&&HL_PLATFORM.id==="crazygames");
+  let played=false; try{ played=!!(localStorage.getItem("retourvloot.v1")||localStorage.getItem("retourvloot.runs")); }catch(e){}
+  const link='<a href="/retourvloot/">Retourvloot</a>';
+  $("#vocLine").innerHTML = cg
+    ? "Her tea came by a long road. It was the Dutch East India Company that first brought tea to Europe, early in the seventeenth century, before the English East India Company came to dominate the trade."
+    : played
+    ? `Her tea came by a long road. Your ${link} company, the Dutch East India Company, brought the first tea to Europe early in the seventeenth century, before the English East India Company came to dominate the trade.`
+    : `Her tea came by a long road. It was the Dutch East India Company that first brought tea to Europe, early in the seventeenth century, before the English East India Company came to dominate the trade. Run the VOC yourself in ${link}.`;
+}
+function topThree(sp){ // the three biggest recipients, a shared recipient's flows summed
+  const by={}; sp.flows.forEach(f=>{ by[f.key]=by[f.key]||{who:f.who,v:0}; by[f.key].v+=f.v; });
+  return Object.values(by).sort((a,b)=>b.v-a.v).slice(0,3).map(r=>`${r.who}: ${r.v.toFixed(2)}d`);
+}
+function shareOpts(){
+  const sp=window.TeaSankey?TeaSankey.whole(havanaKnown()):{flows:[]};
+  return {game:"cupoftea", kicker:"A Cup of Tea · London 1850", title:"Who got every farthing", big:"9½d",
+    sub:`Solved with ${blots} blot${blots===1?"":"s"}`, lines:topThree(sp),
+    art:"/cupoftea/img/tea_intro_3.webp", text:receiptText(receiptData()), url:"https://homoludens.oalpcakir.workers.dev/cupoftea/3/"};
+}
+document.addEventListener("DOMContentLoaded",()=>{ if(window.HL) HL.on($("#rShare"),shareOpts); else $("#rShare").hidden=true; });
 $("#rCopy").addEventListener("click",()=>{
   const t=receiptText(receiptData());
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copied to the clipboard."),()=>toast("Could not copy. Your browser blocked the clipboard."));
@@ -1176,7 +1740,7 @@ document.querySelectorAll(".replayBtn").forEach(b=>b.addEventListener("click",re
    Pick a note with Enter, then press Enter on a box. Escape closes the end screen. */
 let doorFrom=null;
 function openDoor(){
-  doorFrom=document.activeElement; $("#door").classList.add("on");
+  doorFrom=document.activeElement; $("#door").classList.add("on"); drawSankeys();
   setTimeout(()=>$("#door .card").focus({preventScroll:true}),30);
 }
 function closeDoor(){

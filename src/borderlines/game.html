@@ -163,6 +163,134 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
 /* touch screens: no keyboard shortcuts to advertise */
 .hint .touch { display: none; }
 @media (hover: none) { kbd, .hint .keys { display: none; } .hint .touch { display: inline; } }
+/* ---------- title screen: the base map as a quiet, slowly drifting backdrop (no realms on it) ---------- */
+#veil { position: absolute; inset: 0; pointer-events: none; display: none;
+  background: radial-gradient(ellipse 80% 70% at 50% 45%, rgba(217,227,230,.15) 0%, rgba(217,227,230,.62) 70%, rgba(207,219,223,.85) 100%); }
+body.home #veil { display: block; }
+body.home #stage { pointer-events: none; }
+body.home #base { opacity: .62; transform: scale(1.08); transform-origin: 50% 45%; }
+body.home .zoomctl, body.home .coords { display: none; }
+@media (prefers-reduced-motion: no-preference) {
+  body.home #base { animation: drift 110s ease-in-out infinite alternate; }
+  @keyframes drift { from { transform: scale(1.08) translate(-1.6%, -.6%); } to { transform: scale(1.08) translate(1.6%, .9%); } }
+}
+#intro.panel { width: min(940px, calc(100% - 48px)); padding: 30px 32px 28px; }
+.home-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.08fr); grid-template-areas: "brand today" "howto record" "modes record"; grid-template-rows: auto auto 1fr;
+  column-gap: 34px; row-gap: 14px; margin-top: 6px; }
+.home-brand { grid-area: brand; } #btnDaily { grid-area: today; } .record { grid-area: record; align-self: start; }
+.home-modes { grid-area: modes; align-self: end; } .howto { grid-area: howto; align-self: start; }
+.tagline { font-family: var(--f-display); font-size: 22px !important; line-height: 1.25 !important; margin-top: 14px !important; color: var(--ink); }
+.lede { color: var(--ink-soft); }
+.howto { border-top: 1px solid var(--rule); padding-top: 12px; }
+.howto summary { font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); cursor: pointer; padding: 4px 0; list-style: none; display: flex; align-items: center; gap: 8px; }
+.howto summary::-webkit-details-marker { display: none; }
+.howto summary::before { content: ""; width: 6px; height: 6px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); transition: transform .15s; }
+.howto[open] summary::before { transform: rotate(45deg); }
+.howto summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.howto ul { margin-top: 8px !important; }
+.today { display: grid; gap: 6px; text-align: left; padding: 18px 20px 16px; background: var(--ink); color: var(--paper); border: 0; border-radius: 3px; position: relative; overflow: hidden; line-height: 1.2;
+  box-shadow: 0 10px 26px -14px rgba(31,43,74,.7); }
+.today::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .14;
+  background: repeating-linear-gradient(0deg, transparent 0 23px, #fff 23px 24px), repeating-linear-gradient(90deg, transparent 0 23px, #fff 23px 24px);
+  -webkit-mask-image: linear-gradient(110deg, transparent 35%, #000 100%); mask-image: linear-gradient(110deg, transparent 35%, #000 100%); }
+button.today:hover:not(:disabled) { background: #2a3a62; }
+.today .t-kick { font: 500 11px/1 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; opacity: .72; display: flex; justify-content: space-between; gap: 12px; }
+.today .t-title { font-family: var(--f-display); font-size: 32px; font-weight: 400; margin-top: 4px; }
+.today .t-sub { font-size: 14px; opacity: .82; }
+.today .t-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.pips { display: flex; gap: 6px; }
+.pip { display: inline-flex; align-items: flex-end; gap: 2px; height: 16px; padding: 4px 6px; border: 1px solid rgba(255,255,255,.28); border-radius: 2px; box-sizing: content-box; }
+.pip b { width: 3px; background: rgba(255,255,255,.25); }
+.pip b:nth-child(1) { height: 6px; } .pip b:nth-child(2) { height: 11px; } .pip b:nth-child(3) { height: 16px; }
+.pip.t1 b:nth-child(-n+1), .pip.t2 b:nth-child(-n+2), .pip.t3 b:nth-child(-n+3) { background: #fff; }
+.pip.done { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.5); }
+.today .t-go { font: 600 14px/1 var(--f-body); display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--paper); color: var(--ink); border-radius: 2px; white-space: nowrap; }
+.today .t-go svg { width: 14px; height: 14px; }
+.today.done { background: var(--paper); color: var(--ink); border: 1px solid var(--rule); box-shadow: none; }
+button.today.done:hover:not(:disabled) { background: #f4f6f8; }
+.today.done::after { display: none; }
+.today.done .pip { border-color: var(--rule); } .today.done .pip b { background: var(--rule); }
+.today.done .pip.t1 b:nth-child(-n+1), .today.done .pip.t2 b:nth-child(-n+2), .today.done .pip.t3 b:nth-child(-n+3) { background: var(--ink); }
+.today.done .pip.done { background: #f1f3f6; }
+.today.done .t-go { background: var(--ink); color: var(--paper); }
+.record { border: 1px solid var(--rule); padding: 14px 16px 12px; }
+.rec-top { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rec-stat b { display: block; font: 500 24px/1.05 var(--f-mono); font-variant-numeric: tabular-nums; }
+.rec-stat span { font-size: 12px; color: var(--ink-soft); }
+.rec-stat.streak b { color: var(--star); }
+.cal-wrap { display: grid; grid-template-columns: auto 1fr; gap: 12px 14px; margin-top: 14px; align-items: end; }
+.cal { display: grid; grid-template-columns: repeat(7, 18px); gap: 4px; }
+.cal .dh { font: 500 9px/1 var(--f-mono); color: var(--ink-soft); text-align: center; padding-bottom: 2px; }
+.cal i { width: 18px; height: 18px; border-radius: 2px; background: transparent; border: 1px dashed var(--rule); }
+.cal i.none { border: 1px solid transparent; background: rgba(31,43,74,.04); }
+.cal i.miss { border: 1px solid #d3d9df; background: repeating-linear-gradient(135deg, transparent 0 3px, #dfe4e9 3px 4px); }
+.cal i.late { border: 1px solid #b9c3d6; background: #dfe5f0; }
+.cal i.played { border: 1px solid #6f7d9c; background: #8a97b4; }
+.cal i.perfect { border: 1px solid var(--ink); background: var(--ink); }
+.cal i.open { border: 1.5px solid var(--ink); background: var(--paper); }
+.cal i.now { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--star); }
+.cal-legend { display: grid; gap: 6px; font-size: 12px; color: var(--ink-soft); }
+.cal-legend span { display: flex; align-items: center; gap: 7px; }
+.cal-legend i { width: 11px; height: 11px; border-radius: 2px; display: inline-block; flex: none; }
+.cal-l.miss { border: 1px solid #d3d9df; background: repeating-linear-gradient(135deg, transparent 0 3px, #dfe4e9 3px 4px); }
+.cal-l.late { border: 1px solid #b9c3d6; background: #dfe5f0; }
+.cal-l.played { border: 1px solid #6f7d9c; background: #8a97b4; }
+.cal-l.perfect { border: 1px solid var(--ink); background: var(--ink); }
+.rec-note { font-size: 13px; color: var(--ink-soft); margin-top: 10px; }
+.home-modes { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; }
+.home-modes button { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 5px; text-align: left; padding: 12px 14px; line-height: 1.15; min-height: 58px; }
+.home-modes .m-t { font-weight: 600; font-size: 15px; }
+.home-modes .m-s { font-size: 12px; color: var(--ink-soft); }
+@media (max-width: 899px) {
+  #intro.panel { width: min(560px, calc(100% - 32px)); }
+  .home-grid { grid-template-columns: 1fr; grid-template-areas: "brand" "today" "record" "modes" "howto"; grid-template-rows: none; row-gap: 14px; }
+  .home-brand .lede { display: none; }
+}
+@media (max-width: 640px) {
+  #intro.panel { inset: 12px 12px auto; margin: 0; width: auto; max-height: calc(100% - 24px); padding: 20px 18px 18px; }
+  .panel h1 { font-size: 44px; }
+  #intro .eyebrow > span:last-child { display: none; }
+  .tagline { font-size: 19px !important; }
+  .today .t-title { font-size: 28px; }
+  .pip { padding: 3px 4px; }
+  .home-modes { grid-template-columns: 1fr 1fr; }
+  .home-modes #btnPractice { grid-column: 1 / -1; }
+  .cal { grid-template-columns: repeat(7, 22px); } .cal i { width: 22px; height: 22px; }
+}
+@media (max-width: 360px) { .cal-wrap { grid-template-columns: 1fr; } .cal-legend { grid-template-columns: 1fr 1fr; } }
+
+/* ---------- border time-lapse on the result card ---------- */
+.lapse-open { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; padding: 8px 12px; font-size: 13px; }
+.lapse-open svg { width: 15px; height: 15px; }
+.lapse { margin-top: 12px; padding: 12px 12px 10px; background: #f4f6f8; border: 1px solid var(--rule); }
+.lapse-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.lapse-head b { font: 400 30px/1 var(--f-display); font-variant-numeric: lining-nums; }
+.lapse-head span { font: 500 11px var(--f-mono); color: var(--ink-soft); letter-spacing: .04em; text-align: right; }
+.lapse-ctl { display: grid; grid-template-columns: 38px 1fr; gap: 10px; align-items: center; margin-top: 8px; }
+.lapse-ctl button { width: 38px; height: 38px; padding: 0; display: grid; place-items: center; }
+.lapse-ctl button svg { width: 14px; height: 14px; }
+.scrub { position: relative; height: 38px; }
+.scrub input { position: absolute; inset: 0; width: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.scrub .track { position: absolute; left: 8px; right: 8px; top: 18px; height: 2px; background: var(--rule); }
+.scrub .tick { position: absolute; top: 13px; width: 2px; height: 12px; margin-left: -1px; background: #b8c1cc; }
+.scrub .tick.round { background: var(--realm); height: 16px; top: 11px; width: 3px; margin-left: -1.5px; }
+.scrub .thumb { position: absolute; top: 11px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: var(--paper); border: 2px solid var(--ink); transition: left .25s ease; pointer-events: none; }
+.scrub input:focus-visible ~ .thumb { outline: 2px solid var(--ink); outline-offset: 2px; }
+.scrub .lab { position: absolute; top: 30px; font: 500 10px var(--f-mono); color: var(--ink-soft); transform: translateX(-50%); white-space: nowrap; }
+.scrub .lab.round { color: var(--realm); font-weight: 600; }
+.scrub .lab.first { transform: none; margin-left: -8px; } .scrub .lab.last { transform: translateX(-100%); margin-left: 8px; }
+.lapse-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; gap: 10px; }
+.lapse-foot .linkbtn { margin: 0; font-size: 13px; white-space: nowrap; }
+.lapse-foot .src { font-size: 11px; color: var(--ink-soft); }
+.lapse-shape { fill: var(--realm); fill-opacity: .34; stroke: var(--realm); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.lapse-ref { fill: none; stroke: var(--ink); stroke-width: 1.2; stroke-dasharray: 4 3; vector-effect: non-scaling-stroke; opacity: .7; }
+
+/* ---------- end screen: today's players ---------- */
+.pct { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; margin-top: 14px; padding: 12px 14px; border: 1px solid var(--rule); background: #fafbfc; }
+.pct svg { width: 150px; height: 40px; display: block; }
+.pct b { font-weight: 600; display: block; font-size: 15px; line-height: 1.3; }
+.pct span { font-size: 12px; color: var(--ink-soft); }
+@media (max-width: 420px) { .pct svg { width: 110px; } }
 @media (prefers-reduced-motion: no-preference) {
   .truth { animation: draw-in .6s ease-out; }
   @keyframes draw-in { from { stroke-opacity: 0; } }
@@ -177,6 +305,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     <svg id="top"><g id="topG"></g></svg>
     <div id="brush" hidden></div>
   </div>
+  <div id="veil"></div>
 
   <div id="cartouche" class="card" hidden>
     <div class="eyebrow"><span id="roundLabel">Round 1 / 5</span><span id="tierLabel"></span></div>
@@ -218,6 +347,15 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     </div>
     <div class="legend"><span><i class="sw ok"></i>Correct</span><span><i class="sw extra"></i>Spilled over</span><span><i class="sw miss"></i>Missed</span></div>
     <div class="fact" id="rFact"></div>
+    <button id="btnLapse" type="button" class="lapse-open" hidden aria-expanded="false" aria-controls="lapseBox"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.2V8l2.6 1.6"/></svg>See it change</button>
+    <div id="lapseBox" class="lapse" hidden>
+      <div class="lapse-head"><b id="lapseYear" aria-live="polite"></b><span id="lapseNote"></span></div>
+      <div class="lapse-ctl">
+        <button id="lapsePlay" type="button" aria-label="Play"><svg viewBox="0 0 14 14" aria-hidden="true" fill="currentColor"><path d="M3 1.5v11l9-5.5z"/></svg></button>
+        <div class="scrub" id="lapseScrub"><div class="track"></div><input id="lapseRange" type="range" min="0" max="1" step="1" value="0" aria-label="Year"><div class="thumb" id="lapseThumb"></div></div>
+      </div>
+      <div class="lapse-foot"><span class="src">Data: historical-basemaps</span><button id="lapseClose" type="button" class="linkbtn">Back to your map</button></div>
+    </div>
     <div class="note">Borders are approximate. Data: historical-basemaps, Natural Earth.</div>
     <div class="actions"><button id="btnNext" type="button" class="primary">Next round<kbd>↵</kbd></button></div>
     <div class="result-links links"><button id="btnReport" type="button" class="linkbtn">Report a problem with this realm</button><button id="btnResMenu" type="button" class="linkbtn">Menu</button></div>
@@ -259,20 +397,45 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
   </div>
 
   <div id="intro" class="card panel">
-    <div class="eyebrow"><span><a id="portalLink" class="portal-link" href="/" hidden>← Homo Ludens</a><span id="seriesLabel">Homo Ludens · No. 1</span></span><span id="streak"></span></div>
+    <div class="eyebrow"><span><a id="portalLink" class="portal-link" href="/" hidden>← Homo Ludens</a><span id="seriesLabel">Homo Ludens · No. 1</span></span><span>A daily history map game</span></div>
     <h1>Borderlines<img class="orn" src="data:image/webp;base64,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" alt="" width="64" height="64"></h1>
-    <p>Every empire had its edges. Can you find them?</p>
-    <p>You get a year and a realm. Paint the land it ruled, then see how close you came.</p>
-    <ul>
-      <li>Drag to paint. Draw an outline and Fill floods the inside.</li>
-      <li>Stuck? Hints show the region or the capital, for a price.</li>
-      <li>Paint too little or too much and you lose points.</li>
-    </ul>
-    <div class="modes">
-      <button id="btnDaily" type="button" class="mode primary"><span class="m-t" id="dailyTitle">Daily Challenge</span><span class="m-s" id="dailySub"></span></button>
-      <button id="btnPractice" type="button" class="mode"><span class="m-t">Practice</span><span class="m-s" id="practiceSub"></span></button>
+    <div class="home-grid">
+      <div class="home-brand">
+        <p class="tagline">Every empire had its edges. Can you find them?</p>
+        <p class="lede">You get a year and a realm. Paint the land it ruled, then see how close you came.</p>
+      </div>
+        <button id="btnDaily" type="button" class="today"><span class="t-kick"><span id="dailyKick">Daily</span><span id="dailyDate"></span></span><span class="t-title" id="dailyTitle">Daily Challenge</span><span class="t-sub" id="dailySub"></span><span class="t-row"><span class="pips" id="dailyPips" aria-hidden="true"></span><span class="t-go" id="dailyGo" aria-hidden="true">Play<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7h10M8 3l4 4-4 4"/></svg></span></span></button>
+        <section class="record" aria-label="Your record">
+          <div class="rec-top">
+            <div class="rec-stat streak"><b id="hStreak">0</b><span id="hStreakLab">day streak</span></div>
+            <div class="rec-stat"><b id="hBest">–</b><span>best / 500</span></div>
+            <div class="rec-stat"><b id="hPlayed">0</b><span>dailies played</span></div>
+          </div>
+          <div class="cal-wrap">
+            <div class="cal" id="hCal" role="img"></div>
+            <div class="cal-legend" aria-hidden="true">
+              <span><i class="cal-l perfect"></i>All rounds 3★</span>
+              <span><i class="cal-l played"></i>Played</span>
+              <span><i class="cal-l late"></i>Played late</span>
+              <span><i class="cal-l miss"></i>Missed</span>
+            </div>
+          </div>
+          <p class="rec-note" id="hNote" hidden></p>
+        </section>
+        <div class="home-modes">
+          <button id="btnPractice" type="button"><span class="m-t">Practice</span><span class="m-s" id="practiceSub"></span></button>
+          <button id="btnArchive" type="button"><span class="m-t">Archive</span><span class="m-s">Past dailies</span></button>
+          <button id="btnStats" type="button"><span class="m-t">Stats</span><span class="m-s">Your record</span></button>
+        </div>
+        <details class="howto" id="howto">
+          <summary>How to play</summary>
+          <ul>
+            <li>Drag to paint. Draw an outline and Fill floods the inside.</li>
+            <li>Stuck? Hints show the region or the capital, for a price.</li>
+            <li>Paint too little or too much and you lose points.</li>
+          </ul>
+        </details>
     </div>
-    <div class="links"><button id="btnArchive" type="button" class="linkbtn">Past challenges</button><button id="btnStats" type="button" class="linkbtn">Statistics</button></div>
   </div>
 
   <div id="archive" class="card panel" hidden>
@@ -286,10 +449,11 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     <div class="eyebrow"><span id="eKind">Final score</span><span id="eTotal"></span></div>
     <h2 id="eTitle">Cartographer</h2>
     <p id="eLine"></p>
+    <div class="pct" id="ePct" hidden></div>
     <div class="rounds" id="eRounds"></div>
     <div class="share" id="eShare"></div>
     <p class="next" id="eNext"></p>
-    <div class="actions"><span class="sharewrap"><button id="btnShare" type="button" class="primary" aria-haspopup="true" aria-expanded="false">Share</button><span id="shareMenu" class="sharemenu card" hidden><a id="shX" target="_blank" rel="noopener">X / Twitter</a><a id="shWa" target="_blank" rel="noopener">WhatsApp</a><a id="shRd" target="_blank" rel="noopener">Reddit</a><a id="shFb" target="_blank" rel="noopener">Facebook</a></span></span><button id="btnCopy" type="button" class="primary">Copy result</button><button id="btnAgain" type="button">Practice</button><button id="btnMenu" type="button">Menu</button><a id="btnMore" class="morelink" href="/" hidden>More games</a></div>
+    <div class="actions"><span class="sharewrap"><button id="btnShare" type="button" class="primary" aria-haspopup="true" aria-expanded="false">Share</button><span id="shareMenu" class="sharemenu card" hidden><a id="shX" target="_blank" rel="noopener">X / Twitter</a><a id="shWa" target="_blank" rel="noopener">WhatsApp</a><a id="shRd" target="_blank" rel="noopener">Reddit</a><a id="shFb" target="_blank" rel="noopener">Facebook</a></span></span><button id="btnShareImg" type="button" hidden>Share image</button><button id="btnCopy" type="button" class="primary">Copy result</button><button id="btnAgain" type="button">Practice</button><button id="btnMenu" type="button">Menu</button><a id="btnMore" class="morelink" href="/" hidden>More games</a></div>
     <div data-hl-next></div>
   </div>
 
@@ -336,6 +500,15 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
   // platform packages: the live site first (new dailies arrive without a re-upload), then the copies in the package
   const DAYS_FALLBACK = (window.BORDERLINES_CONFIG || {}).daysFallback || "";
   const dayCache = {};
+  const CFG = window.BORDERLINES_CONFIG || {};
+  // Border time-lapse files (lapse/<id>.json) sit next to the day files; the page only knows which ids have one.
+  const LAPSE_URL = CFG.lapseUrl || (CFG.daysUrl ? CFG.daysUrl.replace(/days\/?$/, "lapse/") : "lapse/");
+  const LAPSE = new Set(DATA.lapse || []);
+  // "You beat N% of today's players" needs the site's Worker on the same origin; anywhere else it stays off.
+  const SCORE_API = (() => {
+    if (!CFG.scoreApi) return "";
+    try { const u = new URL(CFG.scoreApi, location.href); return u.origin === location.origin ? u.href.replace(/\/?$/, "/") : ""; } catch (_) { return ""; }
+  })();
   // with a fallback, the remote copy gets 4 s (an unanswered request must not hold the game)
   const fetchDay = (base, i, ms) => {
     const ac = ms && window.AbortController ? new AbortController() : null, t = ac && setTimeout(() => ac.abort(), ms);
@@ -512,7 +685,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
       octx.setTransform(1, 0, 0, 1, 0, 0); octx.clearRect(0, 0, off.width, off.height);
       ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, canvas.width, canvas.height);
       const t = [DPR * zoomT.k, DPR * zoomT.x, DPR * zoomT.y];
-      if (state.phase === "result" && diff) {
+      if (state.phase === "result" && diff && !lapse.open) {
         ctx.setTransform(t[0], 0, 0, t[0], t[1], t[2]);
         ctx.imageSmoothingEnabled = true;
         ctx.drawImage(diff.img, diff.x, diff.y, diff.w, diff.h);
@@ -756,7 +929,8 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     ["cartouche", "tools"].forEach((id) => ($(id).hidden = false));
     ["result", "intro", "end", "archive", "stats", "report", "tutDone"].forEach((id) => ($(id).hidden = true));
     stage.classList.remove("idle");
-    document.body.classList.remove("showing-result");
+    document.body.classList.remove("showing-result", "home");
+    lapseReset();
     $("btnQuit").hidden = state.mode === "tutorial";
     topG.selectAll("*").remove();
     resetZoom(); setTool("brush"); render(); updateButtons();
@@ -853,10 +1027,148 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     $("rFact").textContent = q.fact;
     $("btnNext").innerHTML = (state.mode === "tutorial" ? "Finish tutorial" : state.round === Q.length - 1 ? "See final score" : "Next round") + "<kbd>↵</kbd>";
     $("btnReport").hidden = $("btnResMenu").hidden = state.mode === "tutorial";
+    $("btnLapse").hidden = state.mode === "tutorial" || !LAPSE.has(q.id);
     $("result").hidden = false; $("tools").hidden = true;
     stage.classList.add("pan"); stage.classList.remove("fill");
     updateButtons();
     $("btnNext").focus({ preventScroll: true });
+  }
+
+  // ---------- border time-lapse ("See it change", after a round's result) ----------
+  // lapse/<id>.json: { id, year, snaps: [{ year, label, geometry }] }, the realm in the nearest dataset years
+  // (build_lapse.py). Fetched only when the player opens it, so nothing is loaded before the realm is played.
+  const lapse = { open: false, data: null, i: 0, timer: 0, cache: {} };
+  const PLAY_ICON = '<svg viewBox="0 0 14 14" aria-hidden="true" fill="currentColor"><path d="M3 1.5v11l9-5.5z"/></svg>';
+  const PAUSE_ICON = '<svg viewBox="0 0 14 14" aria-hidden="true" fill="currentColor"><path d="M3 1.5h3v11H3zM8 1.5h3v11H8z"/></svg>';
+  function lapseFetch(id) {
+    if (!lapse.cache[id]) lapse.cache[id] = fetch(LAPSE_URL + id + ".json")
+      .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then((j) => { if (!j || !Array.isArray(j.snaps) || j.snaps.length < 2) throw new Error("bad lapse"); return j; })
+      .catch((e) => { delete lapse.cache[id]; throw e; });
+    return lapse.cache[id];
+  }
+  function lapseStop() { clearTimeout(lapse.timer); lapse.timer = 0; $("lapsePlay").innerHTML = PLAY_ICON; $("lapsePlay").setAttribute("aria-label", "Play"); }
+  function lapseReset() {
+    if (!lapse.open && !lapse.data) return;
+    lapseStop(); lapse.open = false; lapse.data = null;
+    topG.selectAll(".lapse-g").remove(); topG.select(".truth").style("display", null); topG.selectAll(".cap").style("display", null);
+    $("lapseBox").hidden = true; $("btnLapse").hidden = false; $("btnLapse").setAttribute("aria-expanded", "false");
+    render();
+  }
+  function lapseScrub() {
+    const L = lapse.data, n = L.snaps.length, ri = L.snaps.findIndex((s) => s.year === L.year);
+    const at = (k) => `calc(8px + (100% - 16px) * ${n > 1 ? k / (n - 1) : 0})`;
+    const marks = L.snaps.map((s, k) => `<i class="tick${k === ri ? " round" : ""}" style="left:${at(k)}"></i>`).join("");
+    const labs = [...new Set([0, ri, n - 1])].filter((k) => k >= 0)
+      .map((k) => `<span class="lab${k === ri ? " round" : ""}${k === 0 ? " first" : k === n - 1 ? " last" : ""}" style="left:${at(k)}">${L.snaps[k].label}</span>`).join("");
+    const sc = $("lapseScrub");
+    sc.querySelectorAll(".tick, .lab").forEach((e) => e.remove());
+    sc.insertAdjacentHTML("afterbegin", marks + labs);
+    const r = $("lapseRange"); r.max = n - 1; r.value = lapse.i;
+    $("lapseThumb").style.left = at(lapse.i);
+  }
+  function lapseShow(k, animate = true) {
+    const L = lapse.data; if (!L) return;
+    lapse.i = Math.max(0, Math.min(L.snaps.length - 1, k));
+    const s = L.snaps[lapse.i], g = topG.select(".lapse-g");
+    const old = g.selectAll(".lapse-shape");
+    const p = g.insert("path", ".lapse-ref").attr("class", "lapse-shape").attr("d", path(s.geometry));
+    if (animate && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      p.style("opacity", 0).transition().duration(380).style("opacity", 1);
+      old.transition().duration(380).style("opacity", 0).remove();
+    } else old.remove();
+    const n = L.snaps.length, ri = L.snaps.findIndex((x) => x.year === L.year);
+    $("lapseYear").textContent = s.label;
+    const yl = Q[state.round].yearLabel;
+    $("lapseNote").textContent = s.year === L.year ? `The round's year · ${lapse.i + 1} of ${n}` : `${lapse.i + 1} of ${n} · round: ${yl}`;
+    $("lapseRange").value = lapse.i; $("lapseRange").setAttribute("aria-valuetext", s.label + (lapse.i === ri ? " (the round's year)" : ""));
+    $("lapseThumb").style.left = `calc(8px + (100% - 16px) * ${n > 1 ? lapse.i / (n - 1) : 0})`;
+  }
+  function lapseDraw() {
+    // (re)draw the layer: the round's border as a dashed reference, the selected year filled on top
+    const L = lapse.data, q = Q[state.round];
+    topG.selectAll(".lapse-g").remove();
+    const g = topG.insert("g", ".cap").attr("class", "lapse-g");
+    g.append("path").attr("class", "lapse-ref").attr("d", path(q.geometry));
+    topG.select(".truth").style("display", "none");
+    lapseShow(lapse.i, false);
+    return L;
+  }
+  function lapseFrame() {
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const s of lapse.data.snaps) { const [[a, b], [c, d]] = path.bounds(s.geometry); x0 = Math.min(x0, a); y0 = Math.min(y0, b); x1 = Math.max(x1, c); y1 = Math.max(y1, d); }
+    zoomTo(x0, y0, x1, y1, 30, true);
+  }
+  async function lapseOpen() {
+    const q = Q[state.round]; if (state.phase !== "result" || !LAPSE.has(q.id)) return;
+    const btn = $("btnLapse"); btn.disabled = true;
+    let L;
+    try { L = await lapseFetch(q.id); } catch (_) { btn.disabled = false; btn.hidden = true; toast("The time-lapse couldn't be loaded."); return; }
+    btn.disabled = false;
+    if (state.phase !== "result" || Q[state.round] !== q) return;
+    lapse.data = L; lapse.open = true;
+    lapse.i = Math.max(0, L.snaps.findIndex((s) => s.year === L.year));
+    btn.hidden = true; btn.setAttribute("aria-expanded", "true"); $("lapseBox").hidden = false;
+    lapseScrub(); lapseDraw(); lapseFrame(); render();
+    track("lapse_open", { qid: q.id, mode: state.mode, snaps: L.snaps.length });
+    $("lapsePlay").focus({ preventScroll: true });
+    $("lapseBox").scrollIntoView({ block: "nearest" });
+    lapsePlay(true);
+  }
+  function lapsePlay(fromStart) {
+    if (lapse.timer) return lapseStop();
+    const n = lapse.data.snaps.length;
+    if (fromStart || lapse.i >= n - 1) lapseShow(0);
+    $("lapsePlay").innerHTML = PAUSE_ICON; $("lapsePlay").setAttribute("aria-label", "Pause");
+    const step = () => {
+      if (!lapse.open) return;
+      if (lapse.i >= n - 1) { lapseStop(); return; }
+      lapseShow(lapse.i + 1);
+      lapse.timer = setTimeout(step, lapse.data.snaps[lapse.i].year === lapse.data.year ? 1600 : 1000); // linger on the round's year
+    };
+    lapse.timer = setTimeout(step, 900);
+  }
+  $("btnLapse").onclick = lapseOpen;
+  $("lapsePlay").onclick = () => lapse.data && lapsePlay(false);
+  $("lapseRange").addEventListener("input", (e) => { lapseStop(); lapseShow(+e.target.value); });
+  $("lapseClose").onclick = () => { const q = Q[state.round]; lapseReset(); $("btnLapse").focus({ preventScroll: true });
+    const [[x0, y0], [x1, y1]] = path.bounds(q.geometry); zoomTo(x0, y0, x1, y1, 30, true); };
+
+  // ---------- today's players (daily percentile; site only) ----------
+  function pctOf(h, total) {
+    const me = Math.round(total / 5);
+    let below = 0; for (let k = 0; k < me; k++) below += h.b[k] || 0;
+    const all = h.b.reduce((a, c) => a + (c || 0), 0), others = all - 1; // the player's own score is in the histogram
+    if (others <= 0) return null;
+    return Math.max(0, Math.min(100, Math.round(100 * (below + Math.max(0, (h.b[me] || 0) - 1) / 2) / others)));
+  }
+  function spark(h, total) {
+    const bins = [], W2 = 150, H2 = 40, nb = 25;
+    for (let k = 0; k < nb; k++) { let c = 0; for (let j = k * 4; j < (k === nb - 1 ? 101 : k * 4 + 4); j++) c += h.b[j] || 0; bins.push(c); }
+    const mx = Math.max(1, ...bins), bw = W2 / nb, me = Math.min(nb - 1, Math.floor(Math.round(total / 5) / 4));
+    const bars = bins.map((c, k) => { const bh = c ? Math.max(2, (c / mx) * (H2 - 8)) : 0;
+      return `<rect x="${(k * bw + 0.6).toFixed(1)}" y="${(H2 - 2 - bh).toFixed(1)}" width="${(bw - 1.2).toFixed(1)}" height="${bh.toFixed(1)}" fill="${k <= me ? "#55617a" : "#c9d0d8"}"/>`; }).join("");
+    const x = ((Math.min(500, total) / 500) * W2).toFixed(1);
+    return `<svg viewBox="0 0 ${W2} ${H2}" aria-hidden="true"><line x1="0" x2="${W2}" y1="${H2 - 1.5}" y2="${H2 - 1.5}" stroke="#d6dbe0"/>${bars}<line x1="${x}" x2="${x}" y1="2" y2="${H2 - 1}" stroke="#9c2f45" stroke-width="2"/><circle cx="${x}" cy="4" r="3.5" fill="#9c2f45"/></svg>`;
+  }
+  function showPct(h, total, day) {
+    const el = $("ePct");
+    if (!h || !h.ok || !Array.isArray(h.b) || h.b.length !== 101 || !(h.n >= 1) || state.phase !== "end" || state.day !== day) return;
+    const p = pctOf(h, total);
+    state.pct = h.n >= 5 && p != null ? p : null;
+    el.innerHTML = spark(h, total) + (state.pct != null
+      ? `<div><b>You beat ${p}% of today's players</b><span>${h.n.toLocaleString("en")} players have finished Daily #${day + 1}</span></div>`
+      : `<div><b>You're one of the first ${h.n > 1 ? h.n + " " : ""}to finish today</b><span>Check back later to see how you compare</span></div>`);
+    el.hidden = false;
+  }
+  function todaysPlayers(total, saved) {
+    $("ePct").hidden = true; state.pct = null;
+    const day = state.day;
+    if (!SCORE_API || state.mode !== "daily" || day !== todayIdx()) return;
+    const req = saved
+      ? fetch(SCORE_API + "dist?day=" + (day + 1))
+      : fetch(SCORE_API + "score", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ day: day + 1, total, pid: player.id }) });
+    req.then((r) => (r.status === 200 ? r.json() : null)).then((h) => showPct(h, total, day)).catch(() => {});
   }
 
   function hideGame() {
@@ -864,6 +1176,8 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     topG.selectAll("*").remove(); actions = []; diff = null; render();
     document.body.classList.remove("showing-result");
     stage.classList.add("idle"); stage.classList.remove("pan", "fill");
+    lapseReset();
+    document.body.classList.add("home"); // menus sit on the quiet, drifting map
     resetZoom();
   }
 
@@ -880,6 +1194,11 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     $("eKind").textContent = state.mode === "practice" ? "Practice" : `Daily #${state.day + 1} · ${fmtDate(dayDate(state.day))}`;
     $("eTotal").textContent = `${total} / ${max}`;
     $("eTitle").textContent = rankOf(avg);
+    if (isDaily && !saved && window.HL && window.HL.stamp) {
+      try { window.HL.stamp("borderlines", { result: "done", label: `Daily #${state.day + 1} · ${total}/${max}`, score: total }); } catch (_) {}
+    }
+    todaysPlayers(total, saved);
+    $("btnShareImg").hidden = !(window.HL && window.HL.canShare && window.HL.share);
     if (!saved) {
       track("game_complete", { mode: state.mode, day: state.day, total, hints: state.hints.filter((h) => h && (h.region || h.capital)).length });
       if (state.mode === "practice") { const p = store.get("practice") || { games: 0, total: 0 }; p.games++; p.total += total; store.set("practice", p); }
@@ -935,16 +1254,62 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
     showEnd(true);
   }
 
+  // Title screen. Nothing about today's realms is shown before they are played: only the day's number,
+  // date and difficulty tiers (pips), which the page already carries.
+  const fmtLong = (d) => d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" });
+  const ARROW = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7h10M8 3l4 4-4 4"/></svg>';
+  const pipsHtml = (tiers, done) => tiers.map((t, j) => `<i class="pip t${t}${j < done ? " done" : ""}" title="Round ${j + 1}: ${TIERS[t]}"><b></b><b></b><b></b></i>`).join("");
+  const tiersOf = (i) => (DATA.days ? DATA.days[i] : DATA.daily[i].map((q) => q.tier));
+  function dayState(d, ti, first) {
+    if (d < 0 || d >= NDAYS || d > ti) return d > ti ? "future" : "none";
+    const r = dayRec(d);
+    if (r) return r.late ? "late" : r.scores.every((x) => x >= 80) ? "perfect" : "played";
+    if (d === ti) return "open";
+    return first != null && d > first ? "miss" : "none"; // days before a player's first daily are not "missed"
+  }
+  function renderCalendar() {
+    const ti = todayIdx(), now = today();
+    const dow = (now.getDay() + 6) % 7; // Monday first
+    const startIdx = ti - dow - 28;    // Monday, four weeks before this week's Monday
+    let first = null, played = 0, missed = 0;
+    for (let d = 0; d <= Math.min(ti, NDAYS - 1); d++) if (dayRec(d)) { first = d; break; }
+    const cells = ["M", "T", "W", "T", "F", "S", "S"].map((l) => `<span class="dh">${l}</span>`);
+    for (let k = 0; k < 35; k++) {
+      const d = startIdx + k, st = dayState(d, ti, first), r = d >= 0 && d < NDAYS ? dayRec(d) : null;
+      if (st === "played" || st === "perfect" || st === "late") played++; if (st === "miss") missed++;
+      const tip = d >= 0 && d < NDAYS && d <= ti ? `#${d + 1} · ${fmtDate(dayDate(d))}${r ? ` · ${sum(r.scores)}/500${r.late ? " (late)" : ""}` : st === "open" ? " · today" : st === "miss" ? " · missed" : ""}` : "";
+      cells.push(`<i class="${st}${d === ti ? " now" : ""}"${tip ? ` title="${tip}"` : ""}></i>`);
+    }
+    $("hCal").innerHTML = cells.join("");
+    $("hCal").setAttribute("aria-label", `Last five weeks: ${played} ${played === 1 ? "daily" : "dailies"} played, ${missed} missed`);
+  }
   function renderHome() {
     state.phase = "intro"; Q = []; hideGame();
     ["end", "archive", "stats", "report", "tutDone", "coach"].forEach((id) => ($(id).hidden = true));
-    const i = todayIdx(), has = i >= 0 && i < NDAYS, rec = has && dayRec(i), st = streak();
-    $("streak").textContent = st ? `Streak ${st}` : "";
-    if (!has) { $("dailyTitle").textContent = "Daily Challenge"; $("dailySub").textContent = "New realms coming soon"; $("btnDaily").disabled = true; }
-    else if (rec) { $("dailyTitle").textContent = `Daily #${i + 1} · ${sum(rec.scores)}/500`; $("dailySub").textContent = `Done · next in ${untilMidnight()}`; $("btnDaily").disabled = false; }
-    else if (runRec(i)) { const r = runRec(i); $("dailyTitle").textContent = `Continue Daily #${i + 1}`; $("dailySub").textContent = `Round ${r.scores.length + 1} of 5 · ${sum(r.scores)} points so far`; $("btnDaily").disabled = false; }
-    else { $("dailyTitle").textContent = `Daily #${i + 1}`; $("dailySub").textContent = `5 new realms · ${fmtDate(today())}`; $("btnDaily").disabled = false; }
+    const i = todayIdx(), has = i >= 0 && i < NDAYS, rec = has && dayRec(i), run = has && !rec && runRec(i), st = streak();
+    const b = $("btnDaily");
+    b.classList.toggle("done", !!rec);
+    b.disabled = !has;
+    $("dailyKick").textContent = has ? `Daily #${i + 1}` : "Daily";
+    $("dailyDate").textContent = fmtLong(today());
+    $("dailyPips").innerHTML = has ? pipsHtml(tiersOf(i), rec ? 5 : run ? run.scores.length : 0) : "";
+    let go = "Play";
+    if (!has) { $("dailyTitle").textContent = "Daily Challenge"; $("dailySub").textContent = "New realms coming soon"; go = ""; }
+    else if (rec) { $("dailyTitle").textContent = `Done · ${sum(rec.scores)}/500`; $("dailySub").textContent = `Next daily in ${untilMidnight()}`; go = "Results"; }
+    else if (run) { $("dailyTitle").textContent = `Continue Daily #${i + 1}`; $("dailySub").textContent = `Round ${run.scores.length + 1} of 5 · ${sum(run.scores)} points so far`; go = "Continue"; }
+    else { $("dailyTitle").textContent = "Today's challenge"; $("dailySub").textContent = "5 realms, easy to hard"; }
+    $("dailyGo").innerHTML = go ? go + ARROW : ""; $("dailyGo").hidden = !go;
+    b.setAttribute("aria-label", `${$("dailyKick").textContent}, ${$("dailyDate").textContent}. ${$("dailyTitle").textContent}. ${$("dailySub").textContent}`);
+    // record: streak, best, the last five weeks
+    let best = 0, n = 0;
+    for (let d = 0; d <= Math.min(i, NDAYS - 1); d++) { const r = dayRec(d); if (r) { n++; best = Math.max(best, sum(r.scores)); } }
+    $("hStreak").textContent = st; $("hStreakLab").textContent = "day streak";
+    $("hBest").textContent = n ? best : "–"; $("hPlayed").textContent = n;
+    renderCalendar();
+    $("hNote").hidden = !!n; $("hNote").textContent = "Play today's daily to start your streak. Archive games don't count toward it.";
     $("practiceSub").textContent = `5 random realms from ${DATA.pool.length + 5 * practiceDays().length}`;
+    // first visit: open "How to play"; afterwards keep the screen compact
+    $("howto").open = !store.get("tutorialDone") || W >= 900;
     if (has && !rec) getDay(i).catch(() => {}); // warm up today's realms
     $("intro").hidden = false;
   }
@@ -1091,6 +1456,20 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
   // Share: the phone's own share sheet where there is one, otherwise a small menu of share links.
   $("btnCopy").classList.remove("primary");
   $("btnCopy").textContent = "Copy";
+  // Share image: the shared Homo Ludens result card. Realm names are fine here: the player has finished these rounds.
+  $("btnShareImg").onclick = () => {
+    if (!window.HL || !window.HL.share) return;
+    const total = sum(state.scores), isDaily = state.mode !== "practice";
+    const rounds = Q.map((q, i) => `${q.yearLabel} ${q.label} ${state.scores[i] ?? 0}`);
+    const lines = [rounds.slice(0, 2).join("  ·  "), rounds.slice(2, 4).join("  ·  "), rounds.slice(4).join("  ·  ")].filter(Boolean);
+    const { text, url } = shareParts();
+    track("share_image", { mode: state.mode, day: state.day, total });
+    window.HL.share({
+      game: "borderlines", kicker: `Borderlines · ${isDaily ? "Daily #" + (state.day + 1) : "Practice"}`, title: $("eTitle").textContent,
+      big: `${total}/${Q.length * 100}`, sub: state.pct != null ? `Beat ${state.pct}% of today's players` : "", lines, accent: "#9c2f45",
+      text: text + (url ? "\n" + url : ""), url: url || undefined,
+    });
+  };
   function shareParts() { const lines = $("eShare").textContent.split("\n"); const url = lines.pop(); return { text: lines.join("\n"), url }; }
   $("btnShare").onclick = async (e) => {
     const { text, url } = shareParts();
@@ -1129,6 +1508,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
   const feedbackOpen = () => { const o = document.querySelector(".hlfb-ov"); return !!(o && !o.hidden); };
   document.addEventListener("keydown", (e) => {
     const tgt = e.target.closest ? e.target : document.body;
+    if (e.key === "Escape" && lapse.open && !feedbackOpen() && $("report").hidden) { $("lapseClose").click(); return; }
     if (tgt.closest("input, textarea, select")) return; // let forms (the report note) type normally
     if (feedbackOpen()) return; // the site's feedback dialog handles its own keys (Escape closes it)
     if (e.key === "Escape") {
@@ -1180,6 +1560,7 @@ textarea { width: 100%; margin-top: 12px; font: 14px/1.4 var(--f-body); padding:
       const h = state.hints[state.round] || {};
       if (state.phase === "play" && h.capital) showCapital();
       if (state.phase === "result") showCapital();
+      if (lapse.open) { lapseDraw(); lapseScrub(); }
     }
     render();
   });

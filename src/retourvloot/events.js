@@ -119,6 +119,16 @@ const EVENTS = [
     history: 'The fleets were departure windows rather than convoys: the 14 ships of the 1663 Easter fleet left over seven weeks.',
   },
   {
+    // Cross-game nod to Tulip 7. Facts after Anne Goldgar, Tulipmania: Money, Honor, and Knowledge in the Dutch Golden Age (2007).
+    // One-off, no gameplay effect; an old save already past 1637 skips it.
+    id: 'tulips', at: [1637, 2, 9], cond: S => S.t < tOf(1638, 1, 1),
+    title: 'Tulips in the taverns',
+    body: () => `<p>A letter from Haarlem goes round the chamber. All winter, in the back rooms of inns, florists, merchants and well-off craftsmen have been trading tulip bulbs that are still in the ground, by the bulb or by the weight, with promissory notes and a little wine money for the house.</p>
+      <p>In the first week of February the buyers stopped coming. Prices that had climbed for weeks now find no takers, and sellers are asking whether last autumn's notes will be honoured at all.</p>${tulipNod()}`,
+    choices: [{ label: 'Back to the spice trade' }],
+    history: 'The bulb trade broke in Haarlem in early February 1637. Anne Goldgar\'s study of the archives (<i>Tulipmania</i>, 2007) found no wave of bankruptcies and little harm to the wider economy: most deals were settled for a fraction or quietly dropped, and in 1638 Haarlem let buyers off for 3.5% of the price. The shock was to trust and honour more than to purses; the famous tales of ruin come mostly from moralising pamphlets and later retellings. VOC shares were not part of it.',
+  },
+  {
     id: 'dejima', at: [1641, 6, 1], cond: S => !!S.asia.posts.japan,
     title: 'Dejima',
     body: () => `<p>The Tokugawa shogunate has expelled the Portuguese and moved the Company's post from Hirado to <b>Dejima</b>, a small artificial island in Nagasaki harbour. The Dutch are now the only Europeans allowed to trade with Japan.</p>`,
@@ -412,6 +422,16 @@ function resolveEvent(S, id, i) {
   return c && c.fx ? (c.fx(S) || '') : '';
 }
 
+// "You may have seen it yourself": only for players with a Tulip 7 record or save in this browser. No link on CrazyGames.
+function tulipNod() {
+  let seen = false;
+  try { seen = !!(localStorage.getItem('tulip7.record.v1') || localStorage.getItem('tulip7.save.v1')); } catch (e) {}
+  if (!seen) return '';
+  const P = typeof window !== 'undefined' ? window.HL_PLATFORM : null;
+  const cg = !!(P && P.id === 'crazygames');
+  const href = P ? 'https://homoludens.oalpcakir.workers.dev/tulip7/' : '/tulip7/';
+  return `<p class="nod">You may have seen the tavern trade yourself, at the tables in Tulip 7.${cg ? '' : ` <a href="${href}" id="tulip-link">Back to the taverns</a>`}</p>`;
+}
 function conquerBanda(S) {
   S.flags.banda = 'conquest';
   addOther(S, 'Banda Islands, 1621', 'Population about 15,000 before the conquest, about 1,000 after. Thousands were killed; many more died of hunger and disease, were enslaved and deported, or fled.');

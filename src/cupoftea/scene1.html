@@ -132,6 +132,13 @@ tr.labour{animation:inkin 1.8s ease-out}
 #door h2{font-size:30px;margin:0 0 6px}
 #door p{line-height:1.5}
 #door button{font:inherit;font-size:17px;padding:8px 18px;border:1px solid var(--ink);background:none;cursor:pointer;margin:6px}
+/* the end screen with its Sankey */
+#door{padding:12px}
+#door .card{max-width:760px;width:100%}
+#door .card>p{max-width:600px;margin-left:auto;margin-right:auto}
+#door button.pri{background:var(--ink);color:var(--paper)}
+.skwrap{margin:6px 0 10px;padding:14px 16px 10px;background:#f6eedb;border:1px solid var(--line);box-shadow:inset 0 0 0 4px #f6eedb,inset 0 0 0 5px rgba(201,183,143,.7)}
+@media (max-width:700px){#door{padding:6px}#door .card{padding:22px 14px}.skwrap{padding:12px 8px 8px}}
 figure.plate{margin:4px 0 14px;text-align:center}
 figure.plate img{max-width:100%;max-height:260px;border:1px solid var(--line);filter:sepia(.35) contrast(1.05);background:#fbf6e8;box-shadow:2px 3px 0 rgba(0,0,0,.08)}
 figure.plate figcaption{font-size:13px;color:var(--ink2);font-style:italic;margin-top:4px}
@@ -249,14 +256,17 @@ header a:focus-visible,header button:focus-visible{outline:3px solid #f6e3a8;out
   <div class="dtype">The thread is pulled</div>
   <h2>The way to Havana is open</h2>
   <p>London's ledger is closed, but the account is not. Of the 4½d paid for a pound of sugar, 1.75d never reached London: it stayed on the far side of the Atlantic. Seven of her eighteen farthings are still on the counter. Your ledger now has a new column: <b>Labour</b>. The last line of that column has no name.</p>
+  <div class="rhead">Where the farthings went</div>
+  <div class="skwrap" id="skSugar"></div>
   <div class="rhead">The receipt, reprinted</div>
   <canvas class="rc" id="rcpt" role="img" aria-label="The grocer's receipt, reprinted with every share of the 4½d"></canvas>
-  <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button></div>
+  <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button><button id="rShare" class="pri">Share</button></div>
   <a class="nextbtn" href="/cupoftea/2/">Follow the thread to Havana →</a>
   <button onclick="closeDoor()">Back to the ledger</button>
   <button class="replayBtn">Replay scene</button>
 </div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script data-inline="sankey.js"></script>
 <script>
 /* ===== INTRO ===== */
 const INTRO = [
@@ -327,6 +337,9 @@ const ROWS = [
   {id:"r3", q:"Who carried it across the sea?", ans:{who:"shipowner", what:"w_freight", share:"d064"}, coins:3,
    labour:"The crew. Their wages are not in these papers."}
 ];
+/* the unnamed last line of the Labour column, opened by pulling the thread (also drawn in the Sankey) */
+const NONAME = {who:"No name", whoNote:"An enslaved cane-cutter. No voice in the archive.", what:"Cutting cane, a Cuban plantation",
+  share:"~0.1–0.3d?", shareNote:"Nobody recorded it. A guess.", labour:"18–20 hours a day at harvest; 3–7% die each year (the owners' own figures)"};
 const FIELDS=["who","what","share"];
 const RETAIL = 4.5;
 const FARTHINGS = 18;
@@ -608,10 +621,10 @@ function renderLedger(){
   });
   if(lab){
     h+=`<tr class="labour"><td class="num" style="color:var(--red)">?</td>
-      <td><div class="slot">No name</div><div style="font-size:13px;font-style:italic;color:var(--ink2)">An enslaved cane-cutter. No voice in the archive.</div></td>
-      <td><div class="slot">Cutting cane, a Cuban plantation</div></td>
-      <td><div class="slot">~0.1–0.3d?</div><div style="font-size:13px;font-style:italic;color:var(--ink2)">Nobody recorded it. A guess.</div></td>
-      <td class="emek">18–20 hours a day at harvest; 3–7% die each year (the owners' own figures)</td></tr>`;
+      <td><div class="slot">${NONAME.who}</div><div style="font-size:13px;font-style:italic;color:var(--ink2)">${NONAME.whoNote}</div></td>
+      <td><div class="slot">${NONAME.what}</div></td>
+      <td><div class="slot">${NONAME.share}</div><div style="font-size:13px;font-style:italic;color:var(--ink2)">${NONAME.shareNote}</div></td>
+      <td class="emek">${NONAME.labour}</td></tr>`;
   }
   $("#ltable").innerHTML=h;
   $("#ltable").classList.toggle("showEmek",lab);
@@ -851,6 +864,7 @@ $("#pull").addEventListener("click",()=>{
     S.pulled=true;
     const m=DOCS.find(d=>d.id==="madden"); m.hidden=false; m.fresh=true;
     renderLedger(); renderTabs(); checkPull(); showReceipt(); hush(2.5); saveDone(SCENE); saveScene();
+    try{ window.HL && HL.stamp('cupoftea',{result:'done', label:`Scene 1 solved · ${blots} blot${blots===1?"":"s"}`, score:-blots}); }catch(e){}
     $("#msg").textContent="A new column has appeared in the ledger: Labour. A new paper has arrived on the desk.";
     setTimeout(openDoor,1800);
   } else openDoor();
@@ -962,6 +976,21 @@ $("#rSave").addEventListener("click",()=>{
     const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=R.file; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),3000); });
 });
+/* ===== WHERE THE FARTHINGS WENT (Sankey) AND SHARING ===== */
+function drawSankey(){
+  const host=$("#skSugar"); if(!window.TeaSankey||!host) return;
+  if(host._sk&&host._sk.W) return; // drawn already: it redraws itself on resize
+  const order=S.lockOrder.map(rid=>ROWS[S.lockAns[rid]].ans.who).concat("havana");
+  TeaSankey.render(host,TeaSankey.sugar(),{order,onStep:()=>clink(0,.1)});
+}
+function shareOpts(){
+  const sp=window.TeaSankey?TeaSankey.sugar():{flows:[]};
+  return {game:"cupoftea", kicker:"A Cup of Tea · London 1850", title:"Who got every farthing", big:"4½d",
+    sub:`Scene 1 solved with ${blots} blot${blots===1?"":"s"}`,
+    lines:sp.flows.slice().sort((a,b)=>b.v-a.v).slice(0,3).map(f=>`${f.who}: ${f.v.toFixed(2)}d`),
+    art:"/cupoftea/img/tea_intro_1.webp", text:receiptText(receiptData()), url:"{{SITE}}/cupoftea/"};
+}
+document.addEventListener("DOMContentLoaded",()=>{ if(window.HL) HL.on($("#rShare"),shareOpts); else $("#rShare").hidden=true; });
 $("#rCopy").addEventListener("click",()=>{
   const t=receiptText(receiptData());
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copied to the clipboard."),()=>toast("Could not copy. Your browser blocked the clipboard."));
@@ -1056,7 +1085,7 @@ document.querySelectorAll(".replayBtn").forEach(b=>b.addEventListener("click",re
    Pick a note with Enter, then press Enter on a box. Escape closes the end screen. */
 let doorFrom=null;
 function openDoor(){
-  doorFrom=document.activeElement; $("#door").classList.add("on");
+  doorFrom=document.activeElement; $("#door").classList.add("on"); drawSankey();
   setTimeout(()=>$("#door .card").focus({preventScroll:true}),30);
 }
 function closeDoor(){

@@ -131,3 +131,79 @@ test('#7 the emergency silver ship is not offered after the board is dismissed',
   assert.ok(!V('visibleChoices')(S, e).some(({ i }) => i === 0));
   assert.match(e.choices[0].fx(S), /No emergency ship/);
 });
+
+// ---- redesign, October 2026: the end-of-game comparison with the real VOC, and the tulip card
+test('every year is recorded for the comparison, and the decade data are sound', () => {
+  const { S } = play({ n: 2, silver: 200000, div: 15 }, () => 0);
+  const end = V('yearOf')(S.t);
+  assert.ok(S.yhist.length >= end - 1603, `only ${S.yhist.length} years recorded up to ${end}`);
+  assert.ok(S.yhist.every((r, i) => i === 0 || r.y === S.yhist[i - 1].y + 1), 'years are consecutive');
+  assert.equal(S.yhist[0].y, 1602);
+  const D = V('compareData')(S);
+  assert.ok(D.decades.length >= 2);
+  for (const d of D.decades) {
+    assert.equal(d.decade % 10, 0);
+    assert.ok(d.decade >= 1600 && d.decade <= 1790, 'decade ' + d.decade);
+    if (d.decade >= 1620) assert.ok(d.div > 0 && d.div <= 40, `${d.decade}s dividend ${d.div}`); // policy pays 15% from 1612
+  }
+  const mid = D.decades.find(d => d.decade === 1650);
+  if (mid) assert.equal(mid.div, 15, 'a steady 15% shows as 15% a year');
+  assert.ok(Math.abs(D.avgDiv - 15) < 1.5, 'lifetime average ' + D.avgDiv);
+  assert.equal(D.endDebt, S.debt);
+});
+
+test('the real VOC figures are the cited ones', () => {
+  const R = V('REAL_VOC');
+  assert.equal(R.avgDiv, 18);
+  assert.equal(R.firstDiv, 1610);
+  assert.equal(R.lastDiv, 1782);
+  assert.deepEqual({ ...R.early }, { from: 1610, to: 1612, total: 162.5 });
+  assert.deepEqual({ ...R.war }, { y: 1780, loss: 43e6 });
+  assert.deepEqual({ ...R.endDebt }, { y: 1799, lo: 100e6, hi: 120e6 });
+});
+
+test('one line of commentary compares the player with the real Company', () => {
+  const mk = (f, debt, extra = {}) => {
+    const S = V('newState')(); S.t = V('END_T'); S.debt = debt; Object.assign(S, extra);
+    S.yhist = []; for (let y = 1602; y <= 1799; y++) S.yhist.push({ y, div: y < 1610 ? 0 : f(y), debt: Math.round(debt * (y - 1602) / 197) });
+    return S;
+  };
+  const line = S => V('compareLine')(S);
+  assert.match(line(mk(y => y < 1690 ? 25 : 10, 50e6)), /^Your company paid out more than the real VOC's 18% a year until the 1680s, then less, and left ƒ50.0M of debt, against the real Company's roughly ƒ100–120 million\.$/);
+  assert.match(line(mk(() => 25, 0)), /matched or beat the real VOC's 18% a year in every decade, and left no debt at all/);
+  assert.match(line(mk(() => 5, 110e6)), /never matched .* about what the real Company left/);
+  assert.match(line(mk(y => (Math.floor(y / 10) % 2 ? 25 : 10), 130e6)), /in \d+ of 17 decades, most of all in the \d{4}s \(25%\), and left ƒ130M of debt, more than/);
+  const B = mk(() => 20, 121e6, { endReason: 'bankrupt' }); B.t = at(1700, 3); B.yhist = B.yhist.filter(r => r.y < 1700);
+  assert.match(line(B), /went under in 1699 with ƒ121M of debt/);
+  assert.equal(V('finalScore')({ stats: { divPaid: 300e6 }, debt: 50e6 }), 250);
+});
+
+test('Tulips in the taverns: a one-off card in February 1637, no gameplay effect, a nod only for Tulip 7 players', () => {
+  const E = V('EVENT_BY_ID').tulips;
+  assert.ok(E, 'event exists');
+  assert.deepEqual([...E.at], [1637, 2, 9]);
+  assert.equal(E.choices.length, 1); assert.equal(E.choices[0].fx, undefined, 'no effect');
+  assert.match(E.history, /Goldgar/);
+  // fires once in a normal game, around the Haarlem crash
+  const S = V('newState')(); const step = V('step'), resolveEvent = V('resolveEvent');
+  let when = null;
+  while (S.t < at(1638) && !when) { step(S); while (S.queue.length) { if (S.queue[0] === 'tulips') when = S.t; resolveEvent(S, S.queue[0], 0); } }
+  assert.equal(when, at(1637, 2, 9));
+  for (let i = 0; i < 400; i++) { step(S); while (S.queue.length) { assert.notEqual(S.queue[0], 'tulips', 'fired twice'); resolveEvent(S, S.queue[0], 0); } }
+  // an old save already past 1637 skips it
+  const L = V('newState')(); L.t = at(1700); L.done = { founding: true }; L.queue = [];
+  V('checkEvents')(L);
+  assert.ok(!L.queue.includes('tulips'), 'a late save gets the card');
+  // the nod: none without Tulip 7 in this browser; a link to /tulip7/ with it; no link on CrazyGames
+  assert.doesNotMatch(E.body(S), /Tulip 7/);
+  ctx.localStorage = { getItem: k => k === 'tulip7.record.v1' ? '{"best":1}' : null };
+  try {
+    assert.match(E.body(S), /You may have seen the tavern trade yourself.*href="\/tulip7\/"/s);
+    ctx.window = { HL_PLATFORM: { id: 'crazygames' } };
+    assert.match(E.body(S), /You may have seen/); assert.doesNotMatch(E.body(S), /<a /);
+    ctx.window = { HL_PLATFORM: { id: 'itch' } };
+    assert.match(E.body(S), /href="https:\/\/homoludens\.oalpcakir\.workers\.dev\/tulip7\/"/);
+    ctx.localStorage = { getItem: k => k === 'tulip7.save.v1' ? '{}' : null }; ctx.window = undefined;
+    assert.match(E.body(S), /href="\/tulip7\/"/);
+  } finally { delete ctx.localStorage; delete ctx.window; }
+});

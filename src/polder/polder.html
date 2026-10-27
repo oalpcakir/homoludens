@@ -197,6 +197,81 @@ button.primary:hover{background:#cf5843}
   .ups{grid-template-columns:1fr}.up{display:grid;grid-template-columns:52px 1fr;gap:4px 10px;text-align:left;align-items:center}.up canvas{grid-row:span 2;margin:0}
 }
 @media (max-height:520px){ .mbox canvas.art{display:none} #nextCv{width:54px;height:54px} .stats{display:none} }
+/* ---------- end of a region: "Your dikes vs. history" (left) next to the result (right) ---------- */
+.mbox.endc{max-width:960px}
+.endg{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:24px;align-items:start}
+.endr>h2{margin-top:0}
+.vs{background:#eef7f6;border-radius:18px;padding:14px 14px 12px;position:relative}
+.vsk{display:inline-block;background:#24414a;color:#fff;font-weight:600;font-size:12.5px;letter-spacing:1px;text-transform:uppercase;border-radius:99px;padding:3px 11px}
+.vsm{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 8px}
+.vsm figure{margin:0;min-width:0}
+.vsm .fr{aspect-ratio:1.32;border-radius:12px;overflow:hidden;background:#86cfe4;box-shadow:0 0 0 3px #fff,0 4px 12px rgba(36,65,74,.14);position:relative}
+.vsm canvas,.vsm svg{display:block;width:100%;height:100%}
+.vsm figcaption{font-size:12.5px;font-weight:600;margin-top:7px;text-align:center;line-height:1.2}
+.vsm figcaption small{display:block;font-weight:400;color:var(--muted);font-size:11.5px}
+.vsm .vs-or{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%)}
+.vsd{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center;margin:4px 0 6px}
+.vsd b{display:block;font-size:26px;line-height:1.05;font-weight:700}
+.vsd .me b{color:#3d7a2a}.vsd .hi b{color:#2f6fb0}
+.vsd span{font-size:12px;color:var(--muted);line-height:1.2;display:block}
+.vsd i{font-style:normal;font-weight:700;color:#fff;background:#f0a63c;border-radius:99px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.vst{width:100%;border-collapse:collapse;font-size:13px;margin:2px 0 8px}
+.vst th{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:right;padding:0 4px 2px}
+.vst th:first-child,.vst td:first-child{text-align:left}
+.vst td{border-top:1px dashed #cfe1dd;padding:4px;text-align:right;white-space:nowrap}
+.vst td:first-child{white-space:normal}
+.vst td.me{color:#3d7a2a;font-weight:600}.vst td.hi{color:#2f6fb0;font-weight:600}
+.vsp{font-size:14px!important;line-height:1.42!important;margin:0 0 8px!important}
+.vsl{font-size:11.5px;color:var(--muted);line-height:1.45}
+.vsl a{color:#2f7fa3}
+.vsl .sw{display:inline-block;width:14px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:4px}
+.sw.fl{background:repeating-linear-gradient(45deg,#2f6fb0 0 2px,#cfe3f3 2px 5px)}
+.sw.rc{background:repeating-linear-gradient(45deg,#6fae4f 0 2px,#e6f2c9 2px 5px)}
+.sw.tp{background:#c98a4b;border-radius:50%;width:9px;height:9px}
+.vssvg text{font-family:Fredoka,system-ui,sans-serif;font-weight:600;paint-order:stroke;stroke:#fff;stroke-linejoin:round}
+/* the reveal: the board fills in from the sea (canvas), the outline draws, the hatch wipes in, labels and numbers follow */
+.vs.go .vs-land{animation:vsFade .7s both}
+.vs.go .vs-wipe{transform-box:fill-box;transform-origin:left center;animation:vsWipe 1.5s .9s cubic-bezier(.4,.1,.2,1) both}
+.vs.go .vs-mark,.vs.go .vs-lab{animation:vsPop .45s both;animation-delay:calc(1.9s + var(--d,0s))}
+.vs.go .vs-terp{animation:vsPop .3s both;animation-delay:calc(.8s + var(--d,0s))}
+.vs.go .vsd,.vs.go .vst,.vs.go .vsp{animation:vsUp .5s both}
+.vs.go .vsd{animation-delay:1.2s}.vs.go .vst{animation-delay:1.6s}.vs.go .vsp{animation-delay:2s}
+@keyframes vsFade{from{opacity:0}to{opacity:1}}
+@keyframes vsWipe{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes vsPop{from{opacity:0;transform:scale(.4)}to{opacity:1;transform:none}}
+.vs-mark,.vs-lab,.vs-terp{transform-box:fill-box;transform-origin:center}
+@keyframes vsUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){ .vs.go *{animation:none!important} }
+.sharerow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.sharerow .sharebtn{margin-top:8px}
+.sharebtn.img{background:#2f6fb0;color:#fff}.sharebtn.img:hover{background:#285f97}
+@media (max-height:800px), (max-width:1060px){
+  .vs{padding:10px 10px 8px}.vsm{margin:8px 0 6px}.vsd b{font-size:21px}.vsp{font-size:12.5px!important}.vst{font-size:12px;margin:0 0 6px}
+  .endg{gap:16px}
+}
+@media (max-width:760px){ .endg{grid-template-columns:1fr} .mbox.endc{max-width:520px} }
+/* ---------- touch: one bar with the piece, Rotate, Build and Wait ---------- */
+#tbar{display:none}
+body.touch #tbar{display:grid;grid-template-columns:60px minmax(0,1fr) minmax(0,1fr);grid-template-areas:"pc rot rot" "pc build wait";gap:6px;align-items:stretch;background:#fff;border:2px solid var(--line);border-radius:16px;padding:7px}
+#tbar button{min-height:48px;border-radius:14px;font-size:15px;font-weight:600;padding:4px 8px;display:flex;align-items:center;justify-content:center;gap:6px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+#tbar button .ic{font-size:20px;line-height:1}
+@media (min-aspect-ratio:4/5){ #tbar button{font-size:14px;padding:4px 6px;gap:4px;min-width:0} #tBuild,#tWait{flex-direction:column;gap:0!important;font-size:12.5px!important} }
+#tPc{grid-area:pc;width:60px;height:auto;aspect-ratio:1;align-self:center;background:#eef7f6;border-radius:12px;touch-action:manipulation}
+#tRot{grid-area:rot;background:#3f9ec2!important;color:#fff;font-size:17px!important}
+#tBuild{grid-area:build}#tWait{grid-area:wait}
+#tBuild:disabled{background:#e6f2f0;color:#9bb2b4}
+body.touch #cv{cursor:default}
+body.touch .btns.pc{display:none}
+#tip{position:absolute;z-index:4;max-width:min(260px,80%);background:#24414a;color:#fff;font-size:14px;line-height:1.35;padding:8px 12px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.25);pointer-events:none;opacity:0;transform:translate(-50%,calc(-100% - 10px)) scale(.95);transition:opacity .2s,transform .2s}
+#tip.show{opacity:1;transform:translate(-50%,calc(-100% - 14px))}
+#tip b{color:#ffd36b}
+@media (max-aspect-ratio:4/5){
+  body.touch #tbar{position:fixed;left:0;right:0;bottom:0;z-index:6;border-radius:18px 18px 0 0;border-width:2px 0 0;grid-template-columns:64px 1.15fr 1.3fr 1fr;grid-template-areas:"pc rot build wait";padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -6px 22px rgba(36,65,74,.14);gap:8px}
+  body.touch #tbar button{min-height:58px;flex-direction:column;gap:1px;font-size:13px}
+  body.touch #tPc{width:64px}
+  body.touch aside{padding-bottom:104px}
+  body.touch #stage{padding-left:4px;padding-right:4px}
+}
 </style>
 </head>
 <body>
@@ -206,6 +281,7 @@ button.primary:hover{background:#cf5843}
     <div id="goalPill"></div><div id="banner"></div><div id="win"></div>
     <div id="toast"></div>
     <div id="chron"></div>
+    <div id="tip" role="status"></div>
   </div>
   <aside>
     <h1>Polder<small>The sea gives. The sea takes.</small></h1>
@@ -213,6 +289,7 @@ button.primary:hover{background:#cf5843}
       <div class="year"><b id="yearLbl">1200</b><span id="eraLbl">Age of Mounds</span><span id="diffLbl" style="font-size:12px;color:#c0392b;font-weight:600"></span><span id="turnLbl" style="margin-left:auto;font-size:13px;white-space:nowrap;background:#eef7f6;border-radius:8px;padding:1px 7px"></span></div>
       <div class="tl" id="tl"><div class="fill" id="tlFill"></div></div>
     </div>
+    <div id="tbar"><canvas id="tPc" width="144" height="144" aria-label="Current dike piece (tap to rotate)"></canvas><button id="tRot"><span class="ic">⟳</span><span>Rotate</span></button><button id="tBuild" class="primary" disabled><span class="ic">✓</span><span id="tBuildL">Build</span></button><button id="tWait"><span class="ic">⏭</span><span>Wait</span></button></div>
     <div class="card goal" id="goal" title="Click to show all goals"></div>
     <div class="card">
       <h3>Next dike</h3>
@@ -220,7 +297,7 @@ button.primary:hover{background:#cf5843}
         <canvas id="nextCv" width="192" height="192"></canvas>
         <div class="queue"><canvas id="q1" width="92" height="92"></canvas><canvas id="q2" width="92" height="92"></canvas></div>
       </div>
-      <div class="btns"><button id="rotBtn">⟳ Rotate</button><button id="waitBtn">Wait a turn</button></div>
+      <div class="btns pc"><button id="rotBtn">⟳ Rotate</button><button id="waitBtn">Wait a turn</button></div>
       <div class="btns"><button id="swapBtn" hidden>Swap</button><button id="holdBtn" hidden>→ Depot</button><canvas id="holdCv" width="92" height="92" hidden style="width:40px;height:40px;background:#f4f9f8;border-radius:8px"></canvas></div>
     </div>
     <div class="card" id="upCard"></div>
@@ -381,7 +458,7 @@ function validRun(d){ const n=COLS*ROWS, arr=k=>Array.isArray(d[k])&&d[k].length
     &&d.S&&typeof d.S==='object'&&Array.isArray(d.S.queue)&&Array.isArray(d.structs)&&Array.isArray(d.houses)&&Array.isArray(d.sheep)); }
 function loadRun(){ let d=null; try{ const v=STORE.get('polder.run.v1'); if(v) d=JSON.parse(v); }catch(e){} if(!d) d=MEMRUN; return validRun(d)?d:null; }
 // Read-only view for the browser smoke tests (tests/smoke); the game never reads it.
-window.__polderTest={ get cell(){ return CS; }, snapshot:()=>S&&LV?{lv:LV.id,year:S.year,busy:!!S.busy,piece:S.piece,queue:JSON.stringify(S.queue),G:Array.from(G).join(''),rp:rngP.state(),rs:rngS.state()}:null };
+window.__polderTest={ get cell(){ return CS; }, aim:()=>hover?{x:hover.x,y:hover.y,finger:!!hover.finger,ok:!!(ghost&&ghost.ok)}:null, touch:()=>TOUCH, snapshot:()=>S&&LV?{lv:LV.id,year:S.year,busy:!!S.busy,piece:S.piece,queue:JSON.stringify(S.queue),G:Array.from(G).join(''),rp:rngP.state(),rs:rngS.state()}:null };
 function clearRun(){ MEMRUN=null; STORE.remove('polder.run.v1'); }
 function resumeRun(d){
   inLevel=true;
@@ -827,7 +904,7 @@ async function resolve(quiet){
   for(let i=0;i<N;i++) if(!open[i]&&(G[i]===SEA||G[i]===DEEP)) G[i]=LAKE;
   const ls=comps(i=>G[i]===LAKE);
   for(const c of ls){ if(c.length<=cap()) await drain(c); }
-  computeLakes(); if(S.ruins) checkRuins(); achCheck();
+  computeLakes(); if(S.ruins) checkRuins(); achCheck(); histMarks();
 }
 function spawnRuin(){
   const c=[]; for(let i=0;i<N;i++){ if(G[i]!==SEA||S.ruins.some(r=>r.c===i)) continue; const x=cx(i),y=cy(i); let near=false;
@@ -922,7 +999,7 @@ function computePreview(){
   preview=cs.map(c=>{let sx=0,sy=0;c.forEach(i=>{sx+=cx(i)+.5;sy+=cy(i)+.5});return{cells:c,n:c.length,x:sx/c.length,y:sy/c.length,ok:c.length<=cap()};});
 }
 async function place(){
-  if(!ghost||!ghost.ok) { sfx.nope(); return; }
+  if(!ghost||!ghost.ok) { sfx.nope(); if(TOUCH&&ghost) toast(ghostWhy()); return; }
   S.busy=true; const cells=ghost.cells; ghost=null; preview=null;
   if(!S.firstDike){ S.firstDike=1; track('polder_first_dike',{level:LV.id,year:S.year}); }
   for(const[x,y]of cells){ const i=idx(x,y); G[i]=DIKE; crack[i]=0; armor[i]=upLv('stone')?1:(S.stoneFree>0?(S.stoneFree--,1):0); S.dikes++; for(let k=0;k<3;k++) parts.push(P(x+.5,y+.5,'dust')); }
@@ -932,12 +1009,12 @@ async function place(){
   await resolve();
   checkQuests();
   await advance();
-  S.busy=false; refreshHover();
+  S.busy=false; afterMove();
 }
 async function waitDecade(){
   if(S.busy||S.over) return;
   S.busy=true; S.queue.shift(); S.queue.push(genPiece()); S.rot=0; sfx.tick();
-  await advance(); S.busy=false; refreshHover();
+  await advance(); S.busy=false; afterMove();
 }
 async function useFinger(i){
   if(S.fingers<=0){
@@ -1010,7 +1087,7 @@ async function storm(s){
   S.storms++; S.breaches+=breached.length; if(s.final) S.finalBreaches=breached.length; S.surv[s.year]=breached.length; S.survF[s.year]=countFields(); updateUI();
   const lost=breached.length?`The sea broke through in ${breached.length} place${breached.length>1?'s':''}.`:!tested?'The sea found no dikes to test this time.':crack.some(v=>v)?'Your dikes held. The cracked ones will not survive another storm. Plug them!':'Your dikes held, without a single crack.';
   await card({yr:s.year,art:'storm',v:stormVar(s),title:s.name,text:s.text,eff:lost,bad:!!breached.length,btn:s.final?'See how you did':'Rebuild'}); checkQuests();
-  if(!firstCrackShown&&!s.final&&crack.some(v=>v)){ firstCrackShown=true; toast('Click a cracked dike to plug it with a finger.',4500); }
+  if(!firstCrackShown&&!s.final&&crack.some(v=>v)){ firstCrackShown=true; toast(TOUCH?'Tap a cracked dike, then tap it again to plug it with a finger.':'Click a cracked dike to plug it with a finger.',4500); }
 }
 
 function end(){
@@ -1030,15 +1107,25 @@ function end(){
   const shareUrl=CG?'':`${window.HL_SITE||(location.protocol.startsWith('http')?location.origin:'https://homoludens.oalpcakir.workers.dev')}/polder/s/${LV.id}/${st}?n=${nq}&f=${fields}${S.hard?'&h=1':''}`;
   const shareTxt=`Polder · ${LV.name}${S.hard?' (Hard)':''} ${'★'.repeat(st)}${'☆'.repeat(nq-st)} · ${fields} fields`+(CG?'':`\n${shareUrl}`);
   const nowOpen=nextL&&isUnlocked(li+1), newPerk=PERKS[LV.id]&&!hadPerk&&perkOn(LV.id);
-  if(st>=(LV.need||UNLOCK_AT)) PF.happy();
+  const won=st>=(LV.need||UNLOCK_AT);
+  if(won) PF.happy();
+  // Homo Ludens passport (public/hl.js on the site; absent in the bare source page): score = all best stars so far
+  const totalStars=LEVELS.reduce((n,L)=>n+(L.free?0:(pr2[L.id]?.stars||0)),0);
+  try{ window.HL&&HL.stamp('polder',{result:won?'win':'loss',label:`${LV.name}${S.hard?' (Hard)':''} · ${st}★`,score:totalStars}); }catch(e){}
+  const H=HIST[LV.id];
   let msg=''; if(nextL){ msg=nowOpen?(wasLocked?`<b>${nextL.name} unlocked!</b>`:`Next up: <b>${nextL.name}</b>.`):`Get ${LV.need||UNLOCK_AT} ★ here to unlock <b>${nextL.name}</b>.`; }
   if(newPerk) msg+=`<br>Legacy earned: <b>${PERKS[LV.id].name}</b>. ${PERKS[LV.id].desc}`;
-  card({yr:`${ENDY} · ${LV.name}${S.hard?' · Hard':''}`,art:'end',title,
+  card({yr:`${ENDY} · ${LV.name}${S.hard?' · Hard':''}`,art:H?null:'end',title,side:H?vsPanel():'',cls:H?'endc':'',
     text:`<span class="stars" style="font-size:30px">${'<span class=w>★</span>'.repeat(st)}${'★'.repeat(nq-st)}</span><br><b>${st} of ${nq} goals</b>${st>(old.stars||0)&&old.stars?' · new best!':''}`+
       `<div class="res"><div><b>${fields}</b><span>fields won</span></div><div><b>${animals}</b><span>animals</span></div><div><b>${S.breaches}</b><span>breaches</span></div></div>`+msg,
     eff:'Roughly a sixth of today\'s Netherlands was once sea, lake or marsh. "God created the world, but the Dutch created the Netherlands."',
-    list:qlist+`<button class="sharebtn" id="shareBtn">${!CG&&navigator.share&&matchMedia('(pointer:coarse)').matches?'Share result':'Copy result to share'}</button>`+(CG?'':'<div data-hl-next></div>'), btn:nowOpen?`Next: ${nextL.name}`:'Try again', btn2:'All regions',
-    onShow:b=>{ const sb=b.querySelector('#shareBtn'); sb.onclick=()=>{ if(!CG&&navigator.share&&matchMedia('(pointer:coarse)').matches){ track('polder_share',{level:LV.id,stars:st,how:'native'}); navigator.share({text:shareTxt.split('\n')[0],url:shareUrl}).catch(()=>{}); return; } copyText(shareTxt).then(ok=>{ sb.textContent=ok?'Copied!':'Could not copy'; track('polder_share',{level:LV.id,stars:st}); }); }; }
+    list:qlist+`<div class="sharerow"><button class="sharebtn img" id="shareImg" hidden>Share image</button><button class="sharebtn" id="shareBtn">${!CG&&navigator.share&&matchMedia('(pointer:coarse)').matches?'Share result':'Copy result to share'}</button></div>`+(CG?'':'<div data-hl-next></div>'), btn:nowOpen?`Next: ${nextL.name}`:'Try again', btn2:'All regions',
+    onShow:b=>{ revealVs(b);
+      // image share card through the shared shell (hl.js hides the button where sharing is off, e.g. CrazyGames)
+      const ib=b.querySelector('#shareImg');
+      if(window.HL&&HL.on&&!CG){ ib.hidden=false; HL.on(ib,()=>{ track('polder_share',{level:LV.id,stars:st,how:'image'}); return {game:'polder',kicker:`Polder · ${LV.name} ${LV.start}–${ENDY}${S.hard?' · Hard':''}`,title,big:`${st}★`,sub:`${fields} field${fields===1?'':'s'} drained`,
+        lines:[`${st} of ${nq} goals · ${S.breaches} breach${S.breaches===1?'':'es'} · ${animals} animals`].concat(H?[H.share]:[]),art:PART['po_reg_'+LV.id]||PART.po_reg_free||'',accent:'#2f6fb0',text:shareTxt,url:shareUrl}; }); }
+      const sb=b.querySelector('#shareBtn'); sb.onclick=()=>{ if(!CG&&navigator.share&&matchMedia('(pointer:coarse)').matches){ track('polder_share',{level:LV.id,stars:st,how:'native'}); navigator.share({text:shareTxt.split('\n')[0],url:shareUrl}).catch(()=>{}); return; } copyText(shareTxt).then(ok=>{ sb.textContent=ok?'Copied!':'Could not copy'; track('polder_share',{level:LV.id,stars:st}); }); }; }
   }).then(async r=>{
     // a midgame ad only on the way into the next round of play, never on the "All regions" navigation button
     if(r!==2&&PF.canAd()) await PF.ad('midgame');
@@ -1046,6 +1133,140 @@ function end(){
     if(r===2) levelSelect(); else startLevel(nowOpen?nextL.id:LV.id); });
 }
 function countFields(){ let n=0; for(let i=0;i<N;i++) if(G[i]===POLDER) n++; return n; }
+
+// ---------- "Your dikes vs. history" (end of a region) ----------
+// The player's final board next to the region's real outline (NLGEO, same projection as nlmap_gen.py) with the
+// historically flooded or reclaimed land as a hatched layer. The shapes are hand-drawn in longitude/latitude, rough on
+// purpose and clipped to the coastline; the panel says so. Every number has a source in HSRC (also in the Chronicle).
+function histMarks(){ if(!S||!LV) return;
+  for(const t in LAKENAMES){ if(!(S.ly&&S.ly[t])&&lakeDone(+t)) (S.ly||(S.ly={}))[t]=S.year; }
+  if(LV.id==='zuiderzee'&&!S.zzY&&zzClosed()) S.zzY=S.year; }
+const geo=(lon,lat)=>[(lon-3.2)*150*.612+10,(53.75-lat)*150+10]; // = P() in nlmap_gen.py
+const HSRC={
+ w1953:['Wikipedia: North Sea flood of 1953','https://en.wikipedia.org/wiki/North_Sea_flood_of_1953'],
+ canon:['Canon van Nederland: De watersnood','https://canonvannederland.nl/en/watersnood'],
+ unesco:['UNESCO: Droogmakerij de Beemster','https://whc.unesco.org/en/list/899'],
+ anwb:['ANWB: Beemster and Schermer','https://www.anwb.nl/fietsroutes/routes/water---vijand-en-bondgenoot-tussen-beemster-en-schermer'],
+ hhnk:['HHNK: Leeghwater and the Purmer','https://en.hhnk.nl/leeghwatermonument-purmerbuurt'],
+ hmeer:['Flevolands Geheugen: Draining the Haarlemmermeer','https://www.flevolandsgeheugen.nl/page/12278/draining-the-haarlemmermeer'],
+ terp:['Terpen- en Wierdenland: FAQ','https://terpenenwierdenland.nl/terpen-and-wierden-land/frequently-asked-questions.html'],
+ middel:['Wikipedia: Middelzee','https://en.wikipedia.org/wiki/Middelzee'],
+ bildt:['Friesland.nl: Oudebildtdijk','https://www.friesland.nl/en/locations/1510629203/oudebildtdijk-dike'],
+ w1570:["Wikipedia: All Saints' Flood (1570)",'https://en.wikipedia.org/wiki/All_Saints%27_Flood_(1570)'],
+ w1916:['Wikipedia: Flood of 1916','https://en.wikipedia.org/wiki/Flood_of_1916'],
+ afsl:['Wikipedia: Afsluitdijk','https://en.wikipedia.org/wiki/Afsluitdijk'],
+ cbs:['CBS: the IJsselmeerpolders','https://www.cbs.nl/en-gb/news/2018/12/400-thousand-inhabitants-in-the-ijsselmeerpolders'],
+};
+const HIST={
+ friesland:{view:[4.95,52.82,6.35,53.47],era:'c. 1200–1570',cap:'The real Friesland',
+  layers:[{k:'rc',label:'Middelzee\ndiked by 1300',at:[5.47,53.13],poly:[[5.62,53.255],[5.80,53.27],[5.81,53.21],[5.75,53.12],[5.71,53.05],[5.66,53.03],[5.635,53.09],[5.62,53.18]]},
+          {k:'rc',label:'Het Bildt\n1500s',at:[5.38,53.36],poly:[[5.50,53.30],[5.62,53.255],[5.80,53.27],[5.86,53.33],[5.70,53.37],[5.54,53.35]]}],
+  terps:[[5.33,53.0],[5.42,53.27],[5.62,53.40],[6.05,53.43],[6.32,53.40],[6.32,53.22],[6.05,53.2],[5.85,53.08],[5.6,52.98],[5.4,52.93]],
+  legend:'<span class="sw rc"></span>reclaimed from the Middelzee · <span class="sw tp"></span>terps (dots placed by hand)',
+  duel:()=>({me:[linkedTerps()+'/'+TERPS.length,'terps linked to the mainland'],hi:['≈955','terps raised in Friesland']}),
+  rows:()=>[['Fields won',countFields(),'—'],["Dikes in the flood of 1570",S.surv[1570]==null?'—':S.surv[1570]?S.surv[1570]+' breach'+(S.surv[1570]>1?'es':''):'all held','Oudebildtdijk broke'],['Drowned in Friesland, 1570','—','3,181']],
+  text:()=>`Frisians raised about 955 terps before they began to build dikes around 1200. Then they diked the Middelzee estuary, bit by bit: up to Stiens by 1300, Het Bildt in the 1500s (hatched). On 1 November 1570 the All Saints' Flood broke even the Oudebildtdijk.`,
+  share:'History: ≈955 terps, 3,181 drowned in 1570',
+  src:['terp','middel','bildt','w1570']},
+ zeeland:{view:[3.36,51.3,4.6,51.86],era:'1953',cap:'Zeeland in 1953',
+  layers:[{k:'fl',label:'Schouwen-\nDuiveland',at:[3.88,51.69],poly:[[3.66,51.70],[3.80,51.77],[4.06,51.74],[4.16,51.67],[4.10,51.61],[3.85,51.62],[3.68,51.65]]},
+          {k:'fl',label:'Tholen',at:[4.14,51.56],poly:[[4.02,51.62],[4.26,51.67],[4.31,51.58],[4.22,51.49],[4.05,51.52]]},
+          {k:'fl',label:'Goeree-Overflakkee',at:[4.2,51.83],poly:[[3.98,51.72],[4.20,51.69],[4.43,51.69],[4.46,51.76],[4.26,51.81],[4.06,51.79]]},
+          {k:'fl',poly:[[4.34,51.63],[4.61,51.61],[4.63,51.71],[4.40,51.73]]},
+          {k:'fl',poly:[[4.30,51.74],[4.56,51.74],[4.56,51.80],[4.34,51.82]]},
+          {k:'fl',poly:[[3.98,51.36],[4.23,51.43],[4.27,51.38],[4.08,51.33]]},
+          {k:'fl',poly:[[3.74,51.58],[3.92,51.61],[3.94,51.555],[3.77,51.545]]}],
+  marks:[{line:[[3.695,51.668],[3.712,51.596]],label:'Oosterschelde\nbarrier 1986',at:[3.55,51.53]}],
+  legend:'<span class="sw fl"></span>land flooded in 1953 (main areas only)',
+  duel:()=>({me:[countFields(),'fields you held'],hi:['1,365 km²','of land flooded in 1953']}),
+  rows:()=>[['Dike breaches',S.breaches,'67 in Zeeland'],['Lives lost','—','1,836']],
+  text:()=>`Two centuries after your last turn, on the night of 31 January 1953, the sea broke Zeeland's dikes in 67 places and flooded the southwest (hatched). The Delta Works followed: dams and storm-surge barriers across the river mouths. The Oosterschelde barrier opened in 1986.`,
+  share:'History: 1,365 km² flooded in 1953',
+  note:'Estimates of the flooded area run from 1,365 km² (Wikipedia) to 2,000 km² (Canon van Nederland).',
+  src:['w1953','canon']},
+ holland:{view:[4.3,52.2,5.25,52.68],era:'1612–1852',cap:'The real lakes of Holland',
+  layers:[{k:'rc',lake:4,label:'Haarlemmermeer\n1849–52',at:[4.68,52.3],poly:[[4.55,52.27],[4.63,52.215],[4.78,52.275],[4.80,52.345],[4.73,52.385],[4.61,52.36]]},
+          {k:'rc',lake:2,label:'Beemster 1612',at:[5.08,52.565],poly:[[4.86,52.525],[4.97,52.52],[5.00,52.565],[4.94,52.605],[4.86,52.585]]},
+          {k:'rc',lake:3,label:'Purmer 1622',at:[5.1,52.49],poly:[[4.92,52.47],[5.00,52.475],[5.01,52.515],[4.93,52.515]]},
+          {k:'rc',lake:1,label:'Schermer 1635',at:[4.66,52.62],poly:[[4.75,52.585],[4.85,52.575],[4.88,52.63],[4.81,52.655],[4.74,52.625]]}],
+  legend:'<span class="sw rc"></span>lakes drained into polders',
+  duel:()=>{ const n=[1,2,3,4].filter(t=>lakeDone(t)).length; return {me:[n+'/4','lakes you drained'],hi:['4/4','drained by 1852']}; },
+  rows:()=>[[3,'Purmer',1622],[2,'Beemster',1612],[1,'Schermer',1635],[4,'Haarlemmermeer','1849–52']].map(([t,n,y])=>[n,(S.ly&&S.ly[t])||(lakeDone(t)?'yes':'—'),y]),
+  text:()=>`The Beemster (7,208 ha) fell dry in 1612, pumped by 43 windmills; the Schermer needed 52. The Haarlemmermeer had grown to 16,850 ha of water by 1848 and took three steam pumping stations, 1849–52.`,
+  share:'History: Beemster 1612, Haarlemmermeer 1852',
+  src:['unesco','anwb','hhnk','hmeer']},
+ zuiderzee:{view:[4.7,52.3,6.0,53.15],era:'1916–1968',cap:'The real Zuiderzee',zz:1,
+  layers:[{k:'rc',label:'Wieringer-\nmeer 1930',at:[4.86,52.8]},{k:'rc',lab:1,label:'Noordoost-\npolder',at:[5.75,52.71]},{k:'rc',lab:1,label:'Flevoland\n1968',at:[5.55,52.45]}],nocount:1,
+  marks:[{line:[[5.04,52.935],[5.385,53.105]],label:'Afsluitdijk\n1932',at:[5.0,53.06]},{pin:[5.10,52.46],label:'1916',at:[5.0,52.43]}],
+  legend:'<span class="sw rc"></span>land reclaimed from the Zuiderzee · pin: Marken, 1916',
+  duel:()=>({me:[S.zzY||'—',S.zzY?'the year you closed it':'you left it open'],hi:['1932','the Afsluitdijk closed it']}),
+  rows:()=>[['Biggest drain at once',S.maxDrain+' squares','473 km² (Noordoostpolder)'],['Fields won',countFields(),'≈1,600 km²']],
+  text:()=>`In January 1916 the Zuiderzee broke its dikes; 19 people died in North Holland and wooden houses on Marken tumbled over. The Afsluitdijk, 32 km long, closed the sea on 28 May 1932. Behind it came the Wieringermeer (1930), the Noordoostpolder (in the war) and Flevoland (1968).`,
+  share:'History: Afsluitdijk 1932',
+  src:['w1916','afsl','cbs']},
+};
+const ptsD=pts=>'M'+pts.map(p=>geo(p[0],p[1]).map(v=>v.toFixed(1)).join(',')).join(' L')+'Z';
+function inPoly(p,poly){ let c=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const [xi,yi]=poly[i],[xj,yj]=poly[j]; if(((yi>p[1])!==(yj>p[1]))&&p[0]<(xj-xi)*(p[1]-yi)/(yj-yi)+xi) c=!c; } return c; }
+function histSVG(id){
+  // the view is widened or heightened around its centre to the frame's aspect (1.32), so nothing is cropped
+  const h=HIST[id], [a0,b0]=geo(h.view[0],h.view[3]), [c0,d0]=geo(h.view[2],h.view[1]), AR=1.32;
+  const vw=Math.max(c0-a0,(d0-b0)*AR), vh=vw/AR, a=(a0+c0-vw)/2, b=(b0+d0-vh)/2, fs=(vw*.058).toFixed(1);
+  const tl=(t,x,y)=>{ const ls=String(t).split('\n'); return ls.map((l,k)=>`<tspan x="${x}" dy="${k?'1.05em':(-(ls.length-1)*.52)+'em'}">${l}</tspan>`).join(''); };
+  const land=[NLGEO.rest,NLGEO.friesland,NLGEO.holland,NLGEO.zeeland].join(' '), zl=NLGEO.zzland;
+  let hatch='';
+  for(const L of h.layers) if(!L.lab) hatch+=`<path d="${L.poly?ptsD(L.poly):zl}" fill="url(#vs${L.k}-${id})" stroke="${L.k==='fl'?'#2f6fb0':'#5d9a3f'}" stroke-width="${(vw*.006).toFixed(2)}" stroke-dasharray="${(vw*.012).toFixed(1)} ${(vw*.008).toFixed(1)}"/>`;
+  let terps='';
+  if(h.terps){ let k=0; for(let lat=52.9;lat<53.46;lat+=.045) for(let lon=5.25;lon<6.42;lon+=.07){ const q=[lon+((k*7)%5-2)*.009,lat+((k*3)%5-2)*.006]; k++; if(!inPoly(q,h.terps)) continue; const [x,y]=geo(q[0],q[1]); terps+=`<circle class="vs-terp" style="--d:${(k%23)*.03}s" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(vw*.0075).toFixed(2)}" fill="#c98a4b" stroke="#fff" stroke-width="${(vw*.003).toFixed(2)}"/>`; } }
+  let marks='';
+  (h.marks||[]).forEach((m,k)=>{ const sw=(vw*.016).toFixed(2), [lx,ly]=geo(m.at[0],m.at[1]);
+    if(m.line){ const [p,q]=m.line.map(z=>geo(z[0],z[1])); marks+=`<g class="vs-mark" style="--d:${k*.2}s"><line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="#24414a" stroke-width="${sw}" stroke-linecap="round"/><line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="#f0a63c" stroke-width="${(vw*.007).toFixed(2)}" stroke-linecap="round"/></g>`; }
+    if(m.pin){ const [x,y]=geo(m.pin[0],m.pin[1]); marks+=`<g class="vs-mark" style="--d:${k*.2}s"><circle cx="${x}" cy="${y}" r="${(vw*.016).toFixed(2)}" fill="#e0674f" stroke="#fff" stroke-width="${(vw*.005).toFixed(2)}"/></g>`; }
+    marks+=`<text class="vs-lab" style="--d:${.15+k*.2}s;font-size:${fs}px;stroke-width:${(fs*.3).toFixed(1)}px" x="${lx}" y="${ly}" text-anchor="middle" fill="#24414a">${tl(m.label,lx,ly)}</text>`; });
+  let labs=''; h.layers.forEach((L,k)=>{ if(!L.label) return; const [x,y]=geo(L.at[0],L.at[1]); labs+=`<text class="vs-lab" style="--d:${.3+k*.15}s;font-size:${(fs*.92).toFixed(1)}px;stroke-width:${(fs*.3).toFixed(1)}px" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="middle" fill="${L.k==='fl'?'#1f4f86':'#3d6a26'}">${tl(L.label,x.toFixed(1),y.toFixed(1))}</text>`; });
+  return `<svg class="vssvg" viewBox="${a.toFixed(1)} ${b.toFixed(1)} ${vw.toFixed(1)} ${vh.toFixed(1)}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${h.cap}: ${h.legend.replace(/<[^>]+>/g,'')}">
+  <defs><pattern id="vsfl-${id}" width="${(vw*.03).toFixed(2)}" height="${(vw*.03).toFixed(2)}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="100%" height="100%" fill="#fbf8e6"/><rect width="${(vw*.011).toFixed(2)}" height="100%" fill="#2f6fb0"/></pattern>
+  <pattern id="vsrc-${id}" width="${(vw*.03).toFixed(2)}" height="${(vw*.03).toFixed(2)}" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="100%" height="100%" fill="#e8f3cc"/><rect width="${(vw*.011).toFixed(2)}" height="100%" fill="#6fae4f"/></pattern>
+  <clipPath id="vsclip-${id}"><path d="${land} ${h.zz?zl:''}"/></clipPath><clipPath id="vswipe-${id}"><rect class="vs-wipe" x="${a}" y="${b}" width="${vw}" height="${vh}"/></clipPath></defs>
+  <rect x="${a}" y="${b}" width="${vw}" height="${vh}" fill="#86cfe4"/>
+  <g class="vs-land"><path d="${land}" fill="#f4f1dc" stroke="#9fb8b2" stroke-width="${(vw*.004).toFixed(2)}" stroke-linejoin="round"/><path d="${NLGEO[id]||''}" fill="#fbf8e6" stroke="#6c8790" stroke-width="${(vw*.006).toFixed(2)}" stroke-linejoin="round"/>
+  <path d="${NLGEO.zzwater}" fill="#a8e0ee"/><path d="${zl}" fill="${h.zz?'#a8e0ee':'#f4f1dc'}" stroke="#9fb8b2" stroke-width="${(vw*.003).toFixed(2)}"/></g>
+  <g clip-path="url(#vswipe-${id})"><g clip-path="${h.zz?'':`url(#vsclip-${id})`}">${hatch}</g>${terps}</g>${marks}${labs}</svg>`;
+}
+// The player's final board in miniature: cells come up out of the sea in a sweep, fields last.
+function drawMini(c,p){
+  const r=c.getBoundingClientRect(), d=window.devicePixelRatio||1; if(!r.width) return;
+  if(c.width!==Math.round(r.width*d)){ c.width=Math.round(r.width*d); c.height=Math.round(r.height*d); }
+  const g=c.getContext('2d'), w=r.width, hh=r.height, s=Math.min(w/COLS,hh/ROWS), ox=(w-s*COLS)/2, oy=(hh-s*ROWS)/2;
+  g.setTransform(d,0,0,d,0,0); g.fillStyle=C.sea; g.fillRect(0,0,w,hh);
+  const col=t=>t===DEEP?C.deep:t===SEA?C.sea:t===LAKE?C.lake:t===LAND?C.land:t===TERP?'#e7d3a1':t===DIKE?C.dikeTop:null;
+  for(let y=0;y<ROWS;y++) for(let x=0;x<COLS;x++){ const i=idx(x,y), t=G[i], k=Math.max(0,Math.min(1,(p*1.6-(x/COLS*.75+y/ROWS*.25))*4));
+    if(!k) continue; const fill=t===POLDER?FIELD[fieldVar[i]%FIELD.length]:col(t); if(!fill||t===SEA) continue;
+    g.globalAlpha=k; g.fillStyle=fill;
+    if(t===DIKE){ g.fillStyle=C.dikeSide; g.fillRect(ox+x*s,oy+y*s+s*.12,s+.4,s); g.fillStyle=fill; }
+    g.fillRect(ox+x*s,oy+y*s,s+.4,s+.4);
+    if(t===TERP){ g.fillStyle='#e0674f'; g.beginPath(); g.arc(ox+(x+.5)*s,oy+(y+.5)*s,s*.28,0,7); g.fill(); }
+  }
+  g.globalAlpha=1;
+}
+function vsPanel(){ const h=HIST[LV.id]; if(!h) return '';
+  const du=h.duel();
+  return `<div class="vs" id="vsPanel"><span class="vsk">Your dikes vs. history</span>
+  <div class="vsm"><figure><div class="fr"><canvas id="vsMe" aria-label="Your final map"></canvas></div><figcaption>Your ${LV.name}<small>${ENDY}</small></figcaption></figure>
+  <figure><div class="fr">${histSVG(LV.id)}</div><figcaption>${h.cap}<small>${h.era}</small></figcaption></figure></div>
+  <div class="vsd"><div class="me"><b${h.nocount?'':` data-n="${du.me[0]}"`}>${du.me[0]}</b><span>${du.me[1]}</span></div><i>vs</i><div class="hi"><b>${du.hi[0]}</b><span>${du.hi[1]}</span></div></div>
+  <table class="vst"><tr><th></th><th>You</th><th>History</th></tr>${h.rows().map(r=>`<tr><td>${r[0]}</td><td class="me">${r[1]}</td><td class="hi">${r[2]}</td></tr>`).join('')}</table>
+  <p class="vsp">${h.text()}</p>
+  <div class="vsl">${h.legend}. <i>Hatched shapes are drawn by hand and approximate.</i>${h.note?' '+h.note:''} Sources: ${h.src.map(k=>`<a href="${HSRC[k][1]}" target="_blank" rel="noopener">${HSRC[k][0]}</a>`).join('; ')}. All are in the Chronicle's sources too.</div></div>`;
+}
+function revealVs(box){
+  const v=box.querySelector('#vsPanel'); if(!v) return; v.classList.add('go');
+  const c=v.querySelector('#vsMe'), t0=performance.now(), still=matchMedia('(prefers-reduced-motion: reduce)').matches, my=artGen;
+  const b=v.querySelector('.vsd .me b'), raw=b.dataset.n||'', m=raw.match(/^(\d+)(.*)$/), n=m?+m[1]:NaN, tail=m?m[2]:'';
+  const step=now=>{ if(!document.body.contains(c)||my!==artGen) return; const p=still?1:Math.min(1,(now-t0)/1500); drawMini(c,p);
+    if(m){ const q=still?1:Math.min(1,Math.max(0,(now-t0-1200)/700)); b.textContent=Math.round(n*q)+tail; }
+    if(p<1||(now-t0)<2000) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
 
 // ---------- animals & particles ----------
 function spawnAnimal(c){
@@ -1275,7 +1496,7 @@ function drawGhost(){
   if(S.busy||S.over||!hover) return;
   const s=CS;
   if(hover.finger){ const x0=hover.x*s,y0=hover.y*s; ctx.strokeStyle='#e0674f'; ctx.lineWidth=3; rr(x0+1,y0+1,s-2,s-2,s*.25); ctx.stroke();
-    pill(x0+s/2,y0-s*.4,S.fingers>0?'plug it!':'no fingers left','#fff','#b5643a'); return; }
+    pill(x0+s/2,y0-s*.4,S.fingers>0?(TOUCH?'tap again to plug':'plug it!'):'no fingers left','#fff','#b5643a'); return; }
   if(!ghost) return;
   if(preview) for(const p of preview){
     ctx.fillStyle=p.ok?'rgba(150,215,110,.45)':'rgba(255,255,255,.3)';
@@ -1369,7 +1590,9 @@ function hideBanner(){ $('banner').classList.remove('show'); }
 function card(o){
   return new Promise(res=>{
     const m=$('modal'), b=$('mbox');
-    b.className='mbox'; b.innerHTML=`${o.art?'<canvas class="art" id="artCv"></canvas>':''}<div class="yr">${o.yr??''}</div><h2>${o.title}</h2><p>${o.text}</p>${o.eff?`<div class="eff ${o.bad?'bad':''}">${o.eff}</div>`:''}${o.list||''}<div class="row act"><button class="primary" id="mOk">${o.btn||'OK'}</button>${o.btn2?`<button id="mOk2">${o.btn2}</button>`:''}${o.btn3?`<button id="mOk3">${o.btn3}</button>`:''}</div>`;
+    // o.side: a left column (the "vs. history" panel at the end of a region) next to the usual content; o.cls: extra box class
+    const body=`${o.art?'<canvas class="art" id="artCv"></canvas>':''}<div class="yr">${o.yr??''}</div><h2>${o.title}</h2><p>${o.text}</p>${o.eff?`<div class="eff ${o.bad?'bad':''}">${o.eff}</div>`:''}${o.list||''}`;
+    b.className='mbox'+(o.cls?' '+o.cls:''); b.innerHTML=`${o.side?`<div class="endg">${o.side}<div class="endr">${body}</div></div>`:body}<div class="row act"><button class="primary" id="mOk">${o.btn||'OK'}</button>${o.btn2?`<button id="mOk2">${o.btn2}</button>`:''}${o.btn3?`<button id="mOk3">${o.btn3}</button>`:''}</div>`;
     m.classList.remove('hidden'); if(o.art) startArt(o.art,o.v); if(o.onShow) o.onShow(b);
     // Enter/Space press the first button, Escape gives o.esc (if set). Keys are only listened to after 250 ms, so a key
     // held from the previous screen does not skip the card; the timer is cancelled if the card is closed before then
@@ -1379,39 +1602,111 @@ function card(o){
     const kt=setTimeout(()=>{ if(!closed) document.addEventListener('keydown',kd); },250);
     const done=v=>{ if(closed) return; closed=true; clearTimeout(kt); artGen++; m.classList.add('hidden'); b.className='mbox'; document.removeEventListener('keydown',kd); res(v); };
     $('mOk').onclick=()=>done(1); if(o.btn2) $('mOk2').onclick=()=>done(2); if(o.btn3) $('mOk3').onclick=()=>done(3);
+    hideTip(); syncTbar();
   });
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let inLevel=false;
 function syncPlay(){ const open=!document.getElementById('modal').classList.contains('hidden'); if(inLevel&&!open&&S&&!S.over) PF.start(); else PF.stop(); }
-new MutationObserver(syncPlay).observe(document.getElementById('modal'),{attributes:true,attributeFilter:['class']});
+new MutationObserver(()=>{ syncPlay(); syncTbar(); }).observe(document.getElementById('modal'),{attributes:true,attributeFilter:['class']});
 function copyText(t){ return (navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(t).then(()=>true):Promise.reject()).catch(()=>{ try{ const a=document.createElement('textarea'); a.value=t; document.body.appendChild(a); a.select(); const ok=document.execCommand('copy'); a.remove(); return ok; }catch(e){ return false; } }); }
 
 // ---------- input ----------
 function cellAt(e){ const r=cv.getBoundingClientRect(); const x=Math.floor((e.clientX-r.left)/CS), y=Math.floor((e.clientY-r.top)/CS); return inb(x,y)?{x,y}:null; }
 function setHover(h){
   hover=h; ghost=null; preview=null;
-  if(!h||S.busy||S.over) return;
-  const i=idx(h.x,h.y);
-  if(G[i]===DIKE&&crack[i]){ hover.finger=true; cv.style.cursor='pointer'; return; }
-  cv.style.cursor='crosshair';
-  ghost=placement(h.x,h.y); computePreview();
+  if(h&&!S.busy&&!S.over){
+    const i=idx(h.x,h.y);
+    if(G[i]===DIKE&&crack[i]){ hover.finger=true; cv.style.cursor='pointer'; }
+    else { cv.style.cursor=TOUCH?'default':'crosshair'; ghost=placement(h.x,h.y); computePreview(); }
+  }
+  syncTbar();
 }
 function refreshHover(){ if(hover) setHover({x:hover.x,y:hover.y}); updateUI(); }
 function rotate(){ if(S.busy||S.over) return; S.rot=(S.rot+1)%4; sfx.tick(); refreshHover(); }
-let lastTap=null;
-cv.addEventListener('pointermove',e=>{ if(e.pointerType==='touch') return; const h=cellAt(e); if(!h&&!hover) return; if(h&&hover&&h.x===hover.x&&h.y===hover.y) return; setHover(h); });
-cv.addEventListener('pointerleave',()=>{ hover=null; ghost=null; preview=null; });
+// After a move on a touch screen the aim is cleared, so a third tap cannot build the next piece by accident.
+function afterMove(){ if(TOUCH){ hover=null; ghost=null; preview=null; } refreshHover(); }
+// Why a piece cannot go where it is aimed (said out loud on touch screens, where a red ghost is easy to miss).
+function ghostWhy(){ if(!ghost) return ''; let land=false,deep=false,out=false;
+  for(const[x,y]of ghost.cells){ if(!inb(x,y)){ out=true; continue; } const t=G[idx(x,y)]; if(t===DEEP&&S.year<1849) deep=true; else if(!(t===SEA||t===LAKE||t===DEEP)) land=true; }
+  return out?'The piece hangs off the map. Rotate it or move it.':deep?'Too deep to dike here until steam (1849).':land?'Dikes go on water, not on land or other dikes.':'A dike must touch land, a mound or another dike.'; }
+// What a square is: shown by a long press (touch) so that nothing depends on hovering.
+function cellInfo(x,y){ const i=idx(x,y), t=G[i], nm=LAKENAMES[tag[i]];
+  if(S.ruins&&S.ruins.some(r=>r.c===i&&!r.ok)) return '<b>Drowned village.</b> Ring it with dikes and drain it to bring it back.';
+  if(t===DIKE) return crack[i]?`<b>Cracked dike.</b> The next storm breaks it. Tap it, then tap again to plug it (${S.fingers} finger${S.fingers===1?'':'s'} left).`:armor[i]?'<b>Stone-faced dike.</b> It shrugs off one storm hit.':'<b>Dike.</b> Dikes that face the open sea crack in storms.';
+  if(t===POLDER) return '<b>Polder.</b> Drained land, safe as long as its dikes hold.';
+  if(t===TERP) return '<b>Terp.</b> A village on a mound. Link it to the mainland with dikes.';
+  if(t===LAND) return '<b>Dry land.</b> Dikes must touch land, a mound or another dike.';
+  if(t===DEEP) return S.year>=1849?'<b>Deep water.</b> Steam dredgers let you dike it now.':'<b>Deep channel.</b> Too deep to dike until steam, in 1849.';
+  if(t===LAKE){ const l=lakes.find(l=>l.cells.includes(i)), n=l?l.n:1, why=needLabel(n); return `<b>${nm||'Lake'}</b>, ${n} square${n>1?'s':''}. Not fields yet: ${why}.`; }
+  return nm?`<b>${nm}</b>, still open to the sea. Close its inlet with dikes.`:'<b>Open sea.</b> Build here: a dike must touch land, a mound or another dike.'; }
+let tipT=null;
+function showTip(html,x,y){ const t=$('tip'), st=$('stage').getBoundingClientRect(), r=cv.getBoundingClientRect();
+  const px=r.left-st.left+(x+.5)*CS, py=r.top-st.top+y*CS, half=Math.min(130,st.width*.4);
+  t.innerHTML=html; t.style.left=Math.max(half+4,Math.min(st.width-half-4,px))+'px'; t.style.top=Math.max(64,py)+'px'; t.classList.add('show');
+  clearTimeout(tipT); tipT=setTimeout(hideTip,3200); }
+function hideTip(){ clearTimeout(tipT); const t=document.getElementById('tip'); if(t) t.classList.remove('show'); }
+// ---------- touch ----------
+let TOUCH=false;
+function setTouch(on){ if(TOUCH===on) return; TOUCH=on; document.body.classList.toggle('touch',on);
+  $('keysTip').textContent=on?'Tap a square to aim, tap it again to build · Drag to nudge the piece · ⟳ or a two-finger tap rotates · Hold a square to see what it is':'Click to place · Right-click, R or scroll to rotate · Space to wait';
+  tbKey=''; syncTbar(); resize(); }
+let tbKey='';
+function syncTbar(){ if(!TOUCH||!S||!S.queue) return; const open=!$('modal').classList.contains('hidden'), plug=!!(hover&&hover.finger), idle=!S.busy&&!S.over&&!open;
+  const key=[idle,plug,!!(ghost&&ghost.ok),S.rot,S.queue[0]&&S.queue[0].join(';')].join('|'); if(key===tbKey) return; tbKey=key;
+  $('tRot').disabled=!idle; $('tWait').disabled=!idle; $('tBuildL').textContent=plug?'Plug':'Build'; $('tBuild').disabled=!idle||!(plug||(ghost&&ghost.ok));
+  drawPiece($('tPc'),rotated(S.queue[0],S.rot)); }
+const touches=new Map(); let gest=null, lpT=null;
+const onGhost=h=>!!(ghost&&ghost.cells.some(([x,y])=>CS<18&&ghost.ok?Math.abs(x-h.x)<=1&&Math.abs(y-h.y)<=1:x===h.x&&y===h.y));
+function touchDown(e){
+  e.preventDefault(); touches.set(e.pointerId,1);
+  if(touches.size>1){ clearTimeout(lpT); if(gest&&!gest.multi){ gest.multi=true; if(!gest.moved) rotate(); } return; } // two-finger tap: rotate
+  hideTip(); gest=null;
+  if(S.busy||S.over) return;
+  const h=cellAt(e); if(!h) return;
+  const had=hover&&!hover.finger?{x:hover.x,y:hover.y}:null;
+  gest={x0:e.clientX,y0:e.clientY,cell:h,moved:false,multi:false,long:false,hit:onGhost(h),base:had&&Math.abs(had.x-h.x)<=3&&Math.abs(had.y-h.y)<=3?had:h};
+  lpT=setTimeout(()=>{ if(gest&&!gest.moved&&!gest.multi){ gest.long=true; showTip(cellInfo(h.x,h.y),h.x,h.y); if(navigator.vibrate) try{ navigator.vibrate(12); }catch(_){} } },480);
+}
+function touchMove(e){
+  if(!gest||gest.multi||gest.long||S.busy) return;
+  const dx=e.clientX-gest.x0, dy=e.clientY-gest.y0;
+  if(!gest.moved){ if(Math.hypot(dx,dy)<10) return; gest.moved=true; clearTimeout(lpT); }
+  // drag = nudge: the piece moves by the finger's distance (like a trackpad), so small squares can still be hit exactly
+  const nx=Math.max(0,Math.min(COLS-1,gest.base.x+Math.round(dx/CS))), ny=Math.max(0,Math.min(ROWS-1,gest.base.y+Math.round(dy/CS)));
+  if(!hover||hover.finger||hover.x!==nx||hover.y!==ny){ setHover({x:nx,y:ny}); sfx.tick(); }
+}
+function touchUp(e){
+  touches.delete(e.pointerId); clearTimeout(lpT);
+  if(touches.size) return;
+  const g=gest; gest=null;
+  if(!g||g.multi||g.long||g.moved||S.busy||S.over) return;
+  const h=g.cell;
+  if(hover&&hover.finger&&hover.x===h.x&&hover.y===h.y){ useFinger(idx(h.x,h.y)).then(afterMove); return; }
+  if(ghost&&(g.hit||(hover&&hover.x===h.x&&hover.y===h.y))){ place(); return; }
+  setHover(h); if(hover&&!hover.finger) sfx.tick();
+}
+cv.addEventListener('pointermove',e=>{ if(e.pointerType==='touch'){ touchMove(e); return; } const h=cellAt(e); if(!h&&!hover) return; if(h&&hover&&h.x===hover.x&&h.y===hover.y) return; setHover(h); });
+cv.addEventListener('pointerleave',e=>{ if(e.pointerType==='touch') return; hover=null; ghost=null; preview=null; syncTbar(); });
 cv.addEventListener('pointerdown',e=>{
   audioInit();
+  if(e.pointerType==='touch'){ setTouch(true); touchDown(e); return; }
   if(S.busy||S.over) return;
   if(e.button===2){ rotate(); return; }
   const h=cellAt(e); if(!h) return;
-  if(e.pointerType==='touch'){ if(!lastTap||lastTap.x!==h.x||lastTap.y!==h.y){ lastTap=h; setHover(h); return; } }
-  setHover(h); lastTap=null;
+  setHover(h);
   if(hover&&hover.finger) useFinger(idx(h.x,h.y)).then(refreshHover);
   else place();
 });
+cv.addEventListener('pointerup',e=>{ if(e.pointerType==='touch') touchUp(e); });
+cv.addEventListener('pointercancel',e=>{ touches.delete(e.pointerId); clearTimeout(lpT); if(!touches.size) gest=null; });
+document.addEventListener('pointerdown',e=>{ if(e.pointerType==='touch') setTouch(true); else if(e.pointerType==='mouse'&&TOUCH&&!matchMedia('(pointer: coarse)').matches) setTouch(false); },true);
+$('tRot').onclick=()=>{ audioInit(); rotate(); }; $('tPc').onclick=()=>{ audioInit(); rotate(); };
+$('tWait').onclick=()=>{ audioInit(); hideTip(); waitDecade(); };
+$('tBuild').onclick=()=>{ audioInit(); hideTip(); if(S.busy||S.over) return; if(hover&&hover.finger) useFinger(idx(hover.x,hover.y)).then(afterMove); else place(); };
+$('tl').addEventListener('click',()=>{ if(!S||!LV||S.over) return;
+  const ev=[...LV._storms,LV.final].filter(Boolean).filter(x=>x.year>S.year).map(x=>[x.year,`⛈ ${x.year} ${x.name}`]).concat(UNLOCKS.filter(u=>unlockOn(u)&&u.year>S.year&&u.year<=ENDY).map(u=>[u.year,`${u.year} ${u.title}`])).sort((a,b)=>a[0]-b[0]).slice(0,3).map(x=>x[1]);
+  toast(ev.length?'<b>Ahead:</b> '+ev.join(' · '):'Nothing more on the timeline.',4200); });
 document.addEventListener('contextmenu',e=>e.preventDefault());
 window.addEventListener('keydown',e=>{ if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)&&e.target===document.body) e.preventDefault(); });
 cv.addEventListener('wheel',e=>{ e.preventDefault(); rotate(); },{passive:false});
@@ -1477,6 +1772,7 @@ const SOURCES=`<p style="font-size:14px">Every date and claim in Polder was chec
 <li>Windmills: <i>Middeleeuwse watermolens in Hollands polderland, 1407/08 – rondom 1500</i> (<a href="https://new.millsarchive.org/library/index/759" target="_blank" rel="noopener">Mills Archive</a>).</li>
 <li>Steam drainage: <a href="https://www.flevolandsgeheugen.nl/page/12821/driving-devices-for-pumped-discharge-from-polders" target="_blank" rel="noopener">Flevolands Geheugen, driving devices for pumped discharge</a>.</li>
 <li>Printing: <a href="https://en.wikipedia.org/wiki/Delft_Bible" target="_blank" rel="noopener">The Delft Bible</a>.</li>
+<li>Your dikes vs. history (the end of each region): ${Object.values(HSRC).map(([t,u])=>`<a href="${u}" target="_blank" rel="noopener">${t.replace(/^Wikipedia: /,'')}</a>`).join('; ')}. The hatched areas on those maps are drawn by hand and approximate.</li>
 <li>Map of the Netherlands: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a> (public domain); region borders drawn by hand and approximate.</li>
 <li>Font: Fredoka (SIL Open Font License). Music and sound are generated in your browser.</li></ul>`;
 function openBook(tab){
@@ -1496,7 +1792,7 @@ function openBook(tab){
 function startLevel(id){
   inLevel=true; clearRun(); newGame(id); S.busy=true; $('diffLbl').textContent=S.hard?'Hard':''; track('polder_level_start',{level:id,diff:SET.diff});
   card({yr:`${LV.start}–${LV.final?LV.final.year:LV.end}`,art:'intro',v:LV.id,title:`${LV.name} · ${LV.sub}`,text:LV.intro,
-    list:`<ul>${LV.rules.map(r=>`<li>${r}</li>`).join('')}${S.hard?`<li><b>Hard:</b> ${HARDNOTE[LV.id]||'storms hit harder.'}</li>`:''}<li><b>Goals:</b> ${QUESTS.map(q=>q.text.toLowerCase()).join('; ')}.</li></ul>`+(LV.id==='friesland'?`<ul><li><b>Place dikes</b> next to land. Rotate with right-click, R or scroll.</li><li><b>Close a ring</b> around water and it drains into fields.</li><li><b>Storms</b> crack sea-facing dikes. Click a crack to plug it.</li><li><b>Drain fields</b> to earn upgrades.</li></ul>`:''),
+    list:`<ul>${LV.rules.map(r=>`<li>${r}</li>`).join('')}${S.hard?`<li><b>Hard:</b> ${HARDNOTE[LV.id]||'storms hit harder.'}</li>`:''}<li><b>Goals:</b> ${QUESTS.map(q=>q.text.toLowerCase()).join('; ')}.</li></ul>`+(LV.id==='friesland'?`<ul>${TOUCH?'<li><b>Tap a square</b> next to land to aim a dike, tap it again to build. Drag to nudge it, ⟳ or a two-finger tap to rotate.</li>':'<li><b>Place dikes</b> next to land. Rotate with right-click, R or scroll.</li>'}<li><b>Close a ring</b> around water and it drains into fields.</li><li><b>Storms</b> crack sea-facing dikes. ${TOUCH?'Tap a crack twice':'Click a crack'} to plug it.</li><li><b>Drain fields</b> to earn upgrades.</li></ul>`:''),
     btn:'Begin'}).then(()=>{ audioInit(); musicStart(); S.busy=false; });
 }
 let muted=!SET.sfx;
@@ -1538,7 +1834,7 @@ const sfx={
 
 // ---------- loop ----------
 let last=performance.now();
-function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; update(dt); draw(); requestAnimationFrame(frame); }
+function frame(now){ const dt=Math.min(.05,(now-last)/1000); last=now; update(dt); draw(); syncTbar(); requestAnimationFrame(frame); }
 window.addEventListener('resize',resize);
 newGame('friesland'); resize(); requestAnimationFrame(frame);
 window.__polder={PF,dbg:{preview:()=>preview,storm,end:()=>end(),crack:i=>{ if(G[i]===DIKE) crack[i]=1; },setYear:y=>{S.year=y;updateUI();},structs:()=>structs,houses:()=>houses,spawnAnimal,refresh:()=>{open=computeOpen(G);computeLakes();updateUI();},tag:()=>tag},startLevel,levelSelect,checkQuests,applyUp,card,get S(){return S},get G(){return G},place,placement,setHover:(x,y)=>setHover({x,y}),waitDecade};
@@ -1551,7 +1847,8 @@ function boot(){
   levelSelect();
 }
 PF.init().then(()=>{
-if(!CG&&((window.matchMedia&&matchMedia('(pointer: coarse)').matches)||innerWidth<820)){ S.busy=true; card({yr:'A small note',art:'intro',title:'Best with a mouse',text:'Polder is made for a laptop or desktop: you place dikes with a mouse and rotate them with a right-click or the scroll wheel. Touch screens are not supported yet.',btn:'Show me anyway'}).then(()=>{ $('keysTip').textContent='Tap a square to see the dike there, tap it again to place it · Rotate and Wait are the buttons above'; boot(); }); }
+const coarse=!!(window.matchMedia&&matchMedia('(pointer: coarse)').matches); if(coarse) setTouch(true);
+if(!CG&&(coarse||innerWidth<820)){ S.busy=true; card({yr:'A small note',art:'intro',title:'Best with a mouse, but it works by touch',text:'Polder plays best on a laptop. On a touch screen: <b>tap</b> a square to aim a dike and <b>tap it again</b> to build. Drag to nudge the piece, rotate with the big ⟳ button or a two-finger tap, and hold a square to see what it is.',btn:'Play'}).then(boot); }
 else boot();
 });
 })();

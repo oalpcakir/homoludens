@@ -132,6 +132,7 @@ tr.labour{animation:inkin 1.8s ease-out}
 #door h2{font-size:30px;margin:0 0 6px}
 #door p{line-height:1.5}
 #door button{font:inherit;font-size:17px;padding:8px 18px;border:1px solid var(--ink);background:none;cursor:pointer;margin:6px}
+#door button.pri{background:var(--ink);color:var(--paper)}
 #qs{display:flex;flex-direction:column;gap:2px;margin:0 0 8px;font-size:15px;font-style:italic;color:var(--ink2)}
 #qs .done{color:var(--green);font-style:normal;text-decoration:line-through}
 .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:3px;
@@ -282,13 +283,14 @@ canvas.rc{display:block;width:100%;max-width:420px;height:auto;margin:10px auto 
   <p class="epi">"As an accompaniment, weak tea, with perhaps a little sugar, milk, or spirits, is universally drunk."<br><span>Engels, 1845</span></p>
   <div class="rhead">The receipt, reprinted</div>
   <canvas class="rc" id="rcpt" role="img" aria-label="The grocer's receipt, reprinted with every share of the 4½d and the hours of work"></canvas>
-  <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button></div>
+  <div class="rbtns"><button id="rSave">Save the receipt</button><button id="rCopy">Copy as text</button><button id="rShare" class="pri">Share</button></div>
   <p>In East London the woman stirs the brown sugar into her tea. Next, the tea itself: 5d for two ounces, and more than half of what she paid for it was tax.</p>
   <a class="nextbtn" href="/cupoftea/3/">Back to London, for the tea →</a>
   <button onclick="closeDoor()">Back to the ledger</button>
   <button class="replayBtn">Replay scene</button>
 </div></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script data-inline="sankey.js"></script>
 <script>
 /* ===== INTRO ===== */
 const INTRO = [
@@ -784,6 +786,7 @@ function checkFinal(){
   if(id==="t3h"){
     S.done=true; $("#msg").textContent=""; toast("Three hours.");
     stamp(); clink(.25,.18); showReceipt(); saveDone(SCENE); $("#replay").classList.add("on"); saveScene();
+    try{ window.HL && HL.stamp('cupoftea',{result:'done', label:`Scene 2 solved · ${blots} blot${blots===1?"":"s"}`, score:-blots}); }catch(e){}
     setTimeout(()=>{ drawDials(); openDoor(); },1300);
   } else {
     if(!S.tried.has("f1|"+id)) blots++; // the same wrong answer twice is one blot
@@ -958,6 +961,18 @@ $("#rSave").addEventListener("click",()=>{
     const a=document.createElement("a"); a.href=URL.createObjectURL(b); a.download=R.file; document.body.appendChild(a); a.click(); a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),3000); });
 });
+/* ===== SHARING ===== */
+function topThree(sp){ // the three biggest recipients, a shared recipient's flows summed
+  const by={}; sp.flows.forEach(f=>{ by[f.key]=by[f.key]||{who:f.who,v:0}; by[f.key].v+=f.v; });
+  return Object.values(by).sort((a,b)=>b.v-a.v).slice(0,3).map(r=>`${r.who}: ${r.v.toFixed(2)}d`);
+}
+function shareOpts(){
+  const sp=window.TeaSankey?TeaSankey.whole(true):{flows:[]};
+  return {game:"cupoftea", kicker:"A Cup of Tea · London 1850", title:"Who got every farthing", big:"4½d",
+    sub:`Scene 2 solved with ${blots} blot${blots===1?"":"s"}`, lines:topThree({flows:sp.flows.filter(f=>f.from==="sugar")}),
+    art:"/cupoftea/img/tea_intro_2.webp", text:receiptText(receiptData()), url:"{{SITE}}/cupoftea/2/"};
+}
+document.addEventListener("DOMContentLoaded",()=>{ if(window.HL) HL.on($("#rShare"),shareOpts); else $("#rShare").hidden=true; });
 $("#rCopy").addEventListener("click",()=>{
   const t=receiptText(receiptData());
   (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Copied to the clipboard."),()=>toast("Could not copy. Your browser blocked the clipboard."));

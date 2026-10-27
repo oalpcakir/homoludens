@@ -34,6 +34,7 @@ html = f'''<!doctype html>
 {ph}
 <script src="/feedback.js" defer data-game="retourvloot"></script>
 <script src="/next.js" defer data-game="retourvloot"></script>
+<script src="/hl.js" defer data-game="retourvloot"></script>
 <style>html,body{{margin:0}}</style>
 {r("head.html")}
 </head>
@@ -43,6 +44,7 @@ html = f'''<!doctype html>
 {r("model.js")}
 {r("events.js")}
 {r("images.js")}
+{r("mapdata.js")}
 {r("tut.js")}
 {r("ui.js")}
 </script>

@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Homo Ludens</title>
-<meta name="description" content="Small games about the past. Short history games with one mechanic, one idea, and a note on what really happened.">
+<meta name="description" content="Short games about moments in history, each with what really happened afterwards. Most take about ten minutes.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Homo Ludens">
-<meta property="og:description" content="Small games about the past. Short history games: one mechanic, one idea, and what really happened.">
+<meta property="og:description" content="Short games about moments in history, each with what really happened afterwards. Most take about ten minutes.">
 <meta property="og:url" content="{{SITE}}/">
 <link rel="canonical" href="{{SITE}}/">
 <meta property="og:image" content="{{SITE}}/og-homoludens.png">
@@ -15,162 +15,206 @@
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{{SITE}}/og-homoludens.png">
+<meta name="theme-color" content="#f7f6f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12151c" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" href="data:image/png;base64,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">
+<script>/* the colour theme the visitor picked (auto when unset), before the first paint */try{var hlT=localStorage.getItem("hl.theme");if(hlT==="light"||hlT==="dark")document.documentElement.setAttribute("data-theme",hlT)}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital@0;1&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 {{POSTHOG}}
 <style>
-/* Plates: the historical picture; on hover (desktop) a screenshot of the game itself fades in.
-   Layout: a single editorial column, like the front matter of an atlas: wordmark, today's play, the games, a colophon. Shares Borderlines' ink and sea so the series reads as one family. */
+/* An editorial front page, like the front matter of an atlas: wordmark, "For you" (where you left off, today's daily, one game to try),
+   the games (cards or a world map with a timeline), the passport, your record, a colophon.
+   Colours are tokens on :root; dark mode follows the system unless the visitor picks a theme (data-theme on <html>). */
 :root {
-  --paper: #f7f6f2;
-  --card: #ffffff;
-  --ink: #1f2b4a;
-  --ink-soft: #55617a;
-  --rule: #d6dbe0;
-  --sea: #d9e3e6;
-  --coast: #9fb0b5;
-  --accent: #9c2f45;
+  --paper: #f7f6f2; --paper-2: #efede6; --card: #ffffff; --pp: #fbf8ef;
+  --ink: #1f2b4a; --ink-soft: #55617a; --ink-faint: #8a93a6;
+  --rule: #dcdfe3; --rule-strong: #c2c8d0;
+  --sea: #d9e3e6; --coast: #9fb0b5; --grat: #c7d4d8; --seal: #8a9aa0;
+  --accent: #9c2f45; --accent-soft: rgba(156, 47, 69, .09);
+  --hover: #eef0f3; --btn-bg: #1f2b4a; --btn-fg: #f7f6f2; --btn-hover: #2c3b63;
+  --overlay: rgba(247, 246, 242, .9); --chip-dark: rgba(31, 43, 74, .86);
+  --shadow: 0 1px 2px rgba(31, 43, 74, .05), 0 6px 18px -10px rgba(31, 43, 74, .2);
+  --shadow-hi: 0 2px 4px rgba(31, 43, 74, .06), 0 18px 36px -16px rgba(31, 43, 74, .34);
+  --ok: #2c6a47; --err: #962f2a; --desk-bg: #f6efdf; --desk-fg: #7a5a1c; --desk-bd: #d8c59c;
+  --focus: #9c2f45; --emblem: none;
+  /* passport ink, one per game */
+  --c-borderlines: #2f4f7a; --c-retourvloot: #8c3a1c; --c-cupoftea: #2e6a4e; --c-polder: #245f93; --c-kantar: #a12531; --c-tulip: #7b2b62;
+  --radius: 10px; --radius-sm: 6px;
   --f-display: "Libre Caslon Display", "Iowan Old Style", Georgia, serif;
   --f-text: "Libre Caslon Text", "Iowan Old Style", Georgia, serif;
   --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   color-scheme: light;
 }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12151c; --paper-2: #171b24; --card: #1a1f2a; --pp: #191d26;
+    --ink: #ebe6d9; --ink-soft: #a9b0bf; --ink-faint: #6f7789;
+    --rule: #2a303d; --rule-strong: #3b4354;
+    --sea: #1b2631; --coast: #3e5260; --grat: #243440; --seal: #5b6d78;
+    --accent: #e58a9c; --accent-soft: rgba(229, 138, 156, .12);
+    --hover: #232938; --btn-bg: #ebe6d9; --btn-fg: #12151c; --btn-hover: #ffffff;
+    --overlay: rgba(18, 21, 28, .86); --chip-dark: rgba(10, 12, 18, .82);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 20px -12px rgba(0, 0, 0, .6);
+    --shadow-hi: 0 2px 4px rgba(0, 0, 0, .3), 0 18px 40px -16px rgba(0, 0, 0, .8);
+    --ok: #7fc79d; --err: #f08a80; --desk-bg: #2b2416; --desk-fg: #e2c27f; --desk-bd: #5a4a2a;
+    --focus: #e58a9c; --emblem: invert(.92) hue-rotate(180deg);
+    --c-borderlines: #9db9e2; --c-retourvloot: #e5a07f; --c-cupoftea: #8fcfac; --c-polder: #8dbde8; --c-kantar: #f0949a; --c-tulip: #dc9ac9;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12151c; --paper-2: #171b24; --card: #1a1f2a; --pp: #191d26;
+  --ink: #ebe6d9; --ink-soft: #a9b0bf; --ink-faint: #6f7789;
+  --rule: #2a303d; --rule-strong: #3b4354;
+  --sea: #1b2631; --coast: #3e5260; --grat: #243440; --seal: #5b6d78;
+  --accent: #e58a9c; --accent-soft: rgba(229, 138, 156, .12);
+  --hover: #232938; --btn-bg: #ebe6d9; --btn-fg: #12151c; --btn-hover: #ffffff;
+  --overlay: rgba(18, 21, 28, .86); --chip-dark: rgba(10, 12, 18, .82);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 20px -12px rgba(0, 0, 0, .6);
+  --shadow-hi: 0 2px 4px rgba(0, 0, 0, .3), 0 18px 40px -16px rgba(0, 0, 0, .8);
+  --ok: #7fc79d; --err: #f08a80; --desk-bg: #2b2416; --desk-fg: #e2c27f; --desk-bd: #5a4a2a;
+  --focus: #e58a9c; --emblem: invert(.92) hue-rotate(180deg);
+  --c-borderlines: #9db9e2; --c-retourvloot: #e5a07f; --c-cupoftea: #8fcfac; --c-polder: #8dbde8; --c-kantar: #f0949a; --c-tulip: #dc9ac9;
+  color-scheme: dark;
+}
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-body); line-height: 1.5; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
+body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--f-body); line-height: 1.5; overflow-x: hidden; }
 a { color: inherit; }
 [hidden] { display: none !important; }
-.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 32px 40px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 32px; padding-block: 28px 40px; }
 /* room under the footer for the floating Discord / Feedback buttons (feedback.js), so the end of the page is never covered */
 body { padding-bottom: 64px; }
 .eyebrow { font: 500 11px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
 
-header.mast { display: grid; gap: 8px; padding-bottom: 20px; border-bottom: 1px solid var(--ink); }
-header.mast { position: relative; }
-header.mast .emblem { position: absolute; right: 0; top: 4px; width: clamp(56px, 11vw, 100px); height: auto; }
-.mast .topline { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(48px, 9vw, 88px); line-height: .9; letter-spacing: -.01em; margin: 2px 0 0; }
-.lede { font-family: var(--f-text); font-size: clamp(18px, 2.4vw, 21px); line-height: 1.5; max-width: 34em; margin: 6px 0 0; text-wrap: pretty; }
-.lede em { font-style: italic; }
+/* ---------- masthead */
+header.mast { display: grid; gap: 6px; padding-bottom: 18px; border-bottom: 1px solid var(--ink); }
+.mast .topline { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-height: 34px; }
+.mast-tools { display: flex; gap: 8px; align-items: center; }
+.chip { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px 0 6px; border: 1px solid var(--rule-strong); border-radius: 999px; background: var(--card); text-decoration: none; font: 500 12px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink); white-space: nowrap; transition: border-color .15s, background .15s; }
+.chip:hover { border-color: var(--ink); }
+.chip b { font-weight: 500; font-variant-numeric: tabular-nums; }
+.chip .seal { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--paper); font: 400 11px/1 var(--f-display); letter-spacing: 0; }
+.iconbtn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--rule-strong); background: var(--card); color: var(--ink); display: grid; place-items: center; cursor: pointer; padding: 0; }
+.iconbtn:hover { border-color: var(--ink); }
+.iconbtn svg { width: 16px; height: 16px; }
+.mast-main { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(46px, 8.4vw, 92px); line-height: .9; letter-spacing: -.01em; margin: 6px 0 0; }
+.lede { font-family: var(--f-text); font-size: clamp(17px, 2.2vw, 20px); line-height: 1.45; max-width: 34em; margin: 10px 0 0; text-wrap: pretty; }
+.emblem { flex: none; width: clamp(56px, 10vw, 104px); height: auto; filter: var(--emblem); margin-bottom: 4px; }
 
+/* ---------- For you */
+.foryou { padding-block: 18px 6px; }
+.fy-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+.fy-head .sub { font: 13px var(--f-body); color: var(--ink-soft); }
+.fy-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.fy-row::-webkit-scrollbar { display: none; }
+.fy { scroll-snap-align: start; position: relative; display: grid; grid-template-columns: 60px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 9px 12px 9px 9px; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); text-decoration: none; color: var(--ink); box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; min-width: 0; }
+.fy:hover { transform: translateY(-2px); box-shadow: var(--shadow-hi); border-color: var(--rule-strong); }
+.fy-art { width: 60px; height: 60px; border-radius: var(--radius-sm); overflow: hidden; background: var(--sea); display: grid; place-items: center; }
+.fy-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fy-daily .fy-art { background: var(--ink); color: var(--paper); align-content: center; gap: 3px; }
+.fy-daily .fy-art b { font: 400 23px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.fy-daily .fy-art i { font: normal 500 8.5px/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
+.fy-t { display: grid; gap: 3px; min-width: 0; }
+.fy-k { font: 500 10.5px/1.2 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fy-t > b { font: 400 19px/1.12 var(--f-display); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fy-m { font-size: 12.5px; line-height: 1.3; color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fy-m b { color: var(--ink); font-weight: 500; }
+.fy-go { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--rule-strong); display: grid; place-items: center; font-size: 15px; transition: background .15s, color .15s, border-color .15s; }
+.fy:hover .fy-go { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+.fy-done .fy-go { opacity: .6; }
+
+/* ---------- sections */
 section { padding-block: 32px; border-bottom: 1px solid var(--rule); }
+section.foryou { border-bottom: 0; }
 section > .eyebrow { display: block; margin-bottom: 16px; }
+.sechead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; font: 500 15px/1 var(--f-body); text-decoration: none; padding: 0 18px; border: 1px solid var(--btn-bg); border-radius: var(--radius-sm); background: var(--btn-bg); color: var(--btn-fg); white-space: nowrap; cursor: pointer; transition: background .15s, border-color .15s; }
+.btn:hover { background: var(--btn-hover); border-color: var(--btn-hover); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--rule-strong); }
+.btn.ghost:hover { background: var(--hover); border-color: var(--ink); }
 
-.today { display: grid; grid-template-columns: 1fr auto; gap: 16px 24px; align-items: center; background: var(--card); border: 1px solid var(--rule); padding: 18px 20px; }
-.today h2 { font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1.05; margin: 6px 0 0; }
-.today .meta { font: 13px var(--f-mono); color: var(--ink-soft); margin-top: 6px; font-variant-numeric: tabular-nums; }
-.today .meta b { color: var(--ink); font-weight: 500; }
-.btn { display: inline-flex; align-items: center; gap: 8px; font: 500 15px/1 var(--f-body); text-decoration: none; padding: 13px 18px; border: 1px solid var(--ink); border-radius: 2px; background: var(--ink); color: var(--paper); white-space: nowrap; }
-.btn:hover { background: #2c3b63; }
-.btn.ghost { background: transparent; color: var(--ink); }
-.btn.ghost:hover { background: #eef0f3; }
-.btn:focus-visible, a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
-
-.games { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 20px; }
-.game.top { grid-column: span 2; }
-.game.pair { grid-column: span 3; }
-.game.pair .plate { aspect-ratio: 16 / 7; }
-.resume { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin-top: 6px; font: 500 12px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft); }
-.resume a { display: inline-flex; gap: 6px; align-items: center; padding: 7px 10px; border: 1px solid var(--ink); border-radius: 2px; color: var(--ink); text-decoration: none; letter-spacing: .04em; }
-.resume a:hover { background: #eef0f3; }
-.cardnote { font: 12.5px var(--f-mono); color: var(--ink-soft); }
-.game.top h3 { font-size: 30px; }
-.game.top p { font-size: 14.5px; }
-.game { background: var(--card); border: 1px solid var(--rule); display: grid; grid-template-rows: auto 1fr; min-width: 0; text-decoration: none; }
-.game .plate { background: var(--sea); border-bottom: 1px solid var(--rule); aspect-ratio: 620 / 453; max-width: 100%; position: relative; overflow: hidden; }
-.game .plate svg { display: block; width: 100%; height: 100%; }
-.game .plate img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* ---------- game cards */
+.games { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.game { position: relative; background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; box-shadow: var(--shadow); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
+@media (hover: hover) { .game:hover { transform: translateY(-3px); box-shadow: var(--shadow-hi); border-color: var(--rule-strong); } }
+.game:focus-within { border-color: var(--rule-strong); }
+.game .plate { display: block; background: var(--sea); border-bottom: 1px solid var(--rule); aspect-ratio: 3 / 2; position: relative; overflow: hidden; }
+.game .plate:focus-visible { outline-offset: -3px; }
+.game .plate > svg { display: block; width: 100%; height: 100%; }
+.game .plate > img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+@media (hover: hover) { .game:hover .plate > img:not(.shot) { transform: scale(1.03); } }
 .plate .land { fill-rule: evenodd; fill: var(--paper); stroke: var(--coast); stroke-width: .8; }
-.plate .realm { fill: var(--accent); fill-opacity: .55; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
-.plate .grat { stroke: #c7d4d8; stroke-width: 1; }
+.plate .realm { fill: var(--accent); fill-opacity: .5; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
 .plate .shot { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; opacity: 0; transition: opacity .25s ease; }
-.plate .inplay { position: absolute; right: 12px; top: 10px; font: 500 10.5px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--paper); background: rgba(31,43,74,.85); padding: 3px 6px; opacity: 0; transition: opacity .25s ease; }
+.plate .inplay { position: absolute; right: 10px; top: 10px; font: 500 10.5px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: #f7f6f2; background: var(--chip-dark); padding: 4px 7px; border-radius: 4px; opacity: 0; transition: opacity .25s ease; }
 @media (hover: hover) { .game:hover .plate .shot, .game:hover .plate .inplay, .plate:focus-visible .shot, .plate:focus-visible .inplay { opacity: 1; } .game:hover .plate .cap { opacity: 0; } }
-.plate .cap { transition: opacity .25s ease; }
-.plate .cap { position: absolute; left: 14px; bottom: 12px; font: 500 11px var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); background: rgba(247,246,242,.85); padding: 4px 7px; }
-.game .body { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 10px; }
-.game h3 { font-family: var(--f-display); font-weight: 400; font-size: 34px; line-height: 1; margin: 0; }
-.game p { margin: 0; font-size: 15px; color: var(--ink); max-width: 38em; }
-.tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { font: 500 11px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; padding: 5px 7px; border: 1px solid var(--rule); color: var(--ink-soft); }
+.plate .cap { position: absolute; left: 10px; bottom: 10px; max-width: calc(100% - 20px); font: 500 10.5px/1.35 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); background: var(--overlay); padding: 4px 7px; border-radius: 4px; transition: opacity .25s ease; }
+.game .body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; }
+.kick { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font: 500 11px/1.2 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; }
+.numeral { color: var(--ink-faint); }
+.era { color: var(--accent); }
+.badge { font: 500 9.5px/1 var(--f-mono); letter-spacing: .1em; padding: 3px 6px; border-radius: 999px; background: var(--accent); color: var(--paper); }
+.game h3 { font-family: var(--f-display); font-weight: 400; font-size: 32px; line-height: 1; margin: 2px 0 0; }
+.hook { margin: 0; font: italic 17px/1.35 var(--f-text); color: var(--ink); text-wrap: balance; }
+.desc { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ink-soft); }
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px; }
+.tag { font: 500 10.5px/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; padding: 5px 8px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink-soft); background: var(--paper); }
 .tag.dev { display: inline-flex; align-items: center; gap: 5px; }
 .tag.dev svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
-.game .desknote, .brief .desknote { display: none; font-size: 13px; color: var(--ink-soft); }
+.game .desknote, .brief .desknote { display: none; font-size: 13px; color: var(--ink-soft); margin: 0; }
 @media (max-width: 720px), (pointer: coarse) {
-  .tag.dev.desk { border-color: #c9b48a; color: #7a5a1c; background: #f6efdf; }
+  .tag.dev.desk { border-color: var(--desk-bd); color: var(--desk-fg); background: var(--desk-bg); }
   .game .desknote, .brief .desknote { display: block; }
 }
-.game .row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 6px; }
-.game.wide { grid-column: 1 / -1; grid-template-columns: 1.15fr 1fr; grid-template-rows: auto; }
-.game.wide .plate { border-bottom: 0; border-right: 1px solid var(--rule); aspect-ratio: auto; min-height: 100%; }
-.workshop { border: 1px dashed var(--coast); background: transparent; display: grid; align-content: center; gap: 10px; padding: 24px; min-height: 220px; }
-.workshop h3 { font-family: var(--f-display); font-weight: 400; font-size: 26px; margin: 0; }
-.workshop p { margin: 0; font-size: 14px; color: var(--ink-soft); }
-.numeral { font: 500 12px var(--f-mono); color: var(--ink-soft); letter-spacing: .1em; }
+.game .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: auto; padding-top: 8px; }
+.cardnote { font: 12px var(--f-mono); color: var(--ink-soft); }
+.stampmark { display: inline-flex; align-items: center; gap: 6px; font: 500 10.5px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); text-decoration: none; }
+.stampmark i { width: 18px; height: 18px; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font: normal 10px/1 var(--f-display); }
 
-.about { display: grid; grid-template-columns: 200px 1fr; gap: 24px; }
-.about p { margin: 0 0 12px; font-family: var(--f-text); font-size: 17px; line-height: 1.6; max-width: 36em; }
-footer { padding-top: 24px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font: 12px var(--f-mono); color: var(--ink-soft); }
-footer a { color: var(--ink-soft); }
-
-.today + .today { margin-top: 12px; }
-.record { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
-.record div { background: var(--card); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
-.record b { font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1; }
-.record span { font: 500 11px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
-.record small { font-size: 13px; color: var(--ink-soft); }
-.news { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; align-items: start; }
-.news h2 { font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1.05; margin: 0 0 8px; }
-.news p { margin: 0; font-size: 15px; color: var(--ink); max-width: 30em; }
-.news form { display: grid; gap: 10px; }
-.news .fieldrow { display: flex; gap: 8px; }
-.news input[type=email] { flex: 1; min-width: 0; font: 15px var(--f-body); color: var(--ink); background: var(--card); border: 1px solid var(--rule); border-radius: 2px; padding: 12px 12px; }
-.news .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-.news .fine { font-size: 12.5px; color: var(--ink-soft); }
-.news .msg { font-size: 14px; min-height: 20px; }
-.news .msg.ok { color: #2c6a47; } .news .msg.err { color: #962f2a; }
-/* The games, two ways: cards, or a world map you pick a place and time from (like a scenario screen) */
-.sechead { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-.viewtabs { display: inline-flex; border: 1px solid var(--ink); border-radius: 2px; overflow: hidden; }
-.viewtabs button { font: 500 12px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; padding: 8px 12px; border: 0; background: transparent; color: var(--ink); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
-.viewtabs button + button { border-left: 1px solid var(--ink); }
-.viewtabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); }
-.viewtabs button:not([aria-selected="true"]):hover { background: #eef0f3; }
-.viewtabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* ---------- view tabs */
+.viewtabs { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 999px; padding: 3px; background: var(--card); }
+.viewtabs button { font: 500 11.5px/1 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; padding: 8px 12px; border: 0; border-radius: 999px; background: transparent; color: var(--ink); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.viewtabs button[aria-selected="true"] { background: var(--btn-bg); color: var(--btn-fg); }
+.viewtabs button:not([aria-selected="true"]):hover { background: var(--hover); }
 .viewtabs svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linejoin: round; }
-.atlas { background: var(--card); border: 1px solid var(--rule); }
+
+/* ---------- world map */
+.atlas { background: var(--card); border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
 .atlas-scroll { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; }
 .atlas-map { position: relative; min-width: 780px; background: var(--sea); border-bottom: 1px solid var(--rule); }
 .atlas-map > svg { display: block; width: 100%; height: auto; }
 .atlas-map .land { fill: var(--paper); stroke: var(--coast); stroke-width: .6; stroke-linejoin: round; }
-.atlas-map .grat { fill: none; stroke: #c7d4d8; stroke-width: .8; }
+.atlas-map .grat { fill: none; stroke: var(--grat); stroke-width: .8; }
 .atlas-map .route { fill: none; stroke: var(--ink); stroke-width: 1.3; stroke-dasharray: 2 4; stroke-linecap: round; opacity: .28; transition: opacity .2s ease; }
-.atlas-map .route.on { opacity: .9; stroke: var(--accent); }
+.atlas-map .route.on, .atlas-map .route.hot { opacity: .9; stroke: var(--accent); }
 .atlas-map .leader { stroke: var(--ink); stroke-width: .9; opacity: .5; }
-.atlas-map .leader.on { opacity: 1; stroke: var(--accent); stroke-width: 1.3; }
-.atlas-map .pin { fill: var(--ink); stroke: var(--paper); stroke-width: 1.6; }
-.atlas-map .pin.on { fill: var(--accent); }
+.atlas-map .leader.on, .atlas-map .leader.hot { opacity: 1; stroke: var(--accent); stroke-width: 1.3; }
+.atlas-map .pin { fill: var(--ink); stroke: var(--paper); stroke-width: 1.6; transition: fill .15s; }
+.atlas-map .pin.on, .atlas-map .pin.hot { fill: var(--accent); }
 .atlas-map .halo { fill: var(--accent); opacity: 0; }
 .atlas-map .halo.on { animation: atlasPulse 2.2s ease-out infinite; }
 @keyframes atlasPulse { 0% { opacity: .45; r: 4; } 100% { opacity: 0; r: 16; } }
 @media (prefers-reduced-motion: reduce) { .atlas-map .halo.on { animation: none; opacity: .25; r: 9; } }
 .atlas-map .stop { fill: var(--paper); stroke: var(--ink); stroke-width: 1.2; }
 .atlas-map .stoplab { font: 500 9.5px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; fill: var(--ink-soft); paint-order: stroke; stroke: var(--sea); stroke-width: 3px; }
-.atlas-map .seal { font: italic 13px var(--f-text); fill: #8a9aa0; letter-spacing: .04em; }
-.atlas-pick { position: absolute; transform: translate(-50%, -50%); display: grid; gap: 2px; justify-items: start; text-align: left; padding: 6px 9px 7px; background: rgba(247, 246, 242, .96); border: 1px solid var(--ink); border-radius: 2px; color: var(--ink); cursor: pointer; white-space: nowrap; box-shadow: 0 1px 0 rgba(31, 43, 74, .15); transition: background .15s ease, color .15s ease, transform .15s ease; }
+.atlas-map .seal { font: italic 13px var(--f-text); fill: var(--seal); letter-spacing: .04em; }
+.atlas-pick { position: absolute; transform: translate(-50%, -50%); display: grid; gap: 2px; justify-items: start; text-align: left; padding: 6px 9px 7px; background: var(--overlay); border: 1px solid var(--ink); border-radius: var(--radius-sm); color: var(--ink); cursor: pointer; white-space: nowrap; box-shadow: var(--shadow); transition: background .15s ease, color .15s ease, transform .15s ease, border-color .15s ease; }
 .atlas-pick b { font: 400 17px/1 var(--f-display); }
 .atlas-pick span { font: 500 10.5px/1.2 var(--f-mono); letter-spacing: .06em; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
-.atlas-pick:hover { background: #fff; transform: translate(-50%, -50%) translateY(-1px); }
-.atlas-pick[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-.atlas-pick[aria-pressed="true"] span { color: #c9d0dc; }
-.atlas-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.atlas-pick:hover, .atlas-pick.hot { background: var(--card); border-color: var(--accent); transform: translate(-50%, -50%) translateY(-1px); }
+.atlas-pick[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+.atlas-pick[aria-pressed="true"] span { color: inherit; opacity: .75; }
 .atlas-pick .new { font: 500 9px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
-.atlas-pick[aria-pressed="true"] .new { color: #f1b9c4; }
+.atlas-pick[aria-pressed="true"] .new { color: inherit; opacity: .8; }
 /* Narrow screens: the map shrinks to fit (no sideways scrolling) and the labels would collide,
-   so they become compact name tags; on a phone only the selected game keeps its tag (the date strip below picks the others). */
+   so they become compact name tags; on a phone only the selected game keeps its tag (the timeline below picks the others). */
 @media (max-width: 800px) {
   .atlas-map { min-width: 0; }
   .atlas-pick { padding: 3px 6px 4px; }
@@ -179,18 +223,47 @@ footer a { color: var(--ink-soft); }
   .atlas-map .pin { r: 7; }
 }
 @media (max-width: 600px) {
-  .atlas-pick:not([aria-pressed="true"]) { display: none; }
+  .atlas-pick:not([aria-pressed="true"]):not(.hot) { display: none; }
   .atlas-map .leader:not(.on) { display: none; }
   .atlas-map .stoplab { display: none; }
   .atlas-map .pin { r: 11; stroke-width: 3; }
 }
-.atlas-era { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--rule); }
-.atlas-era .eyebrow { margin-right: 6px; }
-.atlas-era button { font: 500 11.5px/1 var(--f-mono); letter-spacing: .04em; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 2px; background: var(--paper); color: var(--ink); cursor: pointer; font-variant-numeric: tabular-nums; }
-.atlas-era button b { font-weight: 500; color: var(--ink-soft); margin-right: 5px; }
-.atlas-era button[aria-pressed="true"] { border-color: var(--ink); background: var(--ink); color: var(--paper); }
-.atlas-era button[aria-pressed="true"] b { color: #c9d0dc; }
-.atlas-era button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- timeline (1 BC → 1953) under the map */
+.tl { border-bottom: 1px solid var(--rule); padding: 16px 0 14px; }
+.tl-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 0 16px 6px; }
+.tl-head .hint { font: 12px var(--f-mono); color: var(--ink-soft); }
+.tl-scroll { overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding: 0 16px; }
+.tl-inner { position: relative; margin: 0 auto; }
+/* labels sit in rows above the line; each one is joined to its dot by a thin leader */
+.tl-lab { position: absolute; display: grid; gap: 2px; text-align: left; padding: 6px 9px 7px; border: 1px solid var(--rule); border-left: 3px solid var(--gc); border-radius: 6px;
+  background: var(--card); color: var(--ink); font: inherit; cursor: pointer; white-space: nowrap; transition: border-color .15s, box-shadow .15s, background .15s; }
+.tl-lab i { font: normal 500 10.5px/1.1 var(--f-mono); letter-spacing: .04em; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+.tl-lab b { font: 400 15px/1.15 var(--f-display); }
+.tl-lab span { font: 500 10.5px/1.1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--gc); }
+.tl-lab:hover, .tl-lab.hot { border-color: var(--gc); box-shadow: 0 2px 10px color-mix(in srgb, var(--gc) 22%, transparent); }
+.tl-lab[aria-pressed="true"] { background: color-mix(in srgb, var(--gc) 12%, var(--card)); border-color: var(--gc); box-shadow: 0 0 0 1px var(--gc); }
+.tl-lab:focus-visible { outline: 2px solid var(--gc); outline-offset: 2px; }
+.tl-lab.flip { border-left-width: 1px; border-right: 3px solid var(--gc); text-align: right; }
+.tl-lead { position: absolute; width: 0; margin-left: -1px; border-left: 2px solid color-mix(in srgb, var(--gc) 45%, transparent); pointer-events: none; z-index: -1; }
+.tl-inner { isolation: isolate; }
+.tl-lead.hot, .tl-lead.on { border-left-color: var(--gc); }
+.tl-line { position: absolute; left: 0; right: 0; height: 2px; background: var(--rule-strong); border-radius: 1px; }
+.tl-dot { position: absolute; width: 13px; height: 13px; margin: -6.5px 0 0 -6.5px; border-radius: 50%; background: var(--gc); border: 2px solid var(--card); box-shadow: 0 0 0 1px var(--gc); padding: 0; cursor: pointer; transition: box-shadow .15s, transform .15s; }
+.tl-dot.hot, .tl-dot:hover { box-shadow: 0 0 0 4px color-mix(in srgb, var(--gc) 35%, transparent); }
+.tl-dot.on { transform: scale(1.25); box-shadow: 0 0 0 4px color-mix(in srgb, var(--gc) 45%, transparent); }
+.tl-tick { position: absolute; transform: translateX(-50%); font: 500 10.5px/1 var(--f-mono); color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; padding-top: 9px; }
+.tl-tick::before { content: ""; position: absolute; left: 50%; top: 0; width: 1px; height: 5px; background: var(--rule-strong); }
+.tl-tick.minor { width: 1px; height: 4px; padding: 0; background: var(--rule-strong); transform: none; }
+.tl-tick.minor::before { display: none; }
+/* the distance between two neighbouring moments, written on the line between them */
+.tl-gap { position: absolute; transform: translate(-50%, -50%); font: italic 400 12px/1 var(--f-display); color: var(--ink-soft); background: var(--card); padding: 0 5px; white-space: nowrap; pointer-events: none; }
+.tl-moment { margin: 12px 16px 0; padding: 12px 14px; border-left: 3px solid var(--gc, var(--accent)); background: color-mix(in srgb, var(--gc, var(--accent)) 7%, var(--card)); border-radius: 0 6px 6px 0; min-height: 64px; }
+.tl-moment .mw { font: 500 11px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--gc, var(--accent)); }
+.tl-moment h4 { font: 400 20px/1.2 var(--f-display); margin: 3px 0 4px; }
+.tl-moment p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); max-width: 46em; }
+@media (prefers-reduced-motion: reduce) { .tl-lab, .tl-dot { transition: none; } }
+
 .brief { display: grid; grid-template-columns: minmax(0, 300px) 1fr; gap: 0; min-height: 220px; }
 .brief .bplate { position: relative; background: var(--sea); border-right: 1px solid var(--rule); overflow: hidden; min-height: 200px; }
 .brief .bplate > img, .brief .bplate > svg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -200,41 +273,117 @@ footer a { color: var(--ink-soft); }
 .brief p { margin: 0; font-size: 15px; max-width: 40em; }
 .brief .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: auto; padding-top: 6px; }
 .brief .hint { font: 12px var(--f-mono); color: var(--ink-soft); }
-@media (max-width: 720px) { .news { grid-template-columns: 1fr; }
-  .brief { grid-template-columns: 1fr; }
-  .brief .bplate { border-right: 0; border-bottom: 1px solid var(--rule); aspect-ratio: 16 / 9; min-height: 0; }
-  .brief h3 { font-size: 30px; } .record { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 960px) and (min-width: 721px) {
-  .games { grid-template-columns: 1fr 1fr; }
-  .game.top, .game.pair { grid-column: auto; }
+
+/* ---------- passport */
+.pp-book { position: relative; overflow: clip; background: var(--pp); border: 1px solid var(--rule); border-radius: 14px; padding: 22px 24px 26px; box-shadow: var(--shadow);
+  background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--ink) 7%, transparent) 1px, transparent 0); background-size: 18px 18px; }
+.pp-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px 24px; flex-wrap: wrap; border-bottom: 1px solid var(--rule); padding-bottom: 14px; margin-bottom: 20px; }
+.pp-head h2 { font: 400 30px/1.05 var(--f-display); margin: 6px 0 0; }
+.pp-head p { margin: 6px 0 0; color: var(--ink-soft); font-size: 14px; max-width: 36em; }
+.pp-count { text-align: right; }
+.pp-count b { display: block; font: 400 40px/1 var(--f-display); font-variant-numeric: tabular-nums; }
+.pp-count span { font: 500 10.5px/1 var(--f-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); }
+.pp-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 22px 14px; }
+.slot { display: grid; justify-items: center; align-content: start; text-align: center; gap: 3px; color: var(--sc); text-decoration: none; }
+.slot .stamp { width: 100%; max-width: 136px; aspect-ratio: 1; display: block; }
+.slot .stamp svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.slot.on .stamp svg { mix-blend-mode: multiply; }
+:root[data-theme="dark"] .slot.on .stamp svg { mix-blend-mode: normal; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .slot.on .stamp svg { mix-blend-mode: normal; } }
+.slot h3 { font: 400 18px/1.1 var(--f-display); margin: 8px 0 0; color: var(--ink); }
+.slot .when { font: 500 10px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.slot .best { font: italic 13px/1.35 var(--f-text); color: var(--ink); max-width: 15em; }
+.slot.empty h3 { color: var(--ink-soft); }
+.slot.empty .stamp { color: var(--rule-strong); }
+.slot.empty:hover .stamp { color: var(--ink-faint); }
+.slot.fresh .stamp { opacity: 0; }
+.slot.stamp-in .stamp { animation: stampIn .6s cubic-bezier(.2, 1.3, .4, 1) both; }
+.slot.stamp-in .stamp::after { content: ""; }
+@keyframes stampIn { 0% { opacity: 0; transform: scale(1.75) rotate(-16deg); } 55% { opacity: 1; transform: scale(.93) rotate(1deg); } 100% { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .slot.fresh .stamp { opacity: 1; } .slot.stamp-in .stamp { animation: none; } }
+
+/* ---------- record, news, about */
+.record { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; }
+.record div { background: var(--card); padding: 14px 16px; display: grid; gap: 4px; align-content: start; }
+.record b { font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1; }
+.record span { font: 500 11px/1.3 var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-soft); }
+.record small { font-size: 13px; color: var(--ink-soft); }
+.news { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 32px; align-items: start; }
+.news h2 { font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1.05; margin: 0 0 8px; }
+.news p { margin: 0; font-size: 15px; color: var(--ink); max-width: 30em; }
+.news form { display: grid; gap: 10px; }
+.news .fieldrow { display: flex; gap: 8px; }
+.news input[type=email] { flex: 1; min-width: 0; font: 15px var(--f-body); color: var(--ink); background: var(--card); border: 1px solid var(--rule-strong); border-radius: var(--radius-sm); padding: 11px 12px; }
+.news .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.news .fine { font-size: 12.5px; color: var(--ink-soft); }
+.news .msg { font-size: 14px; min-height: 20px; }
+.news .msg.ok { color: var(--ok); } .news .msg.err { color: var(--err); }
+.about { display: grid; grid-template-columns: 200px 1fr; gap: 24px; }
+.about p { margin: 0 0 12px; font-family: var(--f-text); font-size: 17px; line-height: 1.6; max-width: 36em; }
+footer { padding-top: 24px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; font: 12px var(--f-mono); color: var(--ink-soft); }
+footer a { color: var(--ink-soft); }
+
+/* ---------- responsive */
+@media (max-width: 1100px) { .pp-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 960px) {
+  .wrap { padding-inline: 24px; }
+  .games { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 720px) {
-  .wrap { padding-block: 28px 32px; padding-inline: 16px; }
-  .games { grid-template-columns: 1fr; }
-  .game.top, .game.pair { grid-column: auto; }
-  .game.wide { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
-  .game.wide .plate { border-right: 0; border-bottom: 1px solid var(--rule); aspect-ratio: 620 / 453; }
-  .today { grid-template-columns: 1fr; }
+  .wrap { padding-block: 16px 32px; padding-inline: 16px; }
+  .games { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .game .plate { aspect-ratio: 16 / 9; }
+  .game h3 { font-size: 30px; }
+  .news { grid-template-columns: 1fr; }
+  .brief { grid-template-columns: 1fr; }
+  .brief .bplate { border-right: 0; border-bottom: 1px solid var(--rule); aspect-ratio: 16 / 9; min-height: 0; }
+  .brief h3 { font-size: 30px; }
+  .record { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .about { grid-template-columns: 1fr; gap: 8px; }
+  section { padding-block: 26px; }
+  /* phones: one swipeable row, so the games stay near the top */
+  .fy-row { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 86%; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; margin: -2px -16px 0; padding: 2px 16px 8px; scroll-padding-inline: 16px; }
+  .fy-row.one { grid-auto-columns: 100%; }
+  .pp-book { padding: 18px 14px 22px; border-radius: 12px; }
+  .pp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 10px; }
+  .pp-head h2 { font-size: 26px; }
+  .tl-scroll { padding-inline: 12px; }
+  .tl-moment { margin-inline: 12px; }
+  .tl-head .hint { display: none; }
 }
+@media (max-width: 400px) { .chip .lbl { display: none; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="mast">
-    <div class="topline"><span class="eyebrow">Small games about the past</span></div>
-    <h1>Homo Ludens</h1>
-    <img class="emblem" src="data:image/webp;base64,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" alt="" width="100" height="100">
-    <p class="lede">Short history games. One mechanic, one idea, and a note on what really happened.</p>
-    <nav class="resume" id="resumeBar" aria-label="Continue where you left off" hidden><span>Continue</span></nav>
+    <div class="topline">
+      <span class="eyebrow">Small games about the past</span>
+      <div class="mast-tools">
+        <a class="chip" id="passChip" href="#passport" aria-label="Your passport"><span class="seal" aria-hidden="true">HL</span><span><span class="lbl">Passport · </span><b id="passCount">0/6</b></span></a>
+        <button class="iconbtn" id="themeBtn" type="button" aria-label="Colour theme: automatic" title="Colour theme: automatic"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.8a6.2 6.2 0 0 1 0 12.4z" fill="currentColor"/></svg></button>
+      </div>
+    </div>
+    <div class="mast-main">
+      <div>
+        <h1>Homo Ludens</h1>
+        <p class="lede">Short games about the bits of history I like reading about. Each one is about a single moment, and at the end it tells you what really happened.</p>
+      </div>
+      <img class="emblem" src="data:image/webp;base64,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" alt="" width="100" height="100">
+    </div>
   </header>
 
-  <section aria-labelledby="gamesLabel">
+  <section class="foryou" id="forYou" aria-labelledby="fyLabel">
+    <div class="fy-head"><span class="eyebrow" id="fyLabel">For you</span><span class="sub" id="fySub"></span></div>
+    <div class="fy-row" id="fyRow"></div>
+  </section>
+
+  <section aria-labelledby="gamesLabel" id="games">
     <div class="sechead">
       <span class="eyebrow" id="gamesLabel">The games</span>
       <div class="viewtabs" role="tablist" aria-label="Show the games as">
         <button type="button" role="tab" id="tabCards" aria-selected="true" aria-controls="viewCards"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="1.5" y="1.5" width="5.5" height="5.5"/><rect x="9" y="1.5" width="5.5" height="5.5"/><rect x="1.5" y="9" width="5.5" height="5.5"/><rect x="9" y="9" width="5.5" height="5.5"/></svg>Cards</button>
-        <button type="button" role="tab" id="tabMap" aria-selected="false" aria-controls="viewMap" tabindex="-1"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5z M5.5 2v10 M10.5 4v10"/></svg>World map</button>
+        <button type="button" role="tab" id="tabMap" aria-selected="false" aria-controls="viewMap" tabindex="-1"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 3.5l4-1.5 5 2 4-1.5v10l-4 1.5-5-2-4 1.5z M5.5 2v10 M10.5 4v10"/></svg>Map &amp; timeline</button>
       </div>
     </div>
     <div class="atlas" id="viewMap" role="tabpanel" aria-labelledby="tabMap" hidden>
@@ -250,39 +399,43 @@ footer a { color: var(--ink-soft); }
           </svg>
         </div>
       </div>
-      <div class="atlas-era" id="atlasEra"><span class="eyebrow">By date</span></div>
+      <div class="tl" id="timeline">
+        <div class="tl-head"><span class="eyebrow">Timeline · drawn to scale</span><span class="hint">Pick a moment, or a game on the map</span></div>
+        <div class="tl-scroll" id="tlScroll"><div class="tl-inner" id="tlInner" role="group" aria-label="The moment each game is about, on a time line drawn to scale"></div></div>
+        <div class="tl-moment" id="tlMoment" aria-live="polite"></div>
+      </div>
       <div class="brief" id="atlasBrief" aria-live="polite"></div>
     </div>
     <div class="games" id="viewCards" role="tabpanel" aria-labelledby="tabCards">
-      <article class="game top">
+      <article class="game" data-game="tulip">
         <a class="plate" href="/tulip7/" data-from="card" aria-label="Play Tulip 7">
           <img src="/tulip7/img/portal-plate.jpg" alt="Flamed tulips, contracts and coins flying over a tavern table in Amsterdam (art made for the game)" loading="lazy">
           <img class="shot" src="/shots/tulip7.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
-          <span class="cap">Winter 1636 · A tavern in Amsterdam</span>
+          <span class="cap">Art made for the game</span>
         </a>
         <div class="body">
-          <span class="numeral">No. 6 · New</span>
+          <div class="kick"><span class="numeral">No. 6</span><span class="era">Amsterdam · 1636–37</span><span class="badge">New</span></div>
           <h3>Tulip 7</h3>
-          <p>Amsterdam, winter 1636. Take tulip papers one by one at a tavern table: seven different ones fill your tulip book, a second copy burns the evening. Then cash in your paper before the crash.</p>
-          <div class="tags"><span class="tag">Push your luck</span><span class="tag">15-minute game</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
+          <p class="desc">In the winter of 1636, people in Amsterdam traded tulips that were still in the ground, on paper, in the back rooms of taverns. Draw until you have enough, but a second copy of a tulip burns the evening, and you still have to sell before February.</p>
+          <div class="tags"><span class="tag">Push your luck</span><span class="tag">15 minutes</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
           <div class="row"><a class="btn" href="/tulip7/" data-from="card">Play</a></div>
         </div>
       </article>
-      <article class="game top">
+      <article class="game" data-game="kantar">
         <a class="plate" href="/kantar/" data-from="card" aria-label="Play Kantar">
           <img src="/kantar/img/portal-plate.jpg" alt="Merchants and shoppers in a vaulted street of the Grand Bazaar, watercolour by Amadeo Preziosi" loading="lazy">
           <img class="shot" src="/shots/kantar.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
-          <span class="cap">19th c. · The Grand Bazaar, Istanbul</span>
+          <span class="cap">Amadeo Preziosi · The Grand Bazaar</span>
         </a>
         <div class="body">
-          <span class="numeral">No. 5</span>
+          <div class="kick"><span class="numeral">No. 5</span><span class="era">Istanbul · 19th century</span></div>
           <h3>Kantar</h3>
-          <p>A two-player duel in the Grand Bazaar of Istanbul. Put three goods on a brass scale; your rival takes one pan and you keep the other. A teacher shows the best move while you learn.</p>
-          <div class="tags"><span class="tag">Card duel</span><span class="tag">10-minute game</span><span class="tag">English · Türkçe</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
+          <p class="desc">A card game for two, set in the Grand Bazaar. You split three goods between two pans, your rival picks one and you get the other. While you learn, a teacher tells you what he would do and why.</p>
+          <div class="tags"><span class="tag">Card duel</span><span class="tag">10 minutes</span><span class="tag">English · Türkçe</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
           <div class="row"><a class="btn" href="/kantar/" data-from="card">Play</a></div>
         </div>
       </article>
-      <article class="game top">
+      <article class="game" data-game="borderlines">
         <a class="plate" href="/borderlines/" data-from="card" aria-label="Play Borderlines">
           <svg viewBox="0 0 {{W}} {{H}}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="The Roman Empire in 1 BC, painted on a map of the Mediterranean">
             <path class="land" d="{{LAND}}"/>
@@ -292,111 +445,73 @@ footer a { color: var(--ink-soft); }
           <span class="cap">1 BC · Roman Empire</span>
         </a>
         <div class="body">
-          <span class="numeral">No. 1</span>
+          <div class="kick"><span class="numeral">No. 1</span><span class="era">Every realm · 500 BC – 1938</span></div>
           <h3>Borderlines</h3>
-          <p>You get a year and a realm. Paint the land it ruled on a map with no modern borders, then see how close you came.</p>
+          <p class="desc">You get a year and the name of a realm, and a map with no borders on it. Paint where you think it was, then see how far off you were. Five new ones every day, from easy to properly hard.</p>
           <div class="tags"><span class="tag">Map puzzle</span><span class="tag">5-minute daily</span><span class="tag dev" title="Plays well on a phone, a tablet or a computer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="14" height="10" rx="1"/><path d="M1 18h16"/><rect x="17" y="8" width="6" height="12" rx="1"/></svg>Any screen</span></div>
           <div class="cardnote" id="blCardNote"></div>
           <div class="row"><a class="btn" href="/borderlines/" data-from="card">Play</a></div>
         </div>
       </article>
-      <article class="game top">
+      <article class="game" data-game="polder">
         <a class="plate" href="/polder/" data-from="card" aria-label="Play Polder">
           <img src="/polder/img/portal-plate.jpg" alt="The Windmill at Wijk bij Duurstede, painted by Jacob van Ruisdael around 1670" loading="lazy">
           <img class="shot" src="/shots/polder.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
-          <span class="cap">c. 1670 · The Windmill at Wijk bij Duurstede</span>
+          <span class="cap">Ruisdael · The Windmill at Wijk, c. 1670</span>
         </a>
         <div class="body">
-          <span class="numeral">No. 4</span>
+          <div class="kick"><span class="numeral">No. 4</span><span class="era">The Netherlands · 1200–1953</span></div>
           <h3>Polder</h3>
-          <p>Build dikes, close them into rings and drain the sea, from the terp mounds of 1200 to the North Sea flood of 1953, across four regions of the Netherlands.</p>
-          <div class="tags"><span class="tag">Puzzle</span><span class="tag">15-minute regions</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
-          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
+          <p class="desc">Build dikes and pump the water out, region by region, from the first terps in Friesland to the flood of 1953. It looks like a cute puzzle game, but the storms and the dates are real.</p>
+          <div class="tags"><span class="tag">Puzzle</span><span class="tag">15 minutes a region</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
+          <p class="desknote">Best on a computer. It opens on a phone, but it's cramped.</p>
           <div class="row"><a class="btn" href="/polder/" data-from="card">Play</a></div>
         </div>
       </article>
-      <article class="game top">
+      <article class="game" data-game="retourvloot">
         <a class="plate" href="/retourvloot/" data-from="card" aria-label="Play Retourvloot">
           <img src="/retourvloot/img/portal-plate.jpg" alt="The Castle of Batavia, painted by Andries Beeckman around 1661" loading="lazy">
           <img class="shot" src="/shots/retourvloot.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
-          <span class="cap">c. 1661 · The Castle of Batavia</span>
+          <span class="cap">Beeckman · The Castle of Batavia, c. 1661</span>
         </a>
         <div class="body">
-          <span class="numeral">No. 2</span>
+          <div class="kick"><span class="numeral">No. 2</span><span class="era">Amsterdam to Batavia · 1602–1799</span></div>
           <h3>Retourvloot</h3>
-          <p>Run the Dutch East India Company from Amsterdam, 1602 to 1799. Send silver east, wait a year for letters from Batavia, and keep the shareholders paid.</p>
+          <p class="desc">You run the VOC from Amsterdam for two hundred years. A letter to Batavia takes a year to arrive, so every order you send is a guess about what Asia will look like when it gets there.</p>
           <div class="tags"><span class="tag">Idle strategy</span><span class="tag">30–80 minute run</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
-          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
+          <p class="desknote">Best on a computer. It opens on a phone, but it's cramped.</p>
           <div class="row"><a class="btn" href="/retourvloot/" data-from="card">Play</a></div>
         </div>
       </article>
-      <article class="game top">
+      <article class="game" data-game="cupoftea">
         <a class="plate" href="/cupoftea/" data-from="card" aria-label="Play A Cup of Tea">
           <img src="/cupoftea/img/portal-plate.jpg" alt="The Flor de Cuba sugar estate in Cuba, with the chimneys of its boiling houses; lithograph by Eduardo Laplante, 1857" loading="lazy">
           <img class="shot" src="/shots/cupoftea.jpg" alt="" loading="lazy" aria-hidden="true"><span class="inplay">In play</span>
-          <span class="cap">1857 · A Cuban sugar estate</span>
+          <span class="cap">Laplante · A Cuban sugar estate, 1857</span>
         </a>
         <div class="body">
-          <span class="numeral">No. 3</span>
+          <div class="kick"><span class="numeral">No. 3</span><span class="era">London &amp; Havana · 1850</span></div>
           <h3>A Cup of Tea</h3>
-          <p>A grocer's receipt from East London, 1850: a pound of sugar and two ounces of tea. Read the papers of the day, do the sums, and find out who got every farthing, from the Customs House to a sugar estate outside Havana.</p>
-          <div class="tags"><span class="tag">Detective</span><span class="tag">Scene by scene</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
-          <p class="desknote">Plays best on a laptop or desktop. It opens on a phone, but the board is cramped.</p>
+          <p class="desc">A grocer's receipt from London in 1850: a pound of sugar and a bit of tea. Using newspapers and reports from the time, you work out who got paid out of those few pennies, all the way back to a sugar estate in Cuba.</p>
+          <div class="tags"><span class="tag">Detective</span><span class="tag">3 scenes</span><span class="tag dev desk" title="Opens on a phone, but needs a laptop or desktop to play well"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="1"/><path d="M8 21h8M12 17v4"/></svg>Desktop</span></div>
+          <p class="desknote">Best on a computer. It opens on a phone, but it's cramped.</p>
           <div class="row"><a class="btn" id="teaPlay" href="/cupoftea/" data-from="card">Play</a></div>
         </div>
       </article>
     </div>
   </section>
 
-  <section aria-labelledby="todayLabel">
-    <span class="eyebrow" id="todayLabel">Today and where you left off</span>
-    <div class="today">
-      <div>
-        <div class="eyebrow">Borderlines · Daily challenge</div>
-        <h2 id="dTitle">Daily #—</h2>
-        <div class="meta" id="dMeta">Five realms, from easy to hard.</div>
+  <section aria-labelledby="passLabel" id="passport">
+    <div class="pp-book">
+      <div class="pp-head">
+        <div>
+          <span class="eyebrow" id="passLabel">Passport</span>
+          <h2 id="passTitle">Your stamps</h2>
+          <p id="passLede">Every game you finish leaves a stamp here. It lives only in this browser; nothing is sent anywhere.</p>
+        </div>
+        <div class="pp-count"><b id="passBig">0/6</b><span>stamped</span></div>
       </div>
-      <a class="btn" id="dPlay" href="/borderlines/" data-from="today">Play today's</a>
-    </div>
-    <div class="today" id="rvToday" hidden>
-      <div>
-        <div class="eyebrow">Retourvloot · Your company</div>
-        <h2 id="rvTitle">Your company</h2>
-        <div class="meta" id="rvMeta"></div>
-      </div>
-      <a class="btn" id="rvPlay" href="/retourvloot/" data-from="today">Continue</a>
-    </div>
-    <div class="today" id="polToday" hidden>
-      <div>
-        <div class="eyebrow">Polder · Your dikes</div>
-        <h2 id="polTitle">Friesland</h2>
-        <div class="meta" id="polMeta"></div>
-      </div>
-      <a class="btn" id="polGo" href="/polder/" data-from="today">Continue</a>
-    </div>
-    <div class="today" id="teaToday" hidden>
-      <div>
-        <div class="eyebrow">A Cup of Tea · Your investigation</div>
-        <h2 id="teaTitle">Scene 1</h2>
-        <div class="meta" id="teaMeta"></div>
-      </div>
-      <a class="btn" id="teaGo" href="/cupoftea/" data-from="today">Continue</a>
-    </div>
-    <div class="today" id="kaToday" hidden>
-      <div>
-        <div class="eyebrow">Kantar · Your match</div>
-        <h2 id="kaTitle">Round 1 of 6</h2>
-        <div class="meta" id="kaMeta"></div>
-      </div>
-      <a class="btn" id="kaGo" href="/kantar/" data-from="today">Continue</a>
-    </div>
-    <div class="today" id="tuToday" hidden>
-      <div>
-        <div class="eyebrow">Tulip 7 · Your winter</div>
-        <h2 id="tuTitle">Evening I</h2>
-        <div class="meta" id="tuMeta"></div>
-      </div>
-      <a class="btn" id="tuGo" href="/tulip7/" data-from="today">Continue</a>
+      <div class="pp-grid" id="passGrid"></div>
     </div>
   </section>
 
@@ -406,11 +521,11 @@ footer a { color: var(--ink-soft); }
   </section>
 
   <section aria-labelledby="newsLabel" id="newsSec" hidden>
-    <span class="eyebrow" id="newsLabel">New games by email</span>
+    <span class="eyebrow" id="newsLabel">Email</span>
     <div class="news">
       <div>
-        <h2>One email per new game</h2>
-        <p>When a new game is out, you get a short note about it and nothing else. No tracking pixels, and you can unsubscribe with one click.</p>
+        <h2>Hear when a new game is out</h2>
+        <p>I'll write once for each new game, and that's all. No tracking, and you can unsubscribe with one click.</p>
       </div>
       <form id="newsForm" novalidate>
         <div class="fieldrow">
@@ -429,9 +544,9 @@ footer a { color: var(--ink-soft); }
   <section class="about" aria-labelledby="aboutLabel">
     <span class="eyebrow" id="aboutLabel">About</span>
     <div>
-      <p>Homo Ludens is a small, independent collection of history games, made in Rotterdam: from a five-minute daily map puzzle to an evening at the helm of the Dutch East India Company or a detective's desk in 1850 London. Each game takes one historical idea and turns it into something you can play. The name comes from Johan Huizinga's 1938 book, which argued that play is older than culture.</p>
-      <p>Spotted a mistake? Every game has a way to report it, and corrections are welcome.</p>
-      <p>Come and talk history, share your results and hear about new games first on the <a href="https://discord.gg/7PcDfAMdr5" target="_blank" rel="noopener">Homo Ludens Discord</a>.</p>
+      <p>I make these in Rotterdam. Most of them start with something I was reading: Sidney Mintz on sugar turned into A Cup of Tea, and the traders at the table in Tulip 7 are real people Anne Goldgar found in the Dutch archives. I try to turn each one into a game you can finish in one sitting, and then show you what actually happened. The name comes from Johan Huizinga's 1938 book <i>Homo Ludens</i>, about how old play is.</p>
+      <p>If I got something wrong, please tell me. Every game has a feedback button, and I do read them and fix things.</p>
+      <p>There's also a <a href="https://discord.gg/7PcDfAMdr5" target="_blank" rel="noopener">Discord</a>, where people post their scores and new games show up first.</p>
     </div>
   </section>
 
@@ -442,11 +557,46 @@ footer a { color: var(--ink-soft); }
 </div>
 
 <script>
+// "For you", the passport and the record: everything here is read from this browser's own saves (localStorage), nothing is sent.
 (function () {
-  // Borderlines schedule (keep in sync with the game data)
+  // Borderlines schedule (the Borderlines builder updates the day count)
   var BORDERLINES = { start: "2026-09-27", days: 72 };
+  // The six games: the passport order is the publication number (No. 1–6). Keep "id" in sync with games.json.
+  var GAMES = {
+    borderlines: { no: 1, title: "Borderlines", href: "/borderlines/", era: "500 BC – 1938", where: "Every realm", len: "5-minute daily", dev: "any", ring: "BORDERLINES · EVERY REALM · ONE A DAY ·" },
+    retourvloot: { no: 2, title: "Retourvloot", href: "/retourvloot/", img: "/retourvloot/img/portal-plate.jpg", era: "1602–1799", where: "Amsterdam to Batavia", len: "30–80 minutes", dev: "desktop", ring: "RETOURVLOOT · AMSTERDAM · BATAVIA ·" },
+    cupoftea: { no: 3, title: "A Cup of Tea", href: "/cupoftea/", img: "/cupoftea/img/portal-plate.jpg", era: "1850", where: "London & Havana", len: "3 scenes", dev: "desktop", ring: "A CUP OF TEA · LONDON · MDCCCL ·" },
+    polder: { no: 4, title: "Polder", href: "/polder/", img: "/polder/img/portal-plate.jpg", era: "1200–1953", where: "The Netherlands", len: "15 minutes a region", dev: "desktop", ring: "POLDER · HOLD THE DIKE · 1200–1953 ·" },
+    kantar: { no: 5, title: "Kantar", href: "/kantar/", img: "/kantar/img/portal-plate.jpg", era: "19th century", where: "Istanbul", len: "10 minutes", dev: "any", ring: "KANTAR · KAPALIÇARŞI · İSTANBUL ·" },
+    tulip: { no: 6, title: "Tulip 7", href: "/tulip7/", img: "/tulip7/img/portal-plate.jpg", era: "1636–37", where: "Amsterdam", len: "15 minutes", dev: "any", ring: "TULIP 7 · AMSTERDAM · 1636–1637 ·" }
+  };
+  var ORDER = ["borderlines", "retourvloot", "cupoftea", "polder", "kantar", "tulip"];
+  // localStorage keys that mean "this browser has played it" (same as PLAYED in /next.js): players from before the passport
+  // existed get their stamps from these.
+  var PLAYED = {
+    borderlines: /^borderlines:(day:|practice|tutorialDone)/,
+    retourvloot: /^retourvloot\.(v1|runs)$/,
+    cupoftea: /^cupoftea\.v1$/,
+    polder: /^polder\.(progress|run)\.v1$/,
+    kantar: /^kantar(\.stats\.v1|-game-v04)$/,
+    tulip: /^tulip7\.(save\.v1|record\.v1)$/
+  };
+  var SEEN = "hl.portal.stamps.v1"; // stamps this browser has already watched land (the animation plays once)
+
   function get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
-  function pad(n) { return String(n).padStart(2, "0"); }
+  function put(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function esc(t) { return String(t == null ? "" : t).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function track(name, props) { try { if (window.posthog && window.posthog.capture) window.posthog.capture(name, props || {}); } catch (e) {} }
+  function keys() { var a = []; try { for (var i = 0; i < localStorage.length; i++) a.push(localStorage.key(i)); } catch (e) {} return a; }
+  var KEYS = keys();
+  function inferred(id) { var re = PLAYED[id]; return !!re && KEYS.some(function (k) { return re.test(k); }); }
+  function money(v) { var s = v < 0 ? "−" : ""; v = Math.abs(v); if (v >= 1e6) return s + "ƒ" + (v / 1e6).toFixed(v >= 1e7 ? 1 : 2) + "M"; if (v >= 1e3) return s + "ƒ" + Math.round(v / 1e3) + "k"; return s + "ƒ" + Math.round(v); }
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function rvDate(t) { var d = new Date(Date.UTC(1602, 0, 1) + Math.floor(t) * 864e5); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
+  function rvYear(t) { return new Date(Date.UTC(1602, 0, 1) + Math.floor(t) * 864e5).getUTCFullYear(); }
+  function phone() { try { return matchMedia("(max-width: 760px), (pointer: coarse)").matches; } catch (e) { return false; } }
+
+  // ---------------------------------------------------------------- Borderlines: today's daily (never the realms themselves)
   var now = new Date();
   var s = BORDERLINES.start.split("-").map(Number);
   var idx = Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(s[0], s[1] - 1, s[2])) / 864e5);
@@ -457,191 +607,244 @@ footer a { color: var(--ink-soft); }
   function onTime(r) { return r && !r.late; }
   if (!onTime(get("borderlines:day:" + i))) i--;
   while (i >= 0 && onTime(get("borderlines:day:" + i))) { streak++; i--; }
-  if (!has) {
-    document.getElementById("dTitle").textContent = "New realms coming soon";
-    document.getElementById("dMeta").textContent = "Practice is open in the meantime.";
-    document.getElementById("dPlay").textContent = "Practice";
-  } else if (rec) {
+  var continues = [], daily = { kind: "daily", game: "borderlines", href: "/borderlines/", num: has ? idx + 1 : "–" };
+  if (!has) { daily.kicker = "Borderlines · Practice"; daily.title = "New realms coming soon"; daily.meta = "Practice is open in the meantime."; }
+  else if (rec) {
     var total = (rec.scores || []).reduce(function (a, b) { return a + (b || 0); }, 0);
-    document.getElementById("dTitle").textContent = "Daily #" + (idx + 1) + " · " + date;
-    document.getElementById("dMeta").innerHTML = "Done today · <b>" + total + "/500</b>. Next one at midnight.";
-    document.getElementById("dPlay").textContent = "See result";
-    document.getElementById("dPlay").classList.add("ghost");
+    daily.kind = "daily fy-done"; daily.kicker = "Today · Done"; daily.title = "Daily #" + (idx + 1) + " · " + date;
+    daily.meta = "<b>" + total + "/500</b> · " + (streak > 1 ? streak + "-day streak · " : "") + "next at midnight";
   } else {
-    document.getElementById("dTitle").textContent = "Daily #" + (idx + 1) + " · " + date;
-    // a daily started and left part-way (the game saves after every round)
+    daily.kicker = "Today · Borderlines"; daily.title = "Daily #" + (idx + 1) + " · " + date;
+    daily.meta = streak ? "Keep your <b>" + streak + "-day</b> streak · five realms" : "Five realms, from easy to hard";
+    // a daily started and left part-way (the game saves after every round): it is a "continue"
     var run = get("borderlines:run:" + idx);
     if (run && run.scores && run.scores.length && run.scores.length < 5) {
       var sofar = run.scores.reduce(function (a, b) { return a + (b || 0); }, 0);
-      document.getElementById("dMeta").innerHTML = "In progress · round <b>" + (run.scores.length + 1) + "</b> of 5 · " + sofar + " points so far";
-      document.getElementById("dPlay").textContent = "Continue";
+      daily.kind = "daily"; daily.cont = true; daily.kicker = "Continue · Borderlines daily";
+      daily.meta = "Round <b>" + (run.scores.length + 1) + "</b> of 5 · " + sofar + " points so far";
+      continues.push(daily); daily = null;
     }
   }
-  function track(name, props) { try { if (window.posthog && window.posthog.capture) window.posthog.capture(name, props || {}); } catch (e) {} }
+  var note = document.getElementById("blCardNote");
+  if (note && has) note.textContent = "Today: Daily #" + (idx + 1) + (rec ? " · done" : "");
   track("portal_open", { streak: streak, playedToday: !!rec });
-  document.querySelectorAll("a[href='/borderlines/']").forEach(function (a) {
-    a.addEventListener("click", function () { track("portal_play", { game: "borderlines", from: a.getAttribute("data-from") }); });
-  });
-})();
-</script>
-<script>
-(function () {
-  function get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
-  function track(name, props) { try { if (window.posthog && window.posthog.capture) window.posthog.capture(name, props || {}); } catch (e) {} }
-  function money(v) { var s = v < 0 ? "−" : ""; v = Math.abs(v); if (v >= 1e6) return s + "ƒ" + (v / 1e6).toFixed(v >= 1e7 ? 1 : 2) + "M"; if (v >= 1e3) return s + "ƒ" + Math.round(v / 1e3) + "k"; return s + "ƒ" + Math.round(v); }
-  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  function rvDate(t) { var d = new Date(Date.UTC(1602, 0, 1) + Math.floor(t) * 864e5); return d.getUTCDate() + " " + MONTHS[d.getUTCMonth()] + " " + d.getUTCFullYear(); }
-  function rvYear(t) { return new Date(Date.UTC(1602, 0, 1) + Math.floor(t) * 864e5).getUTCFullYear(); }
 
-  // Retourvloot: continue a company in progress
+  // ---------------------------------------------------------------- games in progress
+  function cont(game, title, meta, href) { continues.push({ kind: "continue", game: game, href: href || GAMES[game].href, kicker: "Continue · " + GAMES[game].title, title: title, meta: meta }); }
   var S = get("retourvloot.v1"), runs = get("retourvloot.runs") || [];
-  if (S && S.v === 1 && S.t > 80) {
-    var box = document.getElementById("rvToday");
-    if (!S.ended) {
-      document.getElementById("rvTitle").textContent = "Your company · " + rvDate(S.t);
-      document.getElementById("rvMeta").innerHTML = "Treasury <b>" + money(S.cash) + "</b> · debt <b>" + money(S.debt) + "</b> · " + ((S.stats && S.stats.voyages) || 0) + " voyages sent";
-    } else {
-      document.getElementById("rvTitle").textContent = "Your company ended in " + rvYear(S.t);
-      document.getElementById("rvMeta").innerHTML = "It left <b>" + money(S.debt) + "</b> in debt to the state.";
-      document.getElementById("rvPlay").textContent = "Start a new company";
-      document.getElementById("rvPlay").classList.add("ghost");
-    }
-    box.hidden = false;
+  if (S && S.v === 1 && S.t > 80 && !S.ended)
+    cont("retourvloot", "Your company · " + rvDate(S.t), "Treasury <b>" + money(S.cash) + "</b> · debt <b>" + money(S.debt) + "</b> · " + ((S.stats && S.stats.voyages) || 0) + " voyages");
+  var PR = get("polder.run.v1"), PP = get("polder.progress.v1") || {};
+  var PNAMES = { friesland: "Friesland", zeeland: "Zeeland", holland: "Holland", zuiderzee: "Zuiderzee", free: "Free play" };
+  var PTURNS = { friesland: 25, zeeland: 24, holland: 24, zuiderzee: 24, free: 50 };
+  if (PR && PR.S && PNAMES[PR.lv]) {
+    var pf = (PR.G || []).filter(function (v) { return v === 6; }).length;
+    cont("polder", PNAMES[PR.lv] + ", " + PR.S.year, "Turn <b>" + Math.min(PR.S.piece + 1, PTURNS[PR.lv]) + "</b> of " + PTURNS[PR.lv] + " · <b>" + pf + "</b> fields won");
   }
-
-  // Your record, across games
-  var tiles = [];
-  var BL = { start: "2026-09-27", days: 72 }, s0 = BL.start.split("-").map(Number), now = new Date();
-  var last = Math.min(Math.round((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - new Date(s0[0], s0[1] - 1, s0[2])) / 864e5), BL.days - 1);
-  var played = 0, best = 0, run = 0, bestRun = 0, sumScore = 0;
-  for (var d = 0; d <= last; d++) {
-    var r = get("borderlines:day:" + d);
-    if (r) { var t = (r.scores || []).reduce(function (a, b) { return a + (b || 0); }, 0); played++; sumScore += t; best = Math.max(best, t); }
-    if (r && !r.late) { run++; bestRun = Math.max(bestRun, run); } else if (d < last) run = 0;
-  }
-  if (played) {
-    tiles.push(["<b>" + played + "</b><span>Borderlines dailies</span><small>average " + Math.round(sumScore / played) + "/500</small>"]);
-    tiles.push(["<b>" + best + "</b><span>Best daily</span><small>out of 500</small>"]);
-    tiles.push(["<b>" + bestRun + "</b><span>Best streak</span><small>" + (bestRun === 1 ? "day" : "days") + " in a row</small>"]);
-  }
-  if (runs.length) {
-    var longest = runs.reduce(function (a, b) { return (b.endYear || 0) > (a.endYear || 0) ? b : a; });
-    var bestDiv = runs.reduce(function (a, b) { return (b.avgDiv || 0) > (a.avgDiv || 0) ? b : a; });
-    tiles.push(["<b>" + runs.length + "</b><span>VOC companies run</span><small>" + runs.filter(function (x) { return x.reason !== "bankrupt"; }).length + " reached 1799</small>"]);
-    tiles.push(["<b>" + longest.endYear + "</b><span>Longest-lived company</span><small>" + (longest.reason === "bankrupt" ? "until the state took over" : "to the end of the charter") + "</small>"]);
-    tiles.push(["<b>" + (bestDiv.avgDiv || 0).toFixed(1) + "%</b><span>Best average dividend</span><small>the real VOC: about 18%</small>"]);
-  }
-  if (tiles.length) {
-    document.getElementById("record").innerHTML = tiles.map(function (x) { return "<div>" + x[0] + "</div>"; }).join("");
-    document.getElementById("recordSec").hidden = false;
-  }
-  document.querySelectorAll("a[href='/retourvloot/']").forEach(function (a) {
-    a.addEventListener("click", function () { track("portal_play", { game: "retourvloot", from: a.getAttribute("data-from") }); });
-  });
-
-  // A Cup of Tea: continue an investigation (progress kept in this browser by the game)
   var T = get("cupoftea.v1");
   if (T && T.done && T.done.length) {
     var tDone = T.done.slice().sort(), next = [1, 2, 3].filter(function (k) { return tDone.indexOf(k) < 0; })[0];
     var NAMES = { 1: "The sugar, London", 2: "Havana, the harvest", 3: "The tea, London" };
     if (next) {
-      document.getElementById("teaTitle").textContent = "Scene " + next + ": " + NAMES[next];
-      document.getElementById("teaMeta").textContent = tDone.length + " of 3 scenes solved.";
       var href = "/cupoftea/" + (next > 1 ? next + "/" : "");
-      document.getElementById("teaGo").href = href; document.getElementById("teaPlay").href = href;
-      document.getElementById("teaToday").hidden = false;
+      document.getElementById("teaPlay").href = href;
+      cont("cupoftea", "Scene " + next + ": " + NAMES[next], "Your investigation · " + tDone.length + " of 3 scenes solved", href);
     }
   }
-  document.querySelectorAll("a[href^='/cupoftea/']").forEach(function (a) {
-    a.addEventListener("click", function () { track("portal_play", { game: "cupoftea", from: a.getAttribute("data-from") }); });
+  var KS = get("kantar-game-v04"), KG = KS && KS.G;
+  if (KG && typeof KG.turn === "number" && KG.phase && KG.phase !== "end")
+    cont("kantar", "Round " + Math.min(6, KG.turn + 1) + " of 6", (KG.mode === "narh" ? "Narh rules" : "Classic rules") + " · saved where you left it");
+  var TS = get("tulip7.save.v1");
+  if (TS && TS.v === 1 && TS.players && TS.players[0]) {
+    var TIDX = [1, 1.25, 1.5, 2, 2.5, 3.5, 5, 7], TROM = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"], tMe = TS.players[0];
+    var tF = function (n) { return "f" + Math.round(n || 0).toLocaleString("en-US"); };
+    if (TS.mode === "winter") cont("tulip", TS.alkmaar ? "Alkmaar, the last evening" : "Evening " + TROM[TS.evening] + " of the winter",
+      "Purse <b>" + tF(tMe.purse) + "</b> · " + (TS.crashed ? "settled <b>" + tF(tMe.settled) : "paper <b>" + tF((tMe.units || 0) * TIDX[TS.evening])) + "</b>");
+    else cont("tulip", "The tavern game, round " + ((TS.round || 0) + 1), "Your total <b>" + (tMe.total || 0) + "</b> of 200");
+  }
+
+  // ---------------------------------------------------------------- the passport
+  var PASS = get("hl.passport.v1");
+  if (!PASS || PASS.v !== 1 || !PASS.games || typeof PASS.games !== "object") PASS = { v: 1, games: {} };
+  var seen = get(SEEN); if (!Array.isArray(seen)) seen = [];
+  var stamps = ORDER.map(function (id) {
+    var r = PASS.games[id] && typeof PASS.games[id] === "object" ? PASS.games[id] : null;
+    var inf = !r && inferred(id);
+    return { id: id, g: GAMES[id], rec: r, inferred: inf, on: !!r || inf };
+  });
+  function played(id) { return stamps.some(function (x) { return x.id === id && x.on; }); }
+  var nOn = stamps.filter(function (x) { return x.on; }).length;
+  document.getElementById("passCount").textContent = nOn + "/6";
+  document.getElementById("passBig").textContent = nOn + "/6";
+  document.getElementById("passChip").setAttribute("aria-label", "Your passport: " + nOn + " of 6 games stamped");
+  if (nOn === 6) document.getElementById("passTitle").textContent = "All six stamped";
+  else if (nOn) document.getElementById("passTitle").textContent = (6 - nOn) + " stamp" + (6 - nOn === 1 ? "" : "s") + " to go";
+
+  var MON = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+  function dParts(d) { var m = /^(\d{4})-(\d\d)-(\d\d)/.exec(d || ""); return m ? [+m[3], +m[2] - 1, m[1]] : null; }
+  function stampDate(d) { var p = dParts(d); return p ? p[0] + " " + MON[p[1]] + " " + p[2] : ""; }
+  function longDate(d) { var p = dParts(d); return p ? p[0] + " " + MONTHS[p[1]].slice(0, 3) + " " + p[2] : ""; }
+  // each game's emblem, drawn in a 120×120 stamp, centred around (60, 52)
+  var ICON = {
+    borderlines: '<circle cx="60" cy="52" r="15" fill="none" stroke-width="1.6"/><path d="M60 30l4.2 18L60 74l-4.2-26z" stroke="none"/><path d="M38 52l18-4.2L82 52l-26 4.2z" stroke="none" opacity=".55"/><circle cx="60" cy="52" r="2.4" fill="var(--pp)" stroke="none"/>',
+    retourvloot: '<path d="M43 33l17 38 17-38" fill="none" stroke-width="4.2" stroke-linejoin="miter"/><circle cx="49.5" cy="44" r="7.2" fill="none" stroke-width="2.6"/><path d="M76.6 38.8A8 8 0 1 0 76.6 50.6" fill="none" stroke-width="2.6"/>',
+    cupoftea: '<path d="M43 49h30v4a14 14 0 0 1-14 14h-2a14 14 0 0 1-14-14z" stroke="none"/><path d="M73 53c7.5 0 7.5 9.5-1.5 9.5" fill="none" stroke-width="2.4"/><path d="M37 71h42" stroke-width="2.6" stroke-linecap="round"/><path d="M51 44c-3-4 3-6 0-10M58 44c-3-4 3-6 0-10M65 44c-3-4 3-6 0-10" fill="none" stroke-width="1.8" stroke-linecap="round"/>',
+    polder: '<path d="M54 72l3-21h6l3 21z" stroke="none"/><path d="M55.5 51l4.5-6 4.5 6z" stroke="none"/><path d="M60 46L45 31M60 46l15-15M60 46L45 61M60 46l15 15" fill="none" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="46" r="2.2" stroke="none"/><path d="M38 72h44" stroke-width="2" stroke-linecap="round"/><path d="M38 77q5.5-3 11 0t11 0t11 0t11 0" fill="none" stroke-width="1.6"/>',
+    kantar: '<path d="M60 35v37M51 72h18M40 40h40" fill="none" stroke-width="2.6" stroke-linecap="round"/><circle cx="60" cy="35" r="2.8" stroke="none"/><path d="M42 40l-6 16M42 40l6 16M78 40l-6 12M78 40l6 12" fill="none" stroke-width="1.4"/><path d="M34 56h16a8 5 0 0 1-16 0zM70 52h16a8 5 0 0 1-16 0z" stroke="none"/>',
+    tulip: '<path d="M50 34c0 15 4 21 10 21s10-6 10-21l-5 6-5-8-5 8z" stroke="none"/><path d="M60 55v20" fill="none" stroke-width="2.4" stroke-linecap="round"/><path d="M60 71c-8-2-12-9-14-14 8 2 12 6 14 14zM60 66c8-2 12-8 14-14-8 2-12 6-14 14z" stroke="none" opacity=".8"/>'
+  };
+  // each stamp's rim, in the spirit of its game
+  var RIM = {
+    borderlines: '<circle cx="60" cy="60" r="55" fill="none" stroke-width="3.2" stroke-dasharray=".9 4.86"/><circle cx="60" cy="60" r="52.5" fill="none" stroke-width="1.6"/>',
+    retourvloot: '<circle cx="60" cy="60" r="55" fill="none" stroke-width="2.4" stroke-dasharray="4 2.2"/><circle cx="60" cy="60" r="51.8" fill="none" stroke-width="1.4"/>',
+    cupoftea: '<circle cx="60" cy="60" r="55.5" fill="none" stroke-width="2" stroke-dasharray=".1 3.6" stroke-linecap="round"/><circle cx="60" cy="60" r="52.5" fill="none" stroke-width="1.8"/>',
+    polder: '<circle cx="60" cy="60" r="55" fill="none" stroke-width="2.2"/><circle cx="60" cy="60" r="51.6" fill="none" stroke-width="1.2"/>',
+    kantar: '<path d="M20.4 20.4h79.2v79.2H20.4zM60 4l56 56-56 56L4 60z" fill="none" stroke-width="1.4" stroke-linejoin="miter"/><circle cx="60" cy="60" r="53" fill="var(--pp)" stroke-width="2.2"/>',
+    tulip: '<circle cx="60" cy="60" r="55.5" fill="none" stroke-width="4.4" stroke-dasharray=".1 6.96" stroke-linecap="round"/><circle cx="60" cy="60" r="52" fill="none" stroke-width="1.8"/>'
+  };
+  var TILT = { borderlines: -6, retourvloot: 4, cupoftea: -3, polder: 7, kantar: -9, tulip: 3 };
+  function stampSVG(x) {
+    var id = x.id, g = x.g;
+    if (!x.on) return '<svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 4"/><circle cx="60" cy="60" r="42" fill="none" stroke="currentColor" stroke-width=".8" opacity=".6"/>' +
+      '<text x="60" y="58" text-anchor="middle" style="font:400 15px var(--f-display);fill:var(--ink-faint)">' + esc(g.era) + '</text>' +
+      '<text x="60" y="74" text-anchor="middle" style="font:500 7.5px var(--f-mono);letter-spacing:.14em;fill:var(--ink-faint)">NOT YET</text></svg>';
+    var when = x.rec && x.rec.first ? stampDate(x.rec.first) : "PLAYED";
+    return '<svg viewBox="0 0 120 120" aria-hidden="true"><defs><path id="ring-' + id + '" d="M60 104a44 44 0 1 1 .01 0"/></defs>' +
+      '<g filter="url(#hlInk)" fill="currentColor" stroke="currentColor" transform="rotate(' + TILT[id] + ' 60 60)">' + RIM[id] +
+      '<circle cx="60" cy="60" r="40.5" fill="none" stroke-width="1.1"/>' +
+      '<text style="font:500 8.6px var(--f-mono);letter-spacing:.06em" stroke="none"><textPath href="#ring-' + id + '" textLength="272" lengthAdjust="spacing">' + esc(g.ring) + '</textPath></text>' +
+      ICON[id] +
+      '<text x="60" y="87" text-anchor="middle" stroke="none" style="font:500 7.4px var(--f-mono);letter-spacing:.06em">' + esc(when) + '</text></g></svg>';
+  }
+  var grid = document.getElementById("passGrid"), fresh = [];
+  grid.innerHTML = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="hlInk" x="-8%" y="-8%" width="116%" height="116%">' +
+    '<feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="d"/>' +
+    '<feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="1" seed="11" result="n2"/><feColorMatrix in="n2" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -3.2 2.55" result="m"/>' +
+    '<feComposite in="d" in2="m" operator="in"/></filter></svg>' +
+    stamps.map(function (x) {
+      var r = x.rec, lines = [];
+      if (x.on) {
+        lines.push('<span class="when">' + (r && r.first ? "First stamped " + esc(longDate(r.first)) : "Played before the passport") + '</span>');
+        if (r && r.plays) lines.push('<span class="when">' + r.plays + (r.plays === 1 ? " play" : " plays") + (r.wins ? " · " + r.wins + (r.wins === 1 ? " win" : " wins") : "") + '</span>');
+        if (r && (r.bestLabel || r.label)) lines.push('<span class="best">' + (r.bestLabel ? "Best: " : "Last: ") + esc(r.bestLabel || r.label) + '</span>');
+      } else lines.push('<span class="when">' + esc(x.g.where) + ' · not yet stamped</span>');
+      var isFresh = x.on && seen.indexOf(x.id) < 0;
+      if (isFresh) fresh.push(x.id);
+      return '<a class="slot ' + (x.on ? "on" : "empty") + (isFresh ? " fresh" : "") + (x.inferred ? " inferred" : "") + '" data-game="' + x.id + '" href="' + x.g.href + '" data-from="passport" style="--sc:var(--c-' + x.id + ')"' +
+        ' aria-label="' + esc(x.g.title + (x.on ? ", stamped" : ", not yet stamped")) + '">' +
+        '<span class="stamp">' + stampSVG(x) + '</span><h3>' + esc(x.g.title) + '</h3>' + lines.join("") + '</a>';
+    }).join("");
+  // the stamping animation, once per stamp, when the passport scrolls into view
+  if (fresh.length) {
+    var reduce = false; try { reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; } catch (e) {}
+    var land = function () {
+      [].forEach.call(grid.querySelectorAll(".slot.fresh"), function (el, k) {
+        setTimeout(function () { el.classList.remove("fresh"); el.classList.add("stamp-in"); }, reduce ? 0 : 120 + k * 260);
+      });
+      put(SEEN, seen.concat(fresh));
+    };
+    if (!reduce && "IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (es) { if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); land(); } }, { threshold: .35 });
+      io.observe(grid);
+    } else land();
+  }
+
+  // ---------------------------------------------------------------- one game to try next (like /next.js: new to you first; on a phone, desktop games last)
+  var busy = continues.map(function (c) { return c.game; });
+  var HAND = ["tulip", "kantar", "polder", "cupoftea", "retourvloot"], isPhone = phone();
+  var cands = HAND.filter(function (id) { return busy.indexOf(id) < 0 && !played(id); }).map(function (id, k) {
+    return { id: id, s: (isPhone && GAMES[id].dev === "desktop" ? -40 : 0) - k };
+  }).sort(function (a, b) { return b.s - a.s; });
+  var tryNext = null;
+  if (cands.length) {
+    var tg = GAMES[cands[0].id];
+    tryNext = { kind: "next", game: cands[0].id, href: tg.href, kicker: "Try next · New to you", title: tg.title,
+      meta: tg.where + " · " + tg.era + " · " + tg.len + (tg.dev === "desktop" ? " · best on a desktop" : "") };
+  }
+
+  // ---------------------------------------------------------------- the "For you" band: continues, then today's daily, then one to try
+  var items = continues.concat(daily ? [daily] : [], tryNext ? [tryNext] : []);
+  var row = document.getElementById("fyRow");
+  row.innerHTML = items.map(function (it) {
+    var g = GAMES[it.game], art = it.game === "borderlines"
+      ? '<span class="fy-art" aria-hidden="true"><i>Daily</i><b>#' + esc(it.num) + '</b></span>'
+      : '<span class="fy-art"><img src="' + g.img + '" alt="" loading="lazy"></span>';
+    return '<a class="fy fy-' + it.kind + '" data-kind="' + (it.cont ? "continue" : it.kind.split(" ")[0]) + '" data-game="' + it.game + '" href="' + esc(it.href) + '" data-from="foryou">' + art +
+      '<span class="fy-t"><span class="fy-k">' + esc(it.kicker) + '</span><b>' + esc(it.title) + '</b><span class="fy-m">' + it.meta + '</span></span><span class="fy-go" aria-hidden="true">→</span></a>';
+  }).join("");
+    row.classList.toggle("one", items.length === 1);
+  document.getElementById("fySub").textContent = continues.length ? "Pick up where you left off" : nOn ? "Today's daily and a game you haven't tried" : "Start with today's daily, or try a game";
+  [].forEach.call(row.querySelectorAll(".fy"), function (a) {
+    a.addEventListener("click", function () { track("portal_play", { game: a.getAttribute("data-game"), from: "foryou", kind: a.getAttribute("data-kind") }); });
+  });
+  // the cards say when a game is already in your passport
+  stamps.forEach(function (x) {
+    var r = x.on && document.querySelector('.game[data-game="' + x.id + '"] .row');
+    if (r) r.insertAdjacentHTML("beforeend", '<a class="stampmark" href="#passport" title="In your passport"><i>✓</i>Stamped</a>');
   });
 
-  // Polder: a game in progress and progress across regions (kept in this browser by the game)
-  var PR = get("polder.run.v1"), PP = get("polder.progress.v1") || {};
-  var PNAMES = { friesland: "Friesland", zeeland: "Zeeland", holland: "Holland", zuiderzee: "Zuiderzee", free: "Free play" };
-  var PTURNS = { friesland: 25, zeeland: 24, holland: 24, zuiderzee: 24, free: 50 };
-  if (PR && PR.S && PNAMES[PR.lv]) {
-    document.getElementById("polTitle").textContent = PNAMES[PR.lv] + ", " + PR.S.year;
-    var pf = (PR.G || []).filter(function (v) { return v === 6; }).length;
-    document.getElementById("polMeta").innerHTML = "Turn <b>" + Math.min(PR.S.piece + 1, PTURNS[PR.lv]) + "</b> of " + PTURNS[PR.lv] + " · <b>" + pf + "</b> fields won";
-    document.getElementById("polToday").hidden = false;
+  // ---------------------------------------------------------------- your record, across games
+  var tiles = [];
+  var last = Math.min(idx, BORDERLINES.days - 1);
+  var nPlayed = 0, best = 0, runN = 0, bestRun = 0, sumScore = 0;
+  for (var d = 0; d <= last; d++) {
+    var r = get("borderlines:day:" + d);
+    if (r) { var t = (r.scores || []).reduce(function (a, b) { return a + (b || 0); }, 0); nPlayed++; sumScore += t; best = Math.max(best, t); }
+    if (r && !r.late) { runN++; bestRun = Math.max(bestRun, runN); } else if (d < last) runN = 0;
+  }
+  if (nPlayed) {
+    tiles.push("<b>" + nPlayed + "</b><span>Borderlines dailies</span><small>average " + Math.round(sumScore / nPlayed) + "/500</small>");
+    tiles.push("<b>" + best + "</b><span>Best daily</span><small>out of 500</small>");
+    tiles.push("<b>" + bestRun + "</b><span>Best streak</span><small>" + (bestRun === 1 ? "day" : "days") + " in a row</small>");
+  }
+  if (runs.length) {
+    var longest = runs.reduce(function (a, b) { return (b.endYear || 0) > (a.endYear || 0) ? b : a; });
+    var bestDiv = runs.reduce(function (a, b) { return (b.avgDiv || 0) > (a.avgDiv || 0) ? b : a; });
+    tiles.push("<b>" + runs.length + "</b><span>VOC companies run</span><small>" + runs.filter(function (x) { return x.reason !== "bankrupt"; }).length + " reached 1799</small>");
+    tiles.push("<b>" + longest.endYear + "</b><span>Longest-lived company</span><small>" + (longest.reason === "bankrupt" ? "until the state took over" : "to the end of the charter") + "</small>");
+    tiles.push("<b>" + (bestDiv.avgDiv || 0).toFixed(1) + "%</b><span>Best average dividend</span><small>the real VOC: about 18%</small>");
+  } else if (S && S.v === 1 && S.ended) {
+    tiles.push("<b>" + rvYear(S.t) + "</b><span>Your VOC ended</span><small>" + money(S.debt) + " in debt to the state</small>");
   }
   var pWon = 0, pStars = 0;
   ["friesland", "zeeland", "holland", "zuiderzee"].forEach(function (k) { var st = (PP[k] && PP[k].stars) || 0; pStars += st; if (st >= (k === "friesland" ? 4 : 3)) pWon++; });
   var pPages = Object.keys(PP._seen || {}).length;
   if (pStars || pPages) {
-    tiles.push(["<b>" + pWon + "/4</b><span>Polder regions won</span><small>" + pStars + " ★ in total</small>"]);
-    tiles.push(["<b>" + pPages + "</b><span>Chronicle pages</span><small>found so far</small>"]);
-    tiles.push(["<b>" + Object.keys(PP._ach || {}).length + "/14</b><span>Polder achievements</span><small>" + (PP._campaign ? "campaign complete" : "see the Chronicle") + "</small>"]);
-    if (tiles.length) { document.getElementById("record").innerHTML = tiles.map(function (x) { return "<div>" + x[0] + "</div>"; }).join(""); document.getElementById("recordSec").hidden = false; }
-  }
-  document.querySelectorAll("a[href='/polder/']").forEach(function (a) {
-    a.addEventListener("click", function () { track("portal_play", { game: "polder", from: a.getAttribute("data-from") }); });
-  });
-
-  // Kantar: games against the rival merchant (summary written by the game)
-  // a match in progress (the game's own save, "kantar-game-v04"): offer to continue it
-  var KS = get("kantar-game-v04"), KG = KS && KS.G;
-  if (KG && typeof KG.turn === "number" && KG.phase && KG.phase !== "end") {
-    document.getElementById("kaTitle").textContent = "Round " + Math.min(6, KG.turn + 1) + " of 6";
-    document.getElementById("kaMeta").textContent = (KG.mode === "narh" ? "Narh rules" : "Classic rules") + " · your match is saved where you left it";
-    document.getElementById("kaToday").hidden = false;
+    tiles.push("<b>" + pWon + "/4</b><span>Polder regions won</span><small>" + pStars + " ★ in total</small>");
+    tiles.push("<b>" + pPages + "</b><span>Chronicle pages</span><small>found so far</small>");
+    tiles.push("<b>" + Object.keys(PP._ach || {}).length + "/14</b><span>Polder achievements</span><small>" + (PP._campaign ? "campaign complete" : "see the Chronicle") + "</small>");
   }
   var KR = get("kantar.record.v1");
-  if (KR && KR.v === 1 && KR.played) {
-    tiles.push(["<b>" + KR.won + "/" + KR.played + "</b><span>Kantar games won</span><small>" + (KR.master && KR.master.played ? KR.master.won + " against the Master" : "try the Master next") + "</small>"]);
-    document.getElementById("record").innerHTML = tiles.map(function (x) { return "<div>" + x[0] + "</div>"; }).join("");
-    document.getElementById("recordSec").hidden = false;
-  }
-  document.querySelectorAll("a[href='/kantar/']").forEach(function (a) {
-    a.addEventListener("click", function () { track("portal_play", { game: "kantar", from: a.getAttribute("data-from") }); });
-  });
-
-  // Tulip 7: a game in progress (the game saves at the start of each evening) and the record it writes at the end
-  var TS = get("tulip7.save.v1");
-  if (TS && TS.v === 1 && TS.players && TS.players[0]) {
-    var TIDX = [1, 1.25, 1.5, 2, 2.5, 3.5, 5, 7], TROM = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"], tMe = TS.players[0];
-    var tF = function (n) { return "f" + Math.round(n || 0).toLocaleString("en-US"); };
-    if (TS.mode === "winter") {
-      document.getElementById("tuTitle").textContent = TS.alkmaar ? "Alkmaar, the last evening" : "Evening " + TROM[TS.evening] + " of the winter";
-      document.getElementById("tuMeta").innerHTML = "Purse <b>" + tF(tMe.purse) + "</b> · " + (TS.crashed ? "settled <b>" + tF(tMe.settled) : "paper <b>" + tF((tMe.units || 0) * TIDX[TS.evening])) + "</b>";
-    } else {
-      document.getElementById("tuTitle").textContent = "The tavern game, round " + ((TS.round || 0) + 1);
-      document.getElementById("tuMeta").innerHTML = "Your total <b>" + (tMe.total || 0) + "</b> of 200";
-    }
-    document.getElementById("tuToday").hidden = false;
-  }
+  if (KR && KR.v === 1 && KR.played) tiles.push("<b>" + KR.won + "/" + KR.played + "</b><span>Kantar games won</span><small>" + (KR.master && KR.master.played ? KR.master.won + " against the Master" : "try the Master next") + "</small>");
   var TR = get("tulip7.record.v1");
-  if (TR && TR.v === 1 && TR.played) {
-    tiles.push(TR.winters
-      ? ["<b>" + (TR.wintersWon || 0) + "/" + TR.winters + "</b><span>Tulip winters won</span><small>" + (TR.ach || 0) + "/14 achievements</small>"]
-      : ["<b>" + (TR.won || 0) + "/" + TR.played + "</b><span>Tulip 7 games won</span><small>" + (TR.ach || 0) + "/14 achievements</small>"]);
-    document.getElementById("record").innerHTML = tiles.map(function (x) { return "<div>" + x[0] + "</div>"; }).join("");
+  if (TR && TR.v === 1 && TR.played) tiles.push(TR.winters
+    ? "<b>" + (TR.wintersWon || 0) + "/" + TR.winters + "</b><span>Tulip winters won</span><small>" + (TR.ach || 0) + "/14 achievements</small>"
+    : "<b>" + (TR.won || 0) + "/" + TR.played + "</b><span>Tulip 7 games won</span><small>" + (TR.ach || 0) + "/14 achievements</small>");
+  if (tiles.length) {
+    document.getElementById("record").innerHTML = tiles.map(function (x) { return "<div>" + x + "</div>"; }).join("");
     document.getElementById("recordSec").hidden = false;
   }
-  document.querySelectorAll("a[href='/tulip7/']").forEach(function (a) {
-    a.addEventListener("click", function () { track("portal_play", { game: "tulip", from: a.getAttribute("data-from") }); });
+
+  // every play link reports where it was clicked (cards, For you, passport, map)
+  var IDS = { "/borderlines/": "borderlines", "/retourvloot/": "retourvloot", "/cupoftea/": "cupoftea", "/polder/": "polder", "/kantar/": "kantar", "/tulip7/": "tulip" };
+  [].forEach.call(document.querySelectorAll("#viewCards a[data-from], #passGrid a[data-from]"), function (a) {
+    var h = a.getAttribute("href"), id = IDS[h] || (h.indexOf("/cupoftea/") === 0 ? "cupoftea" : null);
+    if (id) a.addEventListener("click", function () { track("portal_play", { game: id, from: a.getAttribute("data-from") }); });
   });
 
-  // New games by email (shown only when the server side is configured)
+  // ---------------------------------------------------------------- colour theme: automatic → light → dark
+  var themeBtn = document.getElementById("themeBtn"), root = document.documentElement;
+  function themeLabel() { var t = root.getAttribute("data-theme") || "automatic"; themeBtn.setAttribute("aria-label", "Colour theme: " + t); themeBtn.title = "Colour theme: " + t; }
+  themeLabel();
+  themeBtn.addEventListener("click", function () {
+    var t = root.getAttribute("data-theme"), n = !t ? "light" : t === "light" ? "dark" : "";
+    if (n) root.setAttribute("data-theme", n); else root.removeAttribute("data-theme");
+    try { if (n) localStorage.setItem("hl.theme", n); else localStorage.removeItem("hl.theme"); } catch (e) {}
+    themeLabel(); track("portal_theme", { theme: n || "auto" });
+  });
+
+  // ---------------------------------------------------------------- new games by email (shown only when the server side is configured)
   var SITE_KEY = "0x4AAAAAAFRMZwiuLLLgZLqX", token = null, wid = null;
-  // the "continue" strip: one link per game with something in progress (from the cards below)
-  (function () {
-    var bar = document.getElementById("resumeBar"), n = 0;
-    if (document.getElementById("dPlay").textContent === "Continue") { // a Borderlines daily left part-way
-      var bl = document.createElement("a"); bl.href = "/borderlines/"; bl.setAttribute("data-from", "resume"); bl.textContent = "Borderlines →"; bar.appendChild(bl); n++;
-    }
-    [["rvToday", "rvPlay", "Retourvloot"], ["polToday", "polGo", "Polder"], ["teaToday", "teaGo", "A Cup of Tea"], ["kaToday", "kaGo", "Kantar"], ["tuToday", "tuGo", "Tulip 7"]].forEach(function (x) {
-      var box = document.getElementById(x[0]), go = document.getElementById(x[1]);
-      if (!box || box.hidden || !go) return;
-      var a = document.createElement("a"); a.href = go.getAttribute("href"); a.setAttribute("data-from", "resume");
-      a.textContent = x[2] + " →"; bar.appendChild(a); n++;
-      a.addEventListener("click", function () { track("portal_play", { game: x[1].replace(/Go|Play/, "").replace("rv", "retourvloot").replace("pol", "polder").replace("tea", "cupoftea").replace("ka", "kantar").replace(/^tu$/, "tulip"), from: "resume" }); });
-    });
-    if (n) bar.hidden = false;
-    var dt = document.getElementById("dTitle"), dm = document.getElementById("dMeta"), note = document.getElementById("blCardNote");
-    if (note && dt) note.textContent = "Today: " + dt.textContent + (/Done today/.test(dm.textContent) ? " · done" : "");
-  })();
   fetch("/api/newsletter/status").then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) {
     if (!j || !j.enabled) return;
     document.getElementById("newsSec").hidden = false;
@@ -649,7 +852,7 @@ footer a { color: var(--ink-soft); }
     function say(t, c) { msg.textContent = t; msg.className = "msg" + (c ? " " + c : ""); }
     function loadTs() {
       if (wid !== null || window.__hlNewsTs) return;
-      window.__hlNewsTs = function () { wid = window.turnstile.render("#newsTs", { sitekey: SITE_KEY, theme: "light", size: "flexible", callback: function (t) { token = t; }, "expired-callback": function () { token = null; } }); };
+      window.__hlNewsTs = function () { wid = window.turnstile.render("#newsTs", { sitekey: SITE_KEY, theme: "auto", size: "flexible", callback: function (t) { token = t; }, "expired-callback": function () { token = null; } }); };
       if (window.turnstile) return window.__hlNewsTs();
       var sc = document.createElement("script"); sc.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=__hlNewsTs"; sc.async = true; document.head.appendChild(sc);
     }
@@ -674,9 +877,10 @@ footer a { color: var(--ink-soft); }
 })();
 </script>
 <script>
-// The "World map" tab: each game pinned where and when it is set. Pick one like a scenario, then play.
+// The "Map & timeline" tab: each game pinned where and when it is set. Pick one like a scenario, then play.
 // Titles, text, pictures and links come from the cards above, so a new game needs only a line in ATLAS
-// (lon/lat of the pin, and where its label sits in map units: the map is {{WW}} wide).
+// (lon/lat of the pin, and where its label sits in map units: the map is {{WW}} wide). Its moment on the timeline comes
+// from "moment" in public/games.json (validate.py insists every game has one, or "moment": false).
 (function () {
   var C = {{MAPCFG}};
   var ATLAS = [
@@ -691,9 +895,11 @@ footer a { color: var(--ink-soft); }
       route: [[-0.1, 51.5], [-6, 49.4], [-20, 42], [-45, 31], [-68, 25.5], [-82.4, 23.1]],
       stops: [{ at: [-82.4, 23.1], name: "Havana" }] }
   ];
+  // The timeline: one moment per game, from "moment" in public/games.json (a game with "moment": false is left off).
+  var MOMENTS = {{MOMENTS}};
   var NS = "http://www.w3.org/2000/svg", KEY = "hl.portal.view", PICK = "hl.portal.pick";
   var map = document.getElementById("atlasMap"), lines = document.getElementById("atlasLines"), pins = document.getElementById("atlasPins");
-  var brief = document.getElementById("atlasBrief"), era = document.getElementById("atlasEra"), scroller = document.getElementById("atlasScroll");
+  var brief = document.getElementById("atlasBrief"), scroller = document.getElementById("atlasScroll");
   var tabCards = document.getElementById("tabCards"), tabMap = document.getElementById("tabMap");
   var viewCards = document.getElementById("viewCards"), viewMap = document.getElementById("viewMap");
   function sget(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
@@ -711,6 +917,7 @@ footer a { color: var(--ink-soft); }
   }
   function card(g) { var a = viewCards.querySelector(".plate[href='" + g.href + "']"); return a && a.closest(".game"); }
   var items = ATLAS.map(function (g) { return { g: g, card: card(g) }; }).filter(function (x) { return x.card; });
+  var byGame = {}; items.forEach(function (it) { byGame[it.g.game] = it; });
 
   items.forEach(function (it, i) {
     var g = it.g, p = xy(g.at), L = g.label, name = it.card.querySelector("h3").textContent;
@@ -725,23 +932,115 @@ footer a { color: var(--ink-soft); }
     it.halo = el("circle", { "class": "halo", cx: p[0], cy: p[1], r: 4 }, pins);
     it.pin = el("circle", { "class": "pin", cx: p[0], cy: p[1], r: 4.5 }, pins);
     var b = document.createElement("button");
-    b.type = "button"; b.className = "atlas-pick"; b.setAttribute("aria-pressed", "false");
+    b.type = "button"; b.className = "atlas-pick"; b.setAttribute("aria-pressed", "false"); b.setAttribute("data-game", g.game);
     b.style.left = (L[0] / C.W * 100) + "%"; b.style.top = (L[1] / C.H * 100) + "%";
     b.innerHTML = (g.isNew ? "<i class='new'>New</i>" : "") + "<b></b><span></span>";
     b.querySelector("b").textContent = name; b.querySelector("span").textContent = g.when;
     b.setAttribute("aria-label", name + ", " + g.when + ", " + g.place);
     b.addEventListener("click", function () { select(i, true); });
     b.addEventListener("dblclick", function () { var go = brief.querySelector(".btn"); if (go) go.click(); });
+    b.addEventListener("mouseenter", function () { hot([g.game]); });
+    b.addEventListener("mouseleave", function () { hot([]); });
+    b.addEventListener("focus", function () { hot([g.game]); });
+    b.addEventListener("blur", function () { hot([]); });
     map.appendChild(b); it.pick = b;
   });
-  // the date strip: the same games, oldest setting first
-  items.slice().sort(function (a, b) { return a.g.year - b.g.year; }).forEach(function (it) {
-    var b = document.createElement("button");
-    b.type = "button"; b.setAttribute("aria-pressed", "false");
-    b.innerHTML = "<b></b>"; b.querySelector("b").textContent = it.g.when; b.appendChild(document.createTextNode(it.name));
-    b.addEventListener("click", function () { select(items.indexOf(it), true); });
-    era.appendChild(b); it.chip = b;
+
+  // ---- the timeline: a linear scale, so the gaps between moments are true to the years between them
+  var inner = document.getElementById("tlInner"), tlScroll = document.getElementById("tlScroll"), momentEl = document.getElementById("tlMoment");
+  var marks = MOMENTS.map(function (m) { var it = byGame[m.game]; return it ? { m: m, it: it } : null; }).filter(Boolean)
+    .sort(function (a, b) { return a.m.year - b.m.year; });
+  marks.forEach(function (k) {
+    var it = k.it, gc = "var(--c-" + k.m.game + ")";
+    var b = document.createElement("button"); b.type = "button"; b.className = "tl-lab"; b.setAttribute("aria-pressed", "false"); b.setAttribute("data-game", k.m.game);
+    b.style.setProperty("--gc", gc);
+    b.innerHTML = "<i></i><b></b><span></span>";
+    b.querySelector("i").textContent = k.m.when + " · " + k.m.place; b.querySelector("b").textContent = k.m.title; b.querySelector("span").textContent = it.name;
+    b.setAttribute("aria-label", k.m.when + ", " + k.m.place + ": " + k.m.title + ". " + it.name);
+    var d = document.createElement("button"); d.type = "button"; d.className = "tl-dot"; d.tabIndex = -1; d.setAttribute("aria-hidden", "true"); d.style.setProperty("--gc", gc);
+    var l = document.createElement("span"); l.className = "tl-lead"; l.style.setProperty("--gc", gc);
+    [b, d].forEach(function (e) {
+      e.addEventListener("click", function () { select(items.indexOf(it), true); });
+      e.addEventListener("mouseenter", function () { hot([k.m.game]); });
+      e.addEventListener("mouseleave", function () { hot([]); });
+    });
+    b.addEventListener("focus", function () { hot([k.m.game]); });
+    b.addEventListener("blur", function () { hot([]); });
+    inner.appendChild(l); inner.appendChild(d); inner.appendChild(b);
+    k.lab = b; k.dot = d; k.lead = l; it.span = b; it.dot = d; it.lead = l; it.moment = k.m;
   });
+  function yearsText(n) { n = Math.round(n); return n === 1 ? "1 year" : n + " years"; }
+  function layoutTimeline() {
+    if (!marks.length || !tlScroll.clientWidth) return;
+    [].slice.call(inner.querySelectorAll(".tl-line, .tl-tick, .tl-gap")).forEach(function (e) { e.remove(); });
+    var lo = marks[0].m.year, hi = marks[marks.length - 1].m.year, span = Math.max(1, hi - lo);
+    var minGap = Infinity; for (var i = 1; i < marks.length; i++) minGap = Math.min(minGap, marks[i].m.year - marks[i - 1].m.year);
+    var avail = tlScroll.clientWidth - 32, pad = 70;
+    // wide enough that the two closest moments stay at least 18px apart, but never wider than 2600px
+    var pxy = Math.max((avail - 2 * pad) / span, minGap > 0 ? 18 / minGap : 0);
+    var W = Math.min(2600, Math.max(avail, span * pxy + 2 * pad)); pxy = (W - 2 * pad) / span;
+    var X = function (y) { return pad + (y - lo) * pxy; };
+    inner.style.width = W + "px";
+    // Labels hang to the right of their dot (to the left near the right edge), with the leader down their coloured edge.
+    // Placed right to left, each in the lowest row where it fits: a label further left that would run into one already
+    // placed goes a row higher, so every leader drops past the labels below it without crossing them.
+    var rows = [], rowH = 0, gapX = 10;
+    marks.forEach(function (k) { k.w = k.lab.offsetWidth; rowH = Math.max(rowH, k.lab.offsetHeight); k.x = X(k.m.year); });
+    for (var q = marks.length - 1; q >= 0; q--) {
+      var k = marks[q], flip = k.x - 1.5 + k.w > W, left = flip ? k.x + 1.5 - k.w : k.x - 1.5, r = 0;
+      // never below a label whose leader runs through this label's width (it would cut through it)
+      for (var u = q + 1; u < marks.length; u++) if (marks[u].x >= left - gapX && marks[u].x <= left + k.w + gapX) r = Math.max(r, marks[u].row + 1);
+      while (rows[r] && rows[r].some(function (o) { return left < o.r + gapX && left + k.w + gapX > o.l; })) r++;
+      (rows[r] = rows[r] || []).push({ l: left, r: left + k.w }); k.row = r; k.left = left; k.flip = flip;
+    }
+    var nRows = rows.length, top = 4, lineY = top + nRows * (rowH + 10) + 14;
+    marks.forEach(function (k) {
+      var y = top + (nRows - 1 - k.row) * (rowH + 10);
+      k.lab.style.left = k.left + "px"; k.lab.style.top = y + "px"; k.lab.classList.toggle("flip", k.flip);
+      k.lead.style.left = k.x + "px"; k.lead.style.top = (y + 6) + "px"; k.lead.style.height = (lineY - y - 6) + "px";
+      k.dot.style.left = k.x + "px"; k.dot.style.top = lineY + "px";
+    });
+    var line = document.createElement("span"); line.className = "tl-line"; line.style.top = (lineY - 1) + "px"; inner.insertBefore(line, inner.firstChild);
+    // ticks: a step that leaves at least ~80px between labelled years
+    var steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000], step = steps[steps.length - 1];
+    for (var s = 0; s < steps.length; s++) if (steps[s] * pxy >= 80) { step = steps[s]; break; }
+    var y0 = lo - pad / pxy, y1 = hi + pad / pxy, minor = step / (step % 4 === 0 || step === 100 ? 4 : 5);
+    for (var t = Math.ceil(y0 / minor) * minor; t <= y1; t += minor) {
+      var e = document.createElement("span"), major = Math.abs(t / step - Math.round(t / step)) < 1e-6;
+      e.className = "tl-tick" + (major ? "" : " minor"); e.style.left = X(t) + "px"; e.style.top = (lineY + 9) + "px";
+      if (major) e.textContent = t < 0 ? -t + " BC" : String(t);
+      inner.appendChild(e);
+    }
+    // the years between neighbours, written on the line where there is room
+    for (var j = 1; j < marks.length; j++) {
+      var a = marks[j - 1], b = marks[j], dx = X(b.m.year) - X(a.m.year), txt = yearsText(b.m.year - a.m.year);
+      if (dx < txt.length * 7 + 24) continue;
+      var g = document.createElement("span"); g.className = "tl-gap"; g.textContent = txt;
+      g.style.left = (X(a.m.year) + dx / 2) + "px"; g.style.top = lineY + "px"; inner.appendChild(g);
+    }
+    inner.style.height = (lineY + 34) + "px";
+  }
+  function showMoment(it) {
+    var m = it && it.moment;
+    if (!m) { momentEl.hidden = true; return; }
+    momentEl.hidden = false; momentEl.style.setProperty("--gc", "var(--c-" + m.game + ")");
+    momentEl.innerHTML = "<div class='mw'></div><h4></h4><p></p>";
+    momentEl.querySelector(".mw").textContent = m.when + " · " + m.place + " · " + it.name;
+    momentEl.querySelector("h4").textContent = m.title; momentEl.querySelector("p").textContent = m.text;
+  }
+  function placeLinks() { layoutTimeline(); }
+  if (window.ResizeObserver) new ResizeObserver(function () { if (!viewMap.hidden) layoutTimeline(); }).observe(tlScroll);
+
+  var hotNow = [];
+  function hot(games, link) {
+    hotNow = games;
+    items.forEach(function (it) {
+      var on = games.indexOf(it.g.game) >= 0;
+      it.pick.classList.toggle("hot", on); it.pin.classList.toggle("hot", on); it.leader.classList.toggle("hot", on);
+      if (it.route) it.route.classList.toggle("hot", on);
+      if (it.span) { it.span.classList.toggle("hot", on); it.dot.classList.toggle("hot", on); it.lead.classList.toggle("hot", on); }
+    });
+  }
 
   var cur = -1;
   function select(i, byUser) {
@@ -749,7 +1048,8 @@ footer a { color: var(--ink-soft); }
     cur = i;
     items.forEach(function (it, j) {
       var on = j === i;
-      it.pick.setAttribute("aria-pressed", on ? "true" : "false"); it.chip.setAttribute("aria-pressed", on ? "true" : "false");
+      it.pick.setAttribute("aria-pressed", on ? "true" : "false");
+      if (it.span) { it.span.setAttribute("aria-pressed", on ? "true" : "false"); it.dot.classList.toggle("on", on); it.lead.classList.toggle("on", on); }
       it.pin.classList.toggle("on", on); it.halo.classList.toggle("on", on); it.leader.classList.toggle("on", on);
       if (it.route) it.route.classList.toggle("on", on);
     });
@@ -764,13 +1064,22 @@ footer a { color: var(--ink-soft); }
     if (pic) bp.appendChild(pic.cloneNode(true));
     brief.querySelector(".bwhen").textContent = g.when + " · " + g.place;
     brief.querySelector("h3").textContent = it.name;
-    brief.querySelector(".bdesc").textContent = c.querySelector(".body > p").textContent;
+    brief.querySelector(".bdesc").textContent = c.querySelector(".body > p.desc").textContent;
     if (tags) brief.querySelector(".btext").insertBefore(tags.cloneNode(true), brief.querySelector(".row"));
     if (note) brief.querySelector(".btext").insertBefore(note.cloneNode(true), brief.querySelector(".row"));
     var b = brief.querySelector(".btn"); b.href = go.getAttribute("href"); b.textContent = "Play " + it.name;
     brief.querySelector(".hint").textContent = cn && cn.textContent ? cn.textContent : "";
     [b, bp].forEach(function (a) { a.addEventListener("click", function () { track("portal_play", { game: g.game, from: "map" }); }); });
     if (byUser) { sset(PICK, g.href); track("portal_map_pick", { game: g.game }); }
+    showMoment(it);
+    revealSpan(it, byUser);
+  }
+  // phones: keep the selected game's span in view on the scrolling timeline
+  function revealSpan(it, smooth) {
+    var s = it.span; if (!s || tlScroll.scrollWidth <= tlScroll.clientWidth) return;
+    var r = s.getBoundingClientRect(), sr = tlScroll.getBoundingClientRect(), w = r.width;
+    var mid = r.left - sr.left + tlScroll.scrollLeft + Math.min(w, sr.width) / 2;
+    tlScroll.scrollTo({ left: Math.max(0, mid - sr.width / 2), behavior: smooth ? "smooth" : "auto" });
   }
 
   function show(view, byUser) {
@@ -778,11 +1087,12 @@ footer a { color: var(--ink-soft); }
     viewMap.hidden = !m; viewCards.hidden = m;
     tabMap.setAttribute("aria-selected", m ? "true" : "false"); tabCards.setAttribute("aria-selected", m ? "false" : "true");
     tabMap.tabIndex = m ? 0 : -1; tabCards.tabIndex = m ? -1 : 0;
+    if (m) placeLinks();
     if (m && cur < 0) {
       var last = sget(PICK), k = 0;
       items.forEach(function (it, j) { if (it.g.href === last) k = j; });
       select(k, false);
-    }
+    } else if (m) revealSpan(items[cur], false);
     if (m && scroller.scrollWidth > scroller.clientWidth) { // phones: start over Europe, where most games are
       var p = xy(items[cur].g.at)[0] / C.W * scroller.scrollWidth;
       scroller.scrollLeft = Math.max(0, p - scroller.clientWidth / 2);
@@ -792,6 +1102,8 @@ footer a { color: var(--ink-soft); }
       if (history.replaceState) history.replaceState(null, "", m ? "#map" : location.pathname + location.search);
     }
   }
+  window.addEventListener("resize", function () { if (!viewMap.hidden) placeLinks(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { if (!viewMap.hidden) placeLinks(); });
   tabCards.addEventListener("click", function () { show("cards", true); });
   tabMap.addEventListener("click", function () { show("map", true); });
   [tabCards, tabMap].forEach(function (t) {

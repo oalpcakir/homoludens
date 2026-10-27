@@ -227,3 +227,57 @@ test('Kantar and Polder share links: preview names the result, escapes input, fo
   assert.doesNotMatch(h, /"><b>/);
   assert.equal((await call(env, '/polder/s/atlantis/3')).status, 302);
 });
+
+// ---------------------------------------------------------------- Borderlines daily percentile
+const blDay = (now = Date.now()) => Math.floor((now - Date.UTC(2026, 8, 27)) / 864e5) + 1;
+const blPost = (env, body, headers) => call(env, '/api/borderlines/score', { method: 'POST', body, headers });
+
+test('Borderlines score: without the STATS binding both endpoints answer 204', async () => {
+  const { env } = setup();
+  assert.equal(env.STATS, undefined);
+  assert.equal((await blPost(env, { day: blDay(), total: 300, pid: 'abcdef12' })).status, 204);
+  assert.equal((await call(env, '/api/borderlines/dist?day=' + blDay())).status, 204);
+});
+
+test('Borderlines score: builds a 101-bucket histogram, one submission per player per day', async () => {
+  const { env } = setup();
+  env.STATS = makeKV();
+  const day = blDay();
+  let r = await blPost(env, { day, total: 412, pid: 'player0001' });
+  assert.equal(r.status, 200);
+  let j = await r.json();
+  assert.equal(j.n, 1); assert.equal(j.b.length, 101); assert.equal(j.b[82], 1); // 412 / 5 = 82.4 → bucket 82
+  for (const [i, t] of [[2, 0], [3, 500], [4, 250], [5, 412]].entries()) await blPost(env, { day, total: t[1], pid: 'player000' + (i + 2) });
+  // the same player again (another device would have another id): counted once, answers the histogram
+  r = await blPost(env, { day, total: 100, pid: 'player0001' });
+  j = await r.json();
+  assert.equal(r.status, 200); assert.equal(j.dup, true); assert.equal(j.n, 5);
+  r = await call(env, '/api/borderlines/dist?day=' + day);
+  j = await r.json();
+  assert.equal(j.n, 5); assert.equal(j.b[0], 1); assert.equal(j.b[100], 1); assert.equal(j.b[50], 1); assert.equal(j.b[82], 2);
+  assert.equal(j.b.reduce((a, b) => a + b, 0), 5);
+  assert.match(r.headers.get('Cache-Control'), /max-age=60/);
+  // an empty day answers zeros, not an error
+  j = await (await call(env, '/api/borderlines/dist?day=' + (day - 3))).json();
+  assert.equal(j.n, 0); assert.equal(j.b.length, 101);
+});
+
+test('Borderlines score: rejects bad input, other days, other origins and rate-limited callers', async () => {
+  const { env } = setup();
+  env.STATS = makeKV();
+  const day = blDay();
+  for (const body of [
+    { day, total: 501, pid: 'abcdef12' }, { day, total: -1, pid: 'abcdef12' }, { day, total: 12.5, pid: 'abcdef12' },
+    { day, total: '300x', pid: 'abcdef12' }, { day: day - 2, total: 300, pid: 'abcdef12' }, { day: day + 2, total: 300, pid: 'abcdef12' },
+    { day: 'x', total: 300, pid: 'abcdef12' }, { day, total: 300, pid: 'a b' }, { day, total: 300 }, { day, total: 300, pid: 'x'.repeat(41) },
+  ]) assert.equal((await blPost(env, body)).status, 400, JSON.stringify(body));
+  assert.equal((await blPost(env, { day, total: 300, pid: 'abcdef12' }, { Origin: 'https://evil.test' })).status, 403);
+  assert.equal((await call(env, '/api/borderlines/score')).status, 405);
+  for (const q of ['', '?day=0', '?day=abc', '?day=' + (day + 2)]) assert.equal((await call(env, '/api/borderlines/dist' + q)).status, 400, q);
+  // yesterday and tomorrow are fine (players' local dates)
+  assert.equal((await blPost(env, { day: day - 1, total: 300, pid: 'abcdef12' })).status, 200);
+  assert.equal((await blPost(env, { day: day + 1, total: 300, pid: 'abcdef12' })).status, 200);
+  env.FEEDBACK_LIMIT = { limit: async ({ key }) => ({ success: !key.startsWith('bls:') }) };
+  assert.equal((await blPost(env, { day, total: 300, pid: 'zzzzzz99' })).status, 429);
+  assert.equal([...env.STATS.m.keys()].filter(k => k.startsWith('bl:h:')).length, 2, 'rejected calls wrote to KV');
+});

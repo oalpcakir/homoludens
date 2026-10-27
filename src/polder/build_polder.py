@@ -47,7 +47,8 @@ head = f'''<meta name="description" content="{desc}">
 {icon}
 {ph}
 <script src="/feedback.js" defer data-game="polder"></script>
-<script src="/next.js" defer data-game="polder"></script>'''
+<script src="/next.js" defer data-game="polder"></script>
+<script src="/hl.js" defer data-game="polder"></script>'''
 os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 open(os.path.join(OUT, "index.html"), "w", encoding="utf-8").write(src.replace(anchor, anchor + "\n" + head, 1))
 shutil.copy(os.path.join(H, "portal-plate.jpg"), os.path.join(OUT, "img", "portal-plate.jpg"))
