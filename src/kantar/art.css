@@ -120,3 +120,10 @@ body.narrow .dish:has(.card.tile:nth-child(3)) .card.tile+.card.tile{margin-left
 .pan.aipick{filter:drop-shadow(0 0 11px rgba(240,144,126,.95)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
 .pan.aikeep{filter:drop-shadow(0 0 9px rgba(143,208,165,.85)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
 .pan.aipick .dish,.pan.aikeep .dish{outline:0!important}
+
+/* ---- the Market panel's painted icons (market-studio.html); the bare source keeps its drawn SVGs ---- */
+.mk-ic.removed{background-image:var(--ka-out)}.mk-ic.goods{background-image:var(--ka-weights)}
+.mk-ic.removed svg,.mk-ic.goods svg{display:none}
+th .mk-gl.count{background:var(--ka-gl-count) center/contain no-repeat}th .mk-gl.count svg{display:none}
+th .mk-gl.coin{background-image:var(--ka-gl-value)}
+th .mk-gl{width:26px;height:26px}

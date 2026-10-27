@@ -773,7 +773,7 @@ main.center{container-type:inline-size;container-name:board}
 .mk-goods th,.mk-goods td{padding:2px 0;text-align:center}
 .mk-goods th:first-child{width:30px}
 .mk-goods thead .commodity-mini{width:26px;height:26px;display:inline-block;filter:drop-shadow(0 0 3px rgba(255,255,255,.15))}
-.mk-goods td{font:600 16px/1.2 "EB Garamond",Georgia,serif;color:var(--text)}
+.mk-goods td{font:600 16px/1.2 "EB Garamond",Georgia,serif;color:var(--text);font-variant-numeric:lining-nums tabular-nums}
 .mk-goods tr.st td{color:var(--brass3)}
 .mk-gl{display:inline-grid;place-items:center;width:22px;height:22px;color:var(--muted)}
 .mk-gl svg{width:18px;height:18px}
@@ -2633,7 +2633,7 @@ function applyStatic(){
   document.querySelectorAll('[data-i18n-aria]').forEach(el=>{el.setAttribute('aria-label',t(el.dataset.i18nAria))});
   const gh=t('goodsHead');
   $('goodsKey').innerHTML=`<table class="mk-goods"><thead><tr><th><span class="sr">${gh[0]}</span></th>${SU.map(c=>`<th title="${gname(c)}"><span role="img" aria-label="${gname(c)}">${sym(c)}</span></th>`).join('')}</tr></thead>`+
-    `<tbody><tr><th scope="row"><span class="mk-gl" role="img" title="${gh[1]}" aria-label="${gh[1]}"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15.5h14M4 12h12M5 8.5h10M6 5h8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span></th>${SU.map(c=>`<td>${SD[c].n}</td>`).join('')}</tr>`+
+    `<tbody><tr><th scope="row"><span class="mk-gl count" role="img" title="${gh[1]}" aria-label="${gh[1]}"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15.5h14M4 12h12M5 8.5h10M6 5h8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span></th>${SU.map(c=>`<td>${SD[c].n}</td>`).join('')}</tr>`+
     `<tr class="st"><th scope="row"><span class="mk-gl coin" role="img" title="${gh[2]}" aria-label="${gh[2]}">${ART_ON?'':'¤'}</span></th>${SU.map(c=>`<td>${SD[c].p}</td>`).join('')}</tr></tbody></table>`;
   $('rulesGoods').innerHTML=SU.map(c=>card(c)).join('');
   $('playBtn').textContent=started?t('newWith'):t('open');

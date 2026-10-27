@@ -644,7 +644,7 @@ button.seal.on{background:linear-gradient(#f1d99a,#d2a650);color:#2b1e14;border-
 /* Painted art: build_kantar.py replaces the marker below with the image variables + src/kantar/art.css. */
 .kemblem,.rp-ic{display:none}
 .rivface{display:none;width:40px;height:40px;border-radius:50%;margin:-6px 10px -10px 0;vertical-align:middle;background:center/cover no-repeat;box-shadow:0 0 0 2px rgba(205,166,102,.55),0 3px 8px rgba(0,0,0,.45)}
-:root{--ka-cirak:url(img/ka_rival_cirak.webp);--ka-usta:url(img/ka_rival_usta.webp);--ka-seal-uc:url(img/ka_seal_threepans.webp);--ka-seal-kes:url(img/ka_seal_cut.webp);--ka-ic-S:url(img/ka_icon_S.webp);--ka-ic-I:url(img/ka_icon_I.webp);--ka-ic-K:url(img/ka_icon_K.webp);--ka-ic-B:url(img/ka_icon_B.webp);--ka-coin:url(img/ka_coin.webp);--ka-light:url(img/ka_lightload.webp);--ka-burn:url(img/ka_burn.webp);--ka-narh:url(img/ka_narh.webp);--ka-emblem:url(img/ka_emblem.webp);--ka-beam:url(img/ka_scale_beam.webp);--ka-pan:url(img/ka_scale_pan.webp);--ka-stand:url(img/ka_scale_stand.webp);--ka-cardback:url(img/ka_cardback.webp);--ka-bg-tall:url(img/ka_bg_tall.webp);--ka-end-win-cirak:url(img/ka_end_win_cirak.webp);--ka-end-lose-cirak:url(img/ka_end_lose_cirak.webp);--ka-end-draw-cirak:url(img/ka_end_draw_cirak.webp);--ka-end-win-usta:url(img/ka_end_win_usta.webp);--ka-end-lose-usta:url(img/ka_end_lose_usta.webp);--ka-end-draw-usta:url(img/ka_end_draw_usta.webp);--ka-tray:url(img/ka_tray.webp);--ka-caravan:url(img/ka_caravan.webp)}
+:root{--ka-cirak:url(img/ka_rival_cirak.webp);--ka-usta:url(img/ka_rival_usta.webp);--ka-seal-uc:url(img/ka_seal_threepans.webp);--ka-seal-kes:url(img/ka_seal_cut.webp);--ka-ic-S:url(img/ka_icon_S.webp);--ka-ic-I:url(img/ka_icon_I.webp);--ka-ic-K:url(img/ka_icon_K.webp);--ka-ic-B:url(img/ka_icon_B.webp);--ka-coin:url(img/ka_coin.webp);--ka-light:url(img/ka_lightload.webp);--ka-burn:url(img/ka_burn.webp);--ka-narh:url(img/ka_narh.webp);--ka-emblem:url(img/ka_emblem.webp);--ka-beam:url(img/ka_scale_beam.webp);--ka-pan:url(img/ka_scale_pan.webp);--ka-stand:url(img/ka_scale_stand.webp);--ka-cardback:url(img/ka_cardback.webp);--ka-bg-tall:url(img/ka_bg_tall.webp);--ka-end-win-cirak:url(img/ka_end_win_cirak.webp);--ka-end-lose-cirak:url(img/ka_end_lose_cirak.webp);--ka-end-draw-cirak:url(img/ka_end_draw_cirak.webp);--ka-end-win-usta:url(img/ka_end_win_usta.webp);--ka-end-lose-usta:url(img/ka_end_lose_usta.webp);--ka-end-draw-usta:url(img/ka_end_draw_usta.webp);--ka-tray:url(img/ka_tray.webp);--ka-caravan:url(img/ka_caravan.webp);--ka-out:url(img/ka_out.webp);--ka-weights:url(img/ka_weights.webp);--ka-gl-count:url(img/ka_gl_count.webp);--ka-gl-value:url(img/ka_gl_value.webp)}
 /* Kantar painted art (src/kantar/art/*.webp, made in ChatGPT from art-studio.html prompts).
    build_kantar.py puts the :root image variables in front of this file and inlines both in place of
    KANTAR_ART in kantar.html. Without the build (the bare source page) none of this loads and the game
@@ -767,6 +767,13 @@ body.narrow .dish:has(.card.tile:nth-child(3)) .card.tile+.card.tile{margin-left
 .pan.aipick{filter:drop-shadow(0 0 11px rgba(240,144,126,.95)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
 .pan.aikeep{filter:drop-shadow(0 0 9px rgba(143,208,165,.85)) drop-shadow(0 10px 10px rgba(0,0,0,.4))}
 .pan.aipick .dish,.pan.aikeep .dish{outline:0!important}
+
+/* ---- the Market panel's painted icons (market-studio.html); the bare source keeps its drawn SVGs ---- */
+.mk-ic.removed{background-image:var(--ka-out)}.mk-ic.goods{background-image:var(--ka-weights)}
+.mk-ic.removed svg,.mk-ic.goods svg{display:none}
+th .mk-gl.count{background:var(--ka-gl-count) center/contain no-repeat}th .mk-gl.count svg{display:none}
+th .mk-gl.coin{background-image:var(--ka-gl-value)}
+th .mk-gl{width:26px;height:26px}
 
 
 /* ---- Header toolbar (2026-10-17): teacher/preview/sound as one icon group, then Stats, Rules, New game ---- */
@@ -974,7 +981,7 @@ main.center{container-type:inline-size;container-name:board}
 .mk-goods th,.mk-goods td{padding:2px 0;text-align:center}
 .mk-goods th:first-child{width:30px}
 .mk-goods thead .commodity-mini{width:26px;height:26px;display:inline-block;filter:drop-shadow(0 0 3px rgba(255,255,255,.15))}
-.mk-goods td{font:600 16px/1.2 "EB Garamond",Georgia,serif;color:var(--text)}
+.mk-goods td{font:600 16px/1.2 "EB Garamond",Georgia,serif;color:var(--text);font-variant-numeric:lining-nums tabular-nums}
 .mk-goods tr.st td{color:var(--brass3)}
 .mk-gl{display:inline-grid;place-items:center;width:22px;height:22px;color:var(--muted)}
 .mk-gl svg{width:18px;height:18px}
@@ -2834,7 +2841,7 @@ function applyStatic(){
   document.querySelectorAll('[data-i18n-aria]').forEach(el=>{el.setAttribute('aria-label',t(el.dataset.i18nAria))});
   const gh=t('goodsHead');
   $('goodsKey').innerHTML=`<table class="mk-goods"><thead><tr><th><span class="sr">${gh[0]}</span></th>${SU.map(c=>`<th title="${gname(c)}"><span role="img" aria-label="${gname(c)}">${sym(c)}</span></th>`).join('')}</tr></thead>`+
-    `<tbody><tr><th scope="row"><span class="mk-gl" role="img" title="${gh[1]}" aria-label="${gh[1]}"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15.5h14M4 12h12M5 8.5h10M6 5h8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span></th>${SU.map(c=>`<td>${SD[c].n}</td>`).join('')}</tr>`+
+    `<tbody><tr><th scope="row"><span class="mk-gl count" role="img" title="${gh[1]}" aria-label="${gh[1]}"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 15.5h14M4 12h12M5 8.5h10M6 5h8" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span></th>${SU.map(c=>`<td>${SD[c].n}</td>`).join('')}</tr>`+
     `<tr class="st"><th scope="row"><span class="mk-gl coin" role="img" title="${gh[2]}" aria-label="${gh[2]}">${ART_ON?'':'¤'}</span></th>${SU.map(c=>`<td>${SD[c].p}</td>`).join('')}</tr></tbody></table>`;
   $('rulesGoods').innerHTML=SU.map(c=>card(c)).join('');
   $('playBtn').textContent=started?t('newWith'):t('open');
