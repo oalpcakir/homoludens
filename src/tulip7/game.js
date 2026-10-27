@@ -398,7 +398,7 @@ function bookHTML(p, big){
   return `<div class="book ${big ? '' : 'sm'}" title="Tulip book: ${p.nums.length} of 7 different tulips">${h}${big ? `<small>tulip book ${p.nums.length}/7${p.nums.length >= 5 ? ' · +15 at seven' : ''}</small>` : ''}</div>`;
 }
 function statusChip(p){
-  if (G.turn === p && p.status === 'active') return p.human ? `<span class="chip turn">Your turn</span>` : `<span class="chip turn"><span class="lbl">Thinking…</span><b class="val">${p.cards.length ? 'On table ' + tableValue(p) : 'Thinking…'}</b></span>`;
+  if (G.turn === p && p.status === 'active') return p.human ? `<span class="chip turn">Your turn</span>` : `<span class="chip turn"><span class="lbl">Thinking…</span><b class="val">${p.cards.length ? '<span class="ot">On table </span>' + tableValue(p) : 'Thinking…'}</b></span>`;
   if (ui.after && p.status !== 'idle'){
     if (p.status === 'bust') return `<span class="chip bust">Up in smoke</span>`;
     return `<span class="chip ${p.status === 'book' ? 'book' : 'stayed'}">${G.mode === 'classic' ? '+' + p.last : '+' + fmt(p.lastG)}${p.status === 'book' ? ' · book' : ''}</span>`;
@@ -407,7 +407,7 @@ function statusChip(p){
   const x = m[p.status]; if (!x) return '';
   // on a phone the chip also carries what a rival has on the table (the separate tag is hidden there)
   const has = !p.human && p.status !== 'bust' && p.nums.length + p.mods.length + (p.x2 ? 1 : 0);
-  if (p.status === 'active') return `<span class="chip"><span class="lbl">${x[1]}</span>${has ? `<b class="val">On table ${tableValue(p)}</b>` : `<span class="val">At the table</span>`}</span>`;
+  if (p.status === 'active') return `<span class="chip"><span class="lbl">${x[1]}</span>${has ? `<b class="val"><span class="ot">On table </span>${tableValue(p)}</b>` : `<span class="val">At the table</span>`}</span>`;
   // a phone's rival tile is narrow: there the short label (.sl) goes with the value, so the value is never cut off
   return has ? `<span class="chip ${x[0]}"><span class="lbl">${x[1]}</span><span class="sl">${x[2]}</span> <b class="val">${tableValue(p)}</b></span>` : `<span class="chip ${x[0]}">${x[1]}</span>`;
 }
@@ -455,6 +455,16 @@ function renderBoard(){
     : G.crashed ? `<b>3 February 1637</b><span>The crash. All paper has settled at 3½ per cent.</span>`
     : `<b>Evening ${ROMAN[G.evening]} · ${EV[G.evening].date}</b><span>${EV[G.evening].news}</span>`);
 }
+/* A rival's status chip must never be cut off: if its text overflows (narrow seat, or the web font did not load and a
+   wider fallback font is used), drop the label and keep the value; if it still does not fit, set it a little smaller. */
+function fitChips(){
+  for (const c of document.querySelectorAll('.rivals .plate .chip')){
+    c.classList.remove('tight', 'tighter');
+    if (c.scrollWidth > c.clientWidth + 1){ c.classList.add('tight'); if (c.scrollWidth > c.clientWidth + 1) c.classList.add('tighter'); }
+  }
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (G) fitChips(); });
+addEventListener('resize', () => { if (G) fitChips(); });
 function render(){
   if (!G) return;
   renderBoard();
@@ -480,6 +490,7 @@ function render(){
   $('#deckN').textContent = G.draw.length; $('#discN').textContent = G.discard.length;
   const ev = G.alkmaar ? 'Alkmaar, 5 February 1637' : G.mode === 'winter' ? `Evening ${ROMAN[G.evening]} · ${EV[G.evening].date}` : `Round ${G.round} · first to ${TARGET}`;
   $('#where').textContent = ev + (G.alkmaar || ART.ui_sign ? '' : ' · Menniste Bruyloft, Amsterdam');
+  fitChips();
   animateNew();
 }
 /* Every new card flies in from the pile; a drawn card is turned over where it lands. */

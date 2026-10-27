@@ -86,6 +86,9 @@ button{font:inherit;cursor:pointer}
 .chip.book{background:#efe2fb;color:#6a2ca0}
 .chip.turn{background:var(--delft);color:#fff}
 .chip .val,.chip .sl{display:none}
+/* set by fitChips() when a chip's text does not fit its box (narrow seats, or a fallback font wider than the web font) */
+.chip.tight .lbl{display:none!important}.chip.tight .val{display:inline!important}
+.chip.tighter{font-size:10px!important;letter-spacing:-.01em;padding-inline:4px!important}.chip.tighter .ot{display:none}
 .hand{display:flex;flex-wrap:wrap;gap:5px;min-height:calc(var(--mw)*1.4 + 6px);margin-top:8px;position:relative;perspective:800px}
 .below{display:flex;align-items:center;gap:8px;margin-top:6px;min-height:20px;flex-wrap:wrap}
 .tag{background:rgba(255,250,240,.9);border-radius:999px;padding:1px 9px;font-size:12.5px;color:var(--muted)}

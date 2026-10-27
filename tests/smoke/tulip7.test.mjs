@@ -269,16 +269,20 @@ test('Tulip 7: on a 768x1024 tablet your hand is in sight on your turn; rival ch
     }
     assert.ok(turns >= 4, `${w}x${h}: did not reach four turns`);
     // every kind of rival chip, with a big value, on this screen
+    // also with a wide fallback font, as when the web font does not load (some machines and CI runners)
+    for (const wide of [false, true]) {
+    if (wide) await page.addStyleTag({ content: '*{font-family:"DejaVu Sans","Verdana",sans-serif!important;letter-spacing:.02em}' });
     const clipped = await page.evaluate(() => {
       const out = [], cards = [12, 11, 10, 9].map((v, k) => ({ k: 'num', v, uid: 'q' + k }));
       for (const [st, fr] of [['stayed', true], ['stayed', false], ['book', false], ['active', false]]) {
         G.players.slice(1).forEach(p => { p.status = st; p.frozen = fr; p.cards = cards.slice(); p.nums = [12, 11, 10, 9]; p.mods = []; p.x2 = false; });
-        G.turn = null; render();
+        G.turn = null; render(); fitChips();
         for (const c of document.querySelectorAll('.rivals .plate .chip')) if (getComputedStyle(c).overflow === 'hidden' && c.scrollWidth > c.clientWidth + 1) out.push(c.textContent);
       }
       return out;
     });
-    assert.deepEqual(clipped, [], `${w}x${h}: rival chips cut off`);
+    assert.deepEqual(clipped, [], `${w}x${h}${wide ? ' (wide font)' : ''}: rival chips cut off`);
+    }
     assert.deepEqual(problems, []);
     await ctx.close();
   }
@@ -335,7 +339,10 @@ test('Tulip 7: art loads as files, cards are never blank on the first deal, dial
   const ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
   await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/, r => r.fulfill({ status: 204, body: '' }));
   // a slow line for the card art: each image arrives 1.2 s late
-  await ctx.route(/\/tulip7\/img\/(t\d\d|m_|a_|ui_frame|ui_cardback)/, async r => { await new Promise(res => setTimeout(res, 1200)); await r.continue(); });
+  // (Playwright turns the HTTP cache off while routing, so only the first request for each picture is held back, as a
+  // real browser would fetch it once and then use its cache)
+  const seen = new Set();
+  await ctx.route(/\/tulip7\/img\/(t\d\d|m_|a_|ui_frame|ui_cardback)/, async r => { const u = r.request().url(); if (!seen.has(u)) { seen.add(u); await new Promise(res => setTimeout(res, 1200)); } await r.continue(); });
   await ctx.addInitScript(() => localStorage.setItem('tulip7.set', JSON.stringify({ fast: true, help: false, sound: false, mode: 'winter' })));
   const page = await ctx.newPage(); const problems = []; page.on('pageerror', e => problems.push(e.message));
   await page.goto(srv.url + '/tulip7/');
