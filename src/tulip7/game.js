@@ -377,9 +377,12 @@ function cardHTML(c, extra = ''){
     return `<div class="card num ${extra}" ${u} style="--c:${v.hex};--ci:${v.ink}" title="${esc(v.name + ' (' + v.n + '): ' + v.note)}" aria-label="${esc(v.name)}, ${v.n}"><div class="fr"><b class="pip tl">${v.n}</b><div class="win"><img src="${ART[v.id]}" alt=""></div><div class="rb ${v.name.length > 16 ? 'long' : ''}">${esc(v.name)}</div><span class="cp">${v.n ? v.n + ' in deck' : 'only one'}</span><b class="pip br" aria-hidden="true">${v.n}</b></div></div>`; }
   if (c.k === 'mod') return `<div class="card mod ${extra}" ${u} title="${esc(SP.mod.note)}"><div class="fr"><b class="pip tl">+${c.v}</b><div class="win"><img src="${ART.m_offset}" alt=""></div><div class="rb">Offsets</div><span class="cp">adds ${c.v}</span><b class="pip br" aria-hidden="true">+${c.v}</b></div></div>`;
   if (c.k === 'x2') return `<div class="card x2 ${extra}" ${u} title="${esc(SP.x2.note)}"><div class="fr"><b class="pip tl">×2</b><div class="win"><img src="${ART.m_broken}" alt=""></div><div class="rb">Broken tulip</div><span class="cp">doubles</span><b class="pip br" aria-hidden="true">×2</b></div></div>`;
-  const s = SP[c.k], ic = {freeze:'✋', flip3:'3', second:'↺'}[c.k];
+  const s = SP[c.k], ic = {freeze:HAND_SVG, flip3:'3', second:'↺'}[c.k];
   return `<div class="card act ${c.k === 'second' ? 'held' : ''} ${extra}" ${u} title="${esc(s.name + ': ' + SPEC[c.k].long)}"><div class="fr"><b class="pip tl">${ic}</b><div class="win"><img src="${ART[s.art]}" alt=""></div><div class="rb">${s.name}</div><span class="cp">${SPEC[c.k].eff}</span></div></div>`;
 }
+/* the Wijnkoop pip: a plain raised hand ("stop"), drawn in the pip's own colour like the other pips (an emoji hand
+   rendered as a yellow cartoon on most systems) */
+const HAND_SVG = `<svg class="pip-ic" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M7.6 12.2V6.1a1.45 1.45 0 0 1 2.9 0v4.6h.6V4.6a1.45 1.45 0 0 1 2.9 0v6.1h.6V5.6a1.45 1.45 0 0 1 2.9 0v5.6h.5V8.1a1.4 1.4 0 0 1 2.8 0v6.3c0 4.2-2.9 7.6-7.2 7.6-3.1 0-5-1.6-6.4-3.9l-2.6-4.5a1.45 1.45 0 0 1 2.4-1.6z"/></svg>`;
 const BACK_SVG = `<svg viewBox="0 0 40 40"><path d="M20 36V20" stroke="#3f8a4a" stroke-width="2.5"/><path d="M20 26c-6-1-9-5-10-9 5 0 9 3 10 9zM20 26c6-1 9-5 10-9-5 0-9 3-10 9z" fill="#3f8a4a"/><path d="M12 8c2 6 4 10 8 12 4-2 6-6 8-12-3 2-5 3-6 5-1-3-1-5-2-7-1 2-1 4-2 7-1-2-3-3-6-5z" fill="#d7261e"/></svg>`;
 const backHTML = (extra = '', uid = '') => `<div class="card facedown ${ART.ui_cardback ? 'img' : ''} ${extra}" ${uid ? `data-uid="${uid}"` : ''}><span class="mark">${BACK_SVG}</span></div>`;
 
