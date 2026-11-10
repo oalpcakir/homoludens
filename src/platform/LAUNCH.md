@@ -1,7 +1,7 @@
 # Launch texts
 
 Drafts for the bigger release, in the same plain voice as the home page. Edit freely; nothing here is published
-automatically. Replace COLLECTION-LINK with the itch.io collection once it exists.
+automatically. The itch.io collection is https://itch.io/c/8475318/homo-ludens.
 
 ---
 
@@ -57,7 +57,7 @@ It takes about fifteen minutes and plays on a phone, a tablet or a computer.
 This is the sixth game in Homo Ludens, a small collection of history games I make. The others are now on itch as
 well: Kantar (a two-player duel in the Grand Bazaar, with a teacher), Borderlines (a daily map puzzle), Polder
 (dikes and floods across seven centuries), A Cup of Tea (a detective game about one grocer's receipt from 1850) and
-Retourvloot (two centuries of the Dutch East India Company). They're all in one place here: COLLECTION-LINK
+Retourvloot (two centuries of the Dutch East India Company). They're all in one place here: https://itch.io/c/8475318/homo-ludens
 
 If you find a mistake, please leave a comment. I read them.
 

@@ -66,7 +66,7 @@ Prices and dates come from Peter Garber, *Tulipmania* (1989), and Anne Goldgar, 
 
 **Part of Homo Ludens**
 Tulip 7 is No. 6 in [Homo Ludens](https://homoludens.oalpcakir.workers.dev/), small games about the past.
-More games: [the Homo Ludens collection](COLLECTION-LINK) · Chat with other players on
+More games: [the Homo Ludens collection](https://itch.io/c/8475318/homo-ludens) · Chat with other players on
 [Discord](https://discord.gg/7PcDfAMdr5).
 
 Your progress is saved in your browser, separately from the Homo Ludens site.
@@ -96,7 +96,7 @@ The rival and the teacher only ever use public information: they never see the h
 
 **Part of Homo Ludens**
 Kantar is No. 5 in [Homo Ludens](https://homoludens.oalpcakir.workers.dev/), small games about the past.
-More games: [the Homo Ludens collection](COLLECTION-LINK) · [Discord](https://discord.gg/7PcDfAMdr5).
+More games: [the Homo Ludens collection](https://itch.io/c/8475318/homo-ludens) · [Discord](https://discord.gg/7PcDfAMdr5).
 Home-page art: Amadeo Preziosi, *The Grand Bazaar* (19th century, Pera Museum), public domain.
 
 ## Polder
@@ -123,7 +123,7 @@ Flood dates and drainage history from the sources listed in the game's Chronicle
 
 **Part of Homo Ludens**
 Polder is No. 4 in [Homo Ludens](https://homoludens.oalpcakir.workers.dev/), small games about the past.
-More games: [the Homo Ludens collection](COLLECTION-LINK) · [Discord](https://discord.gg/7PcDfAMdr5).
+More games: [the Homo Ludens collection](https://itch.io/c/8475318/homo-ludens) · [Discord](https://discord.gg/7PcDfAMdr5).
 Cover painting: Jacob van Ruisdael, *The Windmill at Wijk bij Duurstede* (c. 1670, Rijksmuseum), public domain.
 
 ## A Cup of Tea
@@ -149,7 +149,7 @@ shipowner, and the money that never reached London.
 
 **Part of Homo Ludens**
 A Cup of Tea is No. 3 in [Homo Ludens](https://homoludens.oalpcakir.workers.dev/), small games about the past.
-More games: [the Homo Ludens collection](COLLECTION-LINK) · [Discord](https://discord.gg/7PcDfAMdr5).
+More games: [the Homo Ludens collection](https://itch.io/c/8475318/homo-ludens) · [Discord](https://discord.gg/7PcDfAMdr5).
 Sources are cited in the game: Hansard, Henry Mayhew, Dickens's *Household Narrative* and others. Engravings from
 Wikimedia Commons, public domain.
 
@@ -175,7 +175,7 @@ slowly hollow out from the inside.
 
 **Part of Homo Ludens**
 Retourvloot is No. 2 in [Homo Ludens](https://homoludens.oalpcakir.workers.dev/), small games about the past.
-More games: [the Homo Ludens collection](COLLECTION-LINK) · [Discord](https://discord.gg/7PcDfAMdr5).
+More games: [the Homo Ludens collection](https://itch.io/c/8475318/homo-ludens) · [Discord](https://discord.gg/7PcDfAMdr5).
 All images from the Rijksmuseum, public domain (CC0); the full list is on the game's Sources page.
 
 ## Borderlines
