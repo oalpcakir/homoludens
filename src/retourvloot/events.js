@@ -429,7 +429,7 @@ function tulipNod() {
   if (!seen) return '';
   const P = typeof window !== 'undefined' ? window.HL_PLATFORM : null;
   const cg = !!(P && P.id === 'crazygames');
-  const href = P ? 'https://homoludens.oalpcakir.workers.dev/tulip7/' : '/tulip7/';
+  const href = P ? 'https://homoludens.onuralp.co/tulip7/' : '/tulip7/';
   return `<p class="nod">You may have seen the tavern trade yourself, at the tables in Tulip 7.${cg ? '' : ` <a href="${href}" id="tulip-link">Back to the taverns</a>`}</p>`;
 }
 function conquerBanda(S) {

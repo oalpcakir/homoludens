@@ -10,7 +10,7 @@ ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 OUT = os.path.join(ROOT, "public", "cupoftea")
 import sys
 sys.path.insert(0, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")))
-from site_config import SITE, canonical, analytics_head  # noqa: E402
+from site_config import SITE, canonical, analytics_head, game_ld  # noqa: E402
 ph = analytics_head("cupoftea")
 
 SCENES = {
@@ -63,6 +63,7 @@ for n, (path, title, desc) in SCENES.items():
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{SITE}/og-cupoftea.jpg">
 {canonical("/cupoftea/" + path)}
+{game_ld("cupoftea")}
 {icon}
 {ph}
 <script src="/feedback.js" defer data-game="cupoftea"></script>

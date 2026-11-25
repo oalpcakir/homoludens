@@ -46,7 +46,7 @@ Each realm ends with a short note on what was really going on that year.
 
 **Part of Homo Ludens**
 
-Borderlines is No. 1 in [Homo Ludens](https://homoludens.oalpcakir.workers.dev/), a small collection of history games you can finish over a coffee. The other games (running the Dutch East India Company, tracing a grocer's receipt from 1850 London to a Cuban sugar estate) are on the site.
+Borderlines is No. 1 in [Homo Ludens](https://homoludens.onuralp.co/), a small collection of history games you can finish over a coffee. The other games (running the Dutch East India Company, tracing a grocer's receipt from 1850 London to a Cuban sugar estate) are on the site.
 
 **Credits**
 

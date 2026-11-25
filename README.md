@@ -2,18 +2,18 @@
 
 Small games about the past: short history games with one mechanic, one idea, and a note on what really happened. Named after Johan Huizinga's 1938 book.
 
-▶ **Play:** [homoludens.oalpcakir.workers.dev](https://homoludens.oalpcakir.workers.dev)
+▶ **Play:** [homoludens.onuralp.co](https://homoludens.onuralp.co)
 
 ## Games
 
 | No. | Game | What you do | Length |
 |---|---|---|---|
-| 1 | [**Borderlines**](https://homoludens.oalpcakir.workers.dev/borderlines/) | Paint the land a historical realm ruled, then see how close you came. Daily challenge. | 5 minutes |
-| 2 | [**Retourvloot**](https://homoludens.oalpcakir.workers.dev/retourvloot/) | Run the Dutch East India Company from Amsterdam, 1602–1799. Letters from Batavia take a year. | 30–80 minutes, desktop |
-| 3 | [**A Cup of Tea**](https://homoludens.oalpcakir.workers.dev/cupoftea/) | A grocer's receipt, London 1850: find out who got every farthing, from the Customs House to Havana. | 3 scenes, desktop |
-| 4 | [**Polder**](https://homoludens.oalpcakir.workers.dev/polder/) | Build dikes and drain the sea across four Dutch regions, from the terps of 1200 to the North Sea flood of 1953. | ~15 minutes per region, desktop |
-| 5 | [**Kantar**](https://homoludens.oalpcakir.workers.dev/kantar/) | A two-player duel in the Grand Bazaar of Istanbul: put three goods on a brass scale, your rival takes a pan, you keep the other. A teacher explains the best move as you learn. | ~10 minutes, any screen, English or Turkish |
-| 6 | [**Tulip 7**](https://homoludens.oalpcakir.workers.dev/tulip7/) | Amsterdam, winter 1636: a tavern card game of the tulip mania. Collect seven different tulips without drawing one twice, write your winnings on paper as prices rise, and cash in before the crash of February 1637. | ~15 minutes, any screen |
+| 1 | [**Borderlines**](https://homoludens.onuralp.co/borderlines/) | Paint the land a historical realm ruled, then see how close you came. Daily challenge. | 5 minutes |
+| 2 | [**Retourvloot**](https://homoludens.onuralp.co/retourvloot/) | Run the Dutch East India Company from Amsterdam, 1602–1799. Letters from Batavia take a year. | 30–80 minutes, desktop |
+| 3 | [**A Cup of Tea**](https://homoludens.onuralp.co/cupoftea/) | A grocer's receipt, London 1850: find out who got every farthing, from the Customs House to Havana. | 3 scenes, desktop |
+| 4 | [**Polder**](https://homoludens.onuralp.co/polder/) | Build dikes and drain the sea across four Dutch regions, from the terps of 1200 to the North Sea flood of 1953. | ~15 minutes per region, desktop |
+| 5 | [**Kantar**](https://homoludens.onuralp.co/kantar/) | A two-player duel in the Grand Bazaar of Istanbul: put three goods on a brass scale, your rival takes a pan, you keep the other. A teacher explains the best move as you learn. | ~10 minutes, any screen, English or Turkish |
+| 6 | [**Tulip 7**](https://homoludens.onuralp.co/tulip7/) | Amsterdam, winter 1636: a tavern card game of the tulip mania. Collect seven different tulips without drawing one twice, write your winnings on paper as prices rise, and cash in before the crash of February 1637. | ~15 minutes, any screen |
 
 ## Spotted a mistake?
 

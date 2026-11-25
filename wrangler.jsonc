@@ -1,17 +1,19 @@
 {
   "name": "homoludens",
   "compatibility_date": "2025-09-01",
-  // the old *.oalpcakir.workers.dev address stays on next to the custom domain
+  // the old *.oalpcakir.workers.dev address stays on next to the custom domain, but only to 301 to it (worker.js)
   "workers_dev": true,
   "routes": [{ "pattern": "homoludens.onuralp.co", "custom_domain": true }],
-  // worker.js serves /api/* and the share links (/borderlines/s/*, /kantar/s/*, /polder/s/*); everything else comes straight from ./public
+  // worker.js serves /api/* and the share links (/borderlines/s/*, /kantar/s/*, /polder/s/*); everything else comes straight from ./public.
+  // It also sees every page (paths ending in /), robots.txt and sitemap.xml, so it can 301 the old
+  // homoludens.oalpcakir.workers.dev address to homoludens.onuralp.co. Images, scripts and styles still skip the Worker.
   "main": "worker.js",
   // keep variables and secrets set in the Cloudflare dashboard when deploying from Git
   "keep_vars": true,
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*", "/borderlines/s/*", "/kantar/s/*", "/polder/s/*"]
+    "run_worker_first": ["/api/*", "/borderlines/s/*", "/kantar/s/*", "/polder/s/*", "/", "/*/", "/*.html", "/robots.txt", "/sitemap.xml"]
   },
   // New-game email list. Create a KV namespace called "homoludens-subscribers" in the Cloudflare dashboard
   // (Storage & Databases → KV), then put its id here and remove the // in front of the three lines.

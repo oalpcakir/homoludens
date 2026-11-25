@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: https://homoludens.oalpcakir.workers.dev/sitemap.xml
+Sitemap: https://homoludens.onuralp.co/sitemap.xml

@@ -30,7 +30,7 @@ A few other things:
 - Polder can be played by touch now, and every region ends by showing your dikes next to what really happened.
 - Finished games get a stamp in a little passport on the home page.
 
-Everything is here: https://homoludens.oalpcakir.workers.dev/
+Everything is here: https://homoludens.onuralp.co/
 
 If something is wrong, historically or otherwise, reply to this email or use the feedback button in any game.
 
@@ -106,7 +106,7 @@ Title: Free browser games about specific moments in history (tulip mania, the VO
 **Six games, one passport**
 
 Tulip 7 is out: a tavern card game about the tulip mania. Draw tulips, don't draw the same one twice, and sell before
-February. It plays nicely on a phone. https://homoludens.oalpcakir.workers.dev/tulip7/
+February. It plays nicely on a phone. https://homoludens.onuralp.co/tulip7/
 
 Also new:
 - Kantar reviews your match after it ends, and you can play a friend on one screen

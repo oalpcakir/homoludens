@@ -87,6 +87,18 @@ test('feedback is filed under the right game for every game in games.json', asyn
   }
 });
 
+test('the old workers.dev address 301s pages to homoludens.onuralp.co, but not the API', async () => {
+  const { env } = setup();
+  const old = 'https://homoludens.oalpcakir.workers.dev';
+  const r = await worker.fetch(new Request(old + '/polder/?x=1'), env, {});
+  assert.equal(r.status, 301);
+  assert.equal(r.headers.get('Location'), 'https://homoludens.onuralp.co/polder/?x=1');
+  const a = await worker.fetch(new Request(old + '/api/newsletter/status'), env, {});
+  assert.equal(a.status, 200);
+  const here = await worker.fetch(new Request('https://homoludens.onuralp.co/games.json'), env, {});
+  assert.equal(here.status, 200);
+});
+
 test('turnstile token from another hostname is rejected', async () => {
   const { env } = setup({ hostname: 'evil.test' });
   const r = await call(env, '/api/feedback', { method: 'POST', body: { message: 'hello there', game: 'polder', token: 't' } });

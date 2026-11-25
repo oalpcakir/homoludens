@@ -7,13 +7,14 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="A Cup of Tea">
 <meta property="og:description" content="East London, March 1850. A grocer's receipt: one pound of sugar, 4½d. Find out who got every farthing of it, from the Customs House to a sugar estate in Cuba.">
-<meta property="og:url" content="https://homoludens.oalpcakir.workers.dev/cupoftea/">
-<meta property="og:image" content="https://homoludens.oalpcakir.workers.dev/og-cupoftea.jpg">
+<meta property="og:url" content="https://homoludens.onuralp.co/cupoftea/">
+<meta property="og:image" content="https://homoludens.onuralp.co/og-cupoftea.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://homoludens.oalpcakir.workers.dev/og-cupoftea.jpg">
-<link rel="canonical" href="https://homoludens.oalpcakir.workers.dev/cupoftea/">
+<meta name="twitter:image" content="https://homoludens.onuralp.co/og-cupoftea.jpg">
+<link rel="canonical" href="https://homoludens.onuralp.co/cupoftea/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"A Cup of Tea","url":"https://homoludens.onuralp.co/cupoftea/","description":"A grocer's receipt from East London, 1850. Read the papers of the day, do the sums, and find out who got every farthing.","image":"https://homoludens.onuralp.co/og-cupoftea.jpg","genre":"Historical","gamePlatform":"Web browser","applicationCategory":"Game","operatingSystem":"Any","isAccessibleForFree":true,"author":{"@type":"Person","@id":"https://onuralp.co/#me","name":"Onuralp Çakır","url":"https://onuralp.co/"},"isPartOf":{"@type":"WebSite","@id":"https://homoludens.onuralp.co/#website","name":"Homo Ludens","url":"https://homoludens.onuralp.co/"}}</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%233b2a1e'/%3E%3Cpath d='M7 12h15v5a7 7 0 0 1-7 7h-1a7 7 0 0 1-7-7z' fill='%23efe5cc'/%3E%3Cpath d='M22 14h2a3 3 0 0 1 0 6h-2' fill='none' stroke='%23efe5cc' stroke-width='2'/%3E%3Cpath d='M5 26h21' stroke='%23a7622f' stroke-width='2'/%3E%3C/svg%3E">
 <!-- Analytics: PostHog (US), cookieless; the game's own anonymous player id is the distinct id -->
 <script>
@@ -72,7 +73,7 @@
 <script src="/feedback.js" defer data-game="cupoftea"></script>
 <script src="/next.js" defer data-game="cupoftea"></script>
 <script src="/hl.js" defer data-game="cupoftea"></script>
-<title>A Cup of Tea · Scene 1</title>
+<title>A Cup of Tea · Scene 1: a grocer's receipt, London 1850 · Homo Ludens</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -1546,7 +1547,7 @@ function receiptText(R){
   const out=[R.title, `${R.item}: ${R.price}`];
   R.lines.forEach(l=>out.push(`${(l.ghost?"?":(l.open?"○":"●").repeat(l.coins)).padEnd(8)}${l.d.padStart(6)}  ${l.who}`));
   if(R.time) R.time.forEach(l=>out.push(`${l.who}: ${l.v} (${l.sub})`));
-  out.push(R.foot, `Blots in the ledger: ${blots}`, "https://homoludens.oalpcakir.workers.dev/cupoftea/");
+  out.push(R.foot, `Blots in the ledger: ${blots}`, "https://homoludens.onuralp.co/cupoftea/");
   return out.join("\n");
 }
 function showReceipt(){
@@ -1573,7 +1574,7 @@ function shareOpts(){
   return {game:"cupoftea", kicker:"A Cup of Tea · London 1850", title:"Who got every farthing", big:"4½d",
     sub:`Scene 1 solved with ${blots} blot${blots===1?"":"s"}`,
     lines:sp.flows.slice().sort((a,b)=>b.v-a.v).slice(0,3).map(f=>`${f.who}: ${f.v.toFixed(2)}d`),
-    art:"/cupoftea/img/tea_intro_1.webp", text:receiptText(receiptData()), url:"https://homoludens.oalpcakir.workers.dev/cupoftea/"};
+    art:"/cupoftea/img/tea_intro_1.webp", text:receiptText(receiptData()), url:"https://homoludens.onuralp.co/cupoftea/"};
 }
 document.addEventListener("DOMContentLoaded",()=>{ if(window.HL) HL.on($("#rShare"),shareOpts); else $("#rShare").hidden=true; });
 $("#rCopy").addEventListener("click",()=>{

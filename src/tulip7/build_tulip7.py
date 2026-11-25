@@ -11,7 +11,7 @@ H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 sys.path.insert(0, os.path.normpath(os.path.join(H, "..")))
 sys.path.insert(0, H)
-from site_config import SITE, canonical, analytics_head  # noqa: E402
+from site_config import SITE, canonical, analytics_head, game_ld  # noqa: E402
 from build_prototype import page  # noqa: E402
 OUT = os.path.join(ROOT, "public", "tulip7")
 title = "Tulip 7"
@@ -22,7 +22,6 @@ desc = ("Amsterdam, winter 1636. A tavern card game of the tulip mania: take pap
 # the sign come next, without competing with them)
 FIRST = "\n".join('<link rel="preload" as="image" href="img/%s.webp"%s>' % (k, ' fetchpriority="high"' if k == "bg_cover" else '')
                   for k in ("bg_cover", "ui_logo", "c_cuyck", "c_busscher", "c_meeckeren", "c_theunisz"))
-fav = base64.b64encode(open(os.path.join(H, "favicon-64.png"), "rb").read()).decode()
 head = f'''<meta name="description" content="{desc}">
 <meta property="og:type" content="website">
 <meta property="og:title" content="{title}">
@@ -34,7 +33,8 @@ head = f'''<meta name="description" content="{desc}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{SITE}/og-tulip7.jpg">
 {canonical("/tulip7/")}
-<link rel="icon" type="image/png" href="data:image/png;base64,{fav}">
+{game_ld("tulip")}
+<link rel="icon" type="image/png" href="img/favicon-64.png">
 {analytics_head("tulip")}
 <script src="/feedback.js" defer data-game="tulip"></script>
 <script src="/next.js" defer data-game="tulip"></script>
@@ -64,5 +64,6 @@ assert src.count(anchor) == 1
 with open(os.path.join(OUT, "index.html"), "w", encoding="utf-8", newline="\n") as fh:
     fh.write(src.replace(anchor, anchor + "\n" + head, 1))
 shutil.copy(os.path.join(H, "plate.jpg"), os.path.join(OUT, "img", "portal-plate.jpg"))
+shutil.copy(os.path.join(H, "favicon-64.png"), os.path.join(OUT, "img", "favicon-64.png"))  # relative, so the packages find it too
 shutil.copy(os.path.join(H, "og.jpg"), os.path.join(ROOT, "public", "og-tulip7.jpg"))
 print("built", OUT)

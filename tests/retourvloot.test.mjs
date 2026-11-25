@@ -202,7 +202,7 @@ test('Tulips in the taverns: a one-off card in February 1637, no gameplay effect
     ctx.window = { HL_PLATFORM: { id: 'crazygames' } };
     assert.match(E.body(S), /You may have seen/); assert.doesNotMatch(E.body(S), /<a /);
     ctx.window = { HL_PLATFORM: { id: 'itch' } };
-    assert.match(E.body(S), /href="https:\/\/homoludens\.oalpcakir\.workers\.dev\/tulip7\/"/);
+    assert.match(E.body(S), /href="https:\/\/homoludens\.onuralp\.co\/tulip7\/"/);
     ctx.localStorage = { getItem: k => k === 'tulip7.save.v1' ? '{}' : null }; ctx.window = undefined;
     assert.match(E.body(S), /href="\/tulip7\/"/);
   } finally { delete ctx.localStorage; delete ctx.window; }

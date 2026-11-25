@@ -1,4 +1,4 @@
-<title>Borderlines</title>
+<title>Borderlines: a daily history map game · Homo Ludens</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -1234,7 +1234,7 @@ function borderlines() {
     $("eLine").textContent = `You averaged ${Math.round(avg)} out of 100 across five realms.`;
     $("eRounds").innerHTML = Q.map((q, i) => `<div><span class="y">${q.yearLabel}</span><span>${q.label}</span><span class="s">${state.scores[i] ?? 0}</span></div>`).join("");
     const cfgSite = (window.BORDERLINES_CONFIG || {}).siteUrl;
-    const site = cfgSite === "" ? "" : cfgSite || "https://homoludens.oalpcakir.workers.dev/borderlines/";
+    const site = cfgSite === "" ? "" : cfgSite || "https://homoludens.onuralp.co/borderlines/";
     $("eShare").textContent = `Borderlines ${isDaily ? "#" + (state.day + 1) : "Practice"} · ${total}/${max}\n${Q.map((q, i) => emoji(state.scores[i] ?? 0)).join("")}${site ? `\n${site}s/${total}${isDaily ? "?d=" + (state.day + 1) : ""}` : ""}`;
     const st = streak(), ti = todayIdx(), streakTxt = `Streak: ${st} ${st === 1 ? "day" : "days"}`;
     // the countdown only makes sense for today's daily; for any other day, point at today's if it is still open

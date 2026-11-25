@@ -10,7 +10,7 @@ import os, re, shutil, sys
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 sys.path.insert(0, os.path.normpath(os.path.join(H, "..")))
-from site_config import SITE, canonical, analytics_head  # noqa: E402
+from site_config import SITE, canonical, analytics_head, game_ld  # noqa: E402
 OUT = os.path.join(ROOT, "public", "kantar")
 # Home-page art: "b" = Amadeo Preziosi, The Grand Bazaar (Pera Museum, public domain; original in
 # preziosi-grand-bazaar.jpg), "a" = the game's brass scale over its bazaar background.
@@ -36,6 +36,7 @@ head = f'''<meta name="description" content="{desc}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{SITE}/og-kantar.jpg">
 {canonical("/kantar/")}
+{game_ld("kantar")}
 {icon}
 {analytics_head("kantar")}
 <script src="/feedback.js" defer data-game="kantar"></script>

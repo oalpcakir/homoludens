@@ -12,7 +12,7 @@ ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 OUT = os.path.join(ROOT, "public", "polder")
 import sys
 sys.path.insert(0, os.path.normpath(os.path.join(H, "..")))
-from site_config import SITE, canonical, analytics_head  # noqa: E402
+from site_config import SITE, canonical, analytics_head, game_ld  # noqa: E402
 ph = analytics_head("polder")
 title = "Polder"
 desc = "Build dikes, close them into rings and drain the sea, from the terp mounds of 1200 to the North Sea flood of 1953. Four regions of the Netherlands, each with its own storms and lakes."
@@ -44,6 +44,7 @@ head = f'''<meta name="description" content="{desc}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="{SITE}/og-polder.jpg">
 {canonical("/polder/")}
+{game_ld("polder")}
 {icon}
 {ph}
 <script src="/feedback.js" defer data-game="polder"></script>

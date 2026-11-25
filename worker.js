@@ -20,6 +20,7 @@
 // Bindings (wrangler.jsonc): ASSETS, FEEDBACK_LIMIT (rate limit), SUBSCRIBERS (KV namespace), STATS (KV namespace,
 // optional: without it the Borderlines score endpoints answer 204 and the game leaves the percentile out).
 
+const CANONICAL_ORIGIN = 'https://homoludens.onuralp.co';
 const KINDS = { idea: 'Idea', bug: 'Bug', history: 'Historical mistake', other: 'Other' };
 const GAMES = { portal: 'Portal', borderlines: 'Borderlines', retourvloot: 'Retourvloot', cupoftea: 'A Cup of Tea', polder: 'Polder', kantar: 'Kantar', tulip: 'Tulip 7' };
 const COLORS = { idea: 0x2c6a47, bug: 0x962f2a, history: 0x9a6a14, other: 0x26457d };
@@ -31,6 +32,9 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const p = url.pathname;
+    // the old *.workers.dev address still answers: send pages there to the real one, so search engines move over.
+    // /api/* is left alone, so builds already uploaded elsewhere (itch.io) that post to the old address keep working.
+    if (url.hostname.endsWith('.workers.dev') && !p.startsWith('/api/') && (request.method === 'GET' || request.method === 'HEAD')) return Response.redirect(CANONICAL_ORIGIN + p + url.search, 301);
     try {
       if (p === '/api/feedback') return request.method === 'POST' ? await feedback(request, env, url) : json({ ok: false, error: 'method' }, 405);
       if (p === '/api/newsletter/status') return json({ ok: true, enabled: newsletterEnabled(env) });
@@ -483,7 +487,7 @@ const GAME_SQL = {
         countIf(event = 'newsletter_signup') AS signups
       FROM events WHERE ${R90} GROUP BY date ORDER BY date DESC`,
     sources: `SELECT coalesce(nullIf(toString(properties.$referring_domain), ''), '$direct') AS source, uniq(distinct_id) AS visitors
-      FROM events WHERE event = '$pageview' AND ${R90} AND NOT (coalesce(toString(properties.$referring_domain), '') LIKE '%workers.dev')
+      FROM events WHERE event = '$pageview' AND ${R90} AND NOT (coalesce(toString(properties.$referring_domain), '') LIKE '%workers.dev' OR coalesce(toString(properties.$referring_domain), '') = 'homoludens.onuralp.co')
       GROUP BY source ORDER BY visitors DESC`,
     countries: `SELECT coalesce(toString(properties.$geoip_country_code), '?') AS country, uniq(distinct_id) AS visitors
       FROM events WHERE event = '$pageview' AND ${R90} GROUP BY country ORDER BY visitors DESC`,

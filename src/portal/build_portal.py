@@ -12,7 +12,7 @@ import json, os, re, sys
 H = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.normpath(os.path.join(H, "..", ".."))
 sys.path.insert(0, os.path.join(ROOT, "src"))
-from site_config import SITE, analytics_head  # noqa: E402
+from site_config import SITE, AUTHOR, analytics_head, ld_script, video_game  # noqa: E402
 
 
 def build():
@@ -27,6 +27,15 @@ def build():
     # the timeline: each game's moment from games.json ("moment": false leaves a game off the line)
     from site_config import games  # noqa: E402
     vals["MOMENTS"] = json.dumps([dict(g["moment"], game=g["id"]) for g in games() if g.get("moment")], ensure_ascii=False).replace("</", "<\\/")
+    # JSON-LD: the site (by Onuralp Çakır, the Person on onuralp.co) and its games, in order
+    vals["LDJSON"] = ld_script({"@context": "https://schema.org", "@graph": [
+        {"@type": "WebSite", "@id": SITE + "/#website", "name": "Homo Ludens", "url": SITE + "/",
+         "description": "Short browser games about moments in history, each with what really happened afterwards.",
+         "inLanguage": "en", "author": AUTHOR, "publisher": AUTHOR},
+        {"@type": "ItemList", "name": "Homo Ludens games", "url": SITE + "/", "itemListElement": [
+            {"@type": "ListItem", "position": i, "item": video_game(g)}
+            for i, g in enumerate(sorted(games(), key=lambda g: g["no"]), 1)]},
+    ]})
     out = re.sub(r"\{\{([A-Z]+)\}\}", lambda m: str(vals[m.group(1)]), tpl)
     left = re.findall(r"\{\{[A-Z]+\}\}", out)
     if left:
@@ -40,6 +49,9 @@ def build():
     os.makedirs(os.path.join(ROOT, "public", "shots"), exist_ok=True)
     for f in sorted(os.listdir(os.path.join(H, "shots"))):
         shutil.copy(os.path.join(H, "shots", f), os.path.join(ROOT, "public", "shots", f))
+    # favicons as files (the browser tab, /favicon.ico for crawlers, the iOS home screen)
+    for f in ("favicon-64.png", "favicon.ico", "apple-touch-icon.png"):
+        shutil.copy(os.path.join(H, "art", f), os.path.join(ROOT, "public", f))
     # sitemap.xml and robots.txt carry the site origin too
     for name in ("sitemap.xml", "robots.txt"):
         t = open(os.path.join(H, name), encoding="utf-8").read().replace("{{SITE}}", SITE)

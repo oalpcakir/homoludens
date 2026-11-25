@@ -7,19 +7,20 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Borderlines">
 <meta property="og:description" content="You get a year and a realm. Paint the land it ruled. A daily history map game.">
-<meta property="og:url" content="https://homoludens.oalpcakir.workers.dev/borderlines/">
-<meta property="og:image" content="https://homoludens.oalpcakir.workers.dev/og-borderlines.png">
+<meta property="og:url" content="https://homoludens.onuralp.co/borderlines/">
+<meta property="og:image" content="https://homoludens.onuralp.co/og-borderlines.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://homoludens.oalpcakir.workers.dev/og-borderlines.png">
-<link rel="canonical" href="https://homoludens.oalpcakir.workers.dev/borderlines/">
+<meta name="twitter:image" content="https://homoludens.onuralp.co/og-borderlines.png">
+<link rel="canonical" href="https://homoludens.onuralp.co/borderlines/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"VideoGame","name":"Borderlines","url":"https://homoludens.onuralp.co/borderlines/","description":"You get a year and a realm. Paint the land it ruled, then see how close you came. A new daily challenge every day.","image":"https://homoludens.onuralp.co/og-borderlines.png","genre":"Historical","gamePlatform":"Web browser","applicationCategory":"Game","operatingSystem":"Any","isAccessibleForFree":true,"author":{"@type":"Person","@id":"https://onuralp.co/#me","name":"Onuralp Çakır","url":"https://onuralp.co/"},"isPartOf":{"@type":"WebSite","@id":"https://homoludens.onuralp.co/#website","name":"Homo Ludens","url":"https://homoludens.onuralp.co/"}}</script>
 <link rel="preload" href="/borderlines/map.json?v=9251797062" as="fetch" crossorigin>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231f2b4a'/%3E%3Cpath d='M7 22l6-12 5 8 3-4 4 8z' fill='%23f7f6f2'/%3E%3C/svg%3E">
 <script>
   window.BORDERLINES_CONFIG = {
     reportEndpoint: "",
-    siteUrl: "https://homoludens.oalpcakir.workers.dev/borderlines/",
+    siteUrl: "https://homoludens.onuralp.co/borderlines/",
     portalUrl: "/",
     daysUrl: "/borderlines/days/",
     mapUrl: "/borderlines/map.json?v=9251797062",
@@ -85,7 +86,7 @@
 <script src="/next.js" defer data-game="borderlines"></script>
 <script src="/hl.js" defer data-game="borderlines"></script>
 <style>html,body{margin:0}[hidden]{display:none!important}</style>
-<title>Borderlines</title>
+<title>Borderlines: a daily history map game · Homo Ludens</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -1324,7 +1325,7 @@ function borderlines() {
     $("eLine").textContent = `You averaged ${Math.round(avg)} out of 100 across five realms.`;
     $("eRounds").innerHTML = Q.map((q, i) => `<div><span class="y">${q.yearLabel}</span><span>${q.label}</span><span class="s">${state.scores[i] ?? 0}</span></div>`).join("");
     const cfgSite = (window.BORDERLINES_CONFIG || {}).siteUrl;
-    const site = cfgSite === "" ? "" : cfgSite || "https://homoludens.oalpcakir.workers.dev/borderlines/";
+    const site = cfgSite === "" ? "" : cfgSite || "https://homoludens.onuralp.co/borderlines/";
     $("eShare").textContent = `Borderlines ${isDaily ? "#" + (state.day + 1) : "Practice"} · ${total}/${max}\n${Q.map((q, i) => emoji(state.scores[i] ?? 0)).join("")}${site ? `\n${site}s/${total}${isDaily ? "?d=" + (state.day + 1) : ""}` : ""}`;
     const st = streak(), ti = todayIdx(), streakTxt = `Streak: ${st} ${st === 1 ? "day" : "days"}`;
     // the countdown only makes sense for today's daily; for any other day, point at today's if it is still open

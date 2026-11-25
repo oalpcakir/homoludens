@@ -27,7 +27,7 @@
 (function () {
   var me = document.currentScript;
   var GAME = (me && me.getAttribute('data-game')) || '';
-  var SITE = 'https://homoludens.oalpcakir.workers.dev';
+  var SITE = 'https://homoludens.onuralp.co';
   var KEY = 'hl.passport.v1';
   var P = window.HL_PLATFORM || null;
   var CG = !!(P && P.id === 'crazygames');
